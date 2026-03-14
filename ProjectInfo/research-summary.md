@@ -5,7 +5,7 @@
 - **biodiversiteit** = verscheidenheid aan soorten, goede biodiversiteit = veel soorten + evenwichtig verdeeld
 - **waardplant** = plant waar insecten eitjes op leggen. Nodig voor biodiversiteit
 - **klimaatrobuustheid** = mate waarin ecosysteem zich kan aanpassen aan veranderend klimaat
-	- hangt samen met biodiversiteit : verschillende soorten hebben verschillende noden -> altijd wel een deel dat overleeft
+  - hangt samen met biodiversiteit : verschillende soorten hebben verschillende noden -> altijd wel een deel dat overleeft
 
 ### overige terminiologie
 
@@ -35,7 +35,7 @@ Twee methodes gebruikt :
 - type beheer: intensief, extensief of netheidsboord (zie pdf voor info)
 - aantal soorten (totaal en per categorie soortenbeoordeling)
 - abiotiek: hydrogolie, zuurtegraad en voedselrijkdom (= 3 witte rijen onder tabel van van soortentelling)
-	- bepaald op basis van gemiddelde Ellenbergwaarden
+  - bepaald op basis van gemiddelde Ellenbergwaarden
 - graslandtype = code helemaal onderaan een kolom, onder tabel soortentelling
 
 ---
@@ -46,13 +46,13 @@ Twee methodes gebruikt :
 
 Steeds EXACT één van volgende klassen
 
-1.E = enkeling = een soort dat slechts 1x op het perceel te vinden is
-2.VZ = verspreid zeldzaam, 2-3 individuen staan verspreid;
-3.VVZ = verspreid vrij zeldzaam, 4-5 individuen staan verspreid;
-4.VVA = verspreid vrij algemeen, 6 -15 individuen staan verspreid;
-5.VA = verspreid algemeen, >15 individuen staan verspreid.
-6.#H = aantal haarden, groep individuen van een soort die geclusterd bijéén staan;
-7.D = dominant = een soort die de vegetatie domineert  
+1. E = enkeling = een soort dat slechts 1x op het perceel te vinden is
+2. VZ = verspreid zeldzaam, 2-3 individuen staan verspreid;
+3. VVZ = verspreid vrij zeldzaam, 4-5 individuen staan verspreid;
+4. VVA = verspreid vrij algemeen, 6 -15 individuen staan verspreid;
+5. VA = verspreid algemeen, >15 individuen staan verspreid.
+6. #H = aantal haarden, groep individuen van een soort die geclusterd bijéén staan;
+7. D = dominant = een soort die de vegetatie domineert  
 
 ### beoordeling
 
