@@ -1,6 +1,6 @@
 # Samenvatting en extra info
 
-## terminiologie studie
+## terminologie studie
 
 - **biodiversiteit** = verscheidenheid aan soorten, goede biodiversiteit = veel soorten + evenwichtig verdeeld
 - **waardplant** = plant waar insecten eitjes op leggen. Nodig voor biodiversiteit
@@ -32,17 +32,19 @@ Twee methodes gebruikt :
 
 - code
 - oppervlakte
-- type beheer: intensief, extensief of netheidsboord (zie pdf voor info)
+- type beheer: intensief ((twee)wekelijks gemaaid), extensief (1-2x per jaar gemaaid) of netheidsboord (randen en paden intensief gemaaid, de rest extensief)
 - aantal soorten (totaal en per categorie soortenbeoordeling)
 - abiotiek: hydrogolie, zuurtegraad en voedselrijkdom (= 3 witte rijen onder tabel van van soortentelling)
   - bepaald op basis van gemiddelde Ellenbergwaarden
-- graslandtype = code helemaal onderaan een kolom, onder tabel soortentelling
+- graslandtype = code helemaal onderaan een kolom, onder tabel soortentelling 
+  - gh: geen habitat
+  - (https://www.vlaanderen.be/inbo/media/2742/folder-karteringseenheden-bwk-v2025.pdf)
 
 ---
 
 ## verzamelde en/of verwerkte data per soort
 
-### bedekkinsklasse
+### bedekkingsklasse
 
 Steeds EXACT één van volgende klassen
 
@@ -51,7 +53,7 @@ Steeds EXACT één van volgende klassen
 3. VVZ = verspreid vrij zeldzaam, 4-5 individuen staan verspreid;
 4. VVA = verspreid vrij algemeen, 6 -15 individuen staan verspreid;
 5. VA = verspreid algemeen, >15 individuen staan verspreid.
-6. #H = aantal haarden, groep individuen van een soort die geclusterd bijéén staan;
+6. #H = aantal haarden, groep individuen van een soort die geclusterd bijeen staan;
 7. D = dominant = een soort die de vegetatie domineert  
 
 ### beoordeling
@@ -64,9 +66,9 @@ categorie op basis van beheertype en biodiversiteitswaarde
 4. 0 = ruderale of ruigtesoort, een soort die esthetisch én ecologisch niet thuishoort in grasland maar voorkomt op verstoorde bodems of onbeheerde percelen;
 5. \- = (invasieve) exoot, een soort van buitenlandse origine en in geval van invasieve exoten een bedreiging vormt voor de inheemse flora.
 
-### Ellenbergwaarden (vocht, zuurte, stikstofrijdom)
+### Ellenbergwaarden (vocht, zuurtegraad, stikstofrijdom)
 
 = tabellen met getallen naast elke soort
 
-Onderaan perceelkolom staan gemiddelde waarden.
+Onderaan perceelkolom staan gemiddelde waarden en een omschrijving per waarde
 Deze bepalen samen de abiotiek per perceel
