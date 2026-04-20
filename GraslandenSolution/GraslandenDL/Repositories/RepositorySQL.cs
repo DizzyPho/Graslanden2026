@@ -168,7 +168,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public List<InventoryDTO> GetInventories() 
+        public List<InventoryDTO> GetInventorieDTOs() 
         {
             const string query = "SELECT date, name FROM inventory";
             List<InventoryDTO> inventories = new List<InventoryDTO>(); 

@@ -15,6 +15,6 @@ namespace GraslandenBL.Interfaces
 
         public List<string> GeAllCampuses();
 
-        public List<InventoryDTO> GetInventories();
+        public List<InventoryDTO> GetInventoriesDTOs();
     }
 }
