@@ -1,23 +1,121 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Reflection.Metadata;
+using System.Xml.Linq;
 
-namespace GraslandenDL.Repositories {
-    public class RepositorySQL : IRepository {
+namespace GraslandenDL.Repositories
+{
+    public class RepositorySQL : IRepository
+    {
         private string _connectionString;
 
-        public RepositorySQL(string connectionString) {
+        public RepositorySQL(string connectionString)
+        {
             _connectionString = connectionString;
         }
 
-        public List<Species> GetAllSpecies() {
-
+        public List<string> GeAllCampuses()
+        {
             throw new NotImplementedException();
         }
 
-        public void ImportInventory(List<Inventory> data) {
+        public Dictionary<Plot, string> GetAllGrassPlots()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Inventory> GetAllInventory()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Species> GetAllSpecies()
+        {
+
+            List<Species> species = new List<Species>();
+
+            string query = "SELECT id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance FROM species";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                try
+                {
+                    //Open connection
+                    con.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            string rating = reader.GetString(2);
+                            int moisture = reader.GetInt32(3);
+                            int ph = reader.GetInt32(4);
+                            int nitrogen = reader.GetInt32(5);
+                            int biodiversity;
+                            if (DBNull.Value.Equals(reader[7]))
+                            {
+                                biodiversity = 0;
+                            }
+                            else
+                            {
+                                biodiversity = reader.GetInt32(7);
+                            }
+
+                            int nectarValue;
+                            if (DBNull.Value.Equals(reader[6]))
+                            {
+                                nectarValue = 0;
+                            }
+                            else
+                            {
+                                nectarValue = reader.GetInt32(6);
+                            }
+
+
+                            Species s = new Species(
+                             id,
+                             name,
+                             moisture,
+                             ph,
+                             nitrogen,
+                             nectarValue,
+                             biodiversity,
+
+                             //Sleutel, Begeleidend, Algemeen, Ruderaal, Invasief
+                             rating switch
+                             {
+                                 "Sleutel" => Rating.Sleutel,
+                                 "Begeleidend" => Rating.Begeleidend,
+                                 "Algemeen" => Rating.Algemeen,
+                                 "Ruderaal" => Rating.Ruderaal,
+                                 "Invasief" => Rating.Invasief,
+                                 _ => null
+                             }
+                             );
+                            species.Add(s);
+                        }
+
+                        return species;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+
+            }
+        }
+                
+
+        public void ImportInventory(List<Inventory> data)
+        {
             string queryInventory = "INSERT INTO inventory(id, date,name) output INSERTED.ID VALUES(@id,@date,@name)";
             string querySpecies = "INSERT INTO species(id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity) output INSERTED.ID VALUES(@id, @name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversit)";
             string queryGrassPlot = "INSERT INTO plot(code, campus, area_sq_meter) output INSERTED.ID VALUES(@code, @campus, @area_sq_meter)";
@@ -33,7 +131,8 @@ namespace GraslandenDL.Repositories {
             using (SqlCommand cmdManagementType = con.CreateCommand())
             using (SqlCommand cmdPlotType = con.CreateCommand())
             using (SqlCommand cmdInventoried_plot = con.CreateCommand())
-            using (SqlCommand cmdMeasurement = con.CreateCommand()) {
+            using (SqlCommand cmdMeasurement = con.CreateCommand())
+            {
                 //Open connection and transaction
                 con.Open();
                 SqlTransaction transaction = con.BeginTransaction();
@@ -88,8 +187,10 @@ namespace GraslandenDL.Repositories {
                 cmdMeasurement.Parameters.Add(new SqlParameter("@idSpecies", SqlDbType.Int));
                 cmdMeasurement.Parameters.Add(new SqlParameter("@coverage", SqlDbType.NVarChar));
 
-                try {
-                    foreach (Inventory inventory in data) {
+                try
+                {
+                    foreach (Inventory inventory in data)
+                    {
                         //Insert inventory
                         cmdInventory.Parameters["@name"].Value = inventory.Name;
                         cmdInventory.Parameters["@date"].Value = inventory.Date;
@@ -98,7 +199,8 @@ namespace GraslandenDL.Repositories {
                         cmdInventory.Parameters["@id"].Value = inventoryId;
 
 
-                        foreach (var item in inventory.Measurements) {
+                        foreach (var item in inventory.Measurements)
+                        {
 
                             //Insert species
                             cmdSpecies.Parameters["@name"].Value = item.Species.Name;
@@ -146,7 +248,9 @@ namespace GraslandenDL.Repositories {
                             cmdMeasurement.Parameters["@coverage"].Value = item.Coverage;
                         }
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     transaction.Rollback();
                     throw ex;
                 }
