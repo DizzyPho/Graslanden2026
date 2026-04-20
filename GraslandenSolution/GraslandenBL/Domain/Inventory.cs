@@ -6,7 +6,7 @@ namespace GraslandenBL.Domain
 {
     public class Inventory
     {
-        public Inventory(DateTime date, string name)
+        private Inventory(DateTime date, string name)
         {
             Date = date;
             Name = name;
