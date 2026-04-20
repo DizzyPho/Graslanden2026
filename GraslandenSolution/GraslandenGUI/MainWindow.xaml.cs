@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Microsoft.Extensions.Configuration;
+using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +21,16 @@ namespace GraslandenGUI
         public MainWindow()
         {
             InitializeComponent();
+
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("./Config/appsettings.json", optional: false, reloadOnChange: true);
+
+            var config = builder.Build();
+
+            string dbConnectionString = config.GetConnectionString("SQLServerConnection");
+            string indicatorValuesPath = config.GetSection("AppSettings")["IndicatorValuesPath"];
+            string importFileType = config.GetSection("AppSettings")["ImportFileType"];
+            string DBType = config.GetSection("AppSettings")["DataBaseType"];
+            
         }
     }
 }
