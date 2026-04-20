@@ -4,6 +4,6 @@ namespace GraslandenBL.Interfaces
 {
     public interface IFileReader
     {
-        public FactoryResult<Measurement> ReadFile();
+        public List<Measurement> ReadFile();
     }
 }
