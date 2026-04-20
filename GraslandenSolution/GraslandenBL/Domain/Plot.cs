@@ -19,7 +19,7 @@ namespace GraslandenBL.Domain
         public string Code { get; set;  }
         public double AreaSqMeters { get; set; }
         public string Campus { get; set; }
-        ManagementType ManagementType { get; set; }
-        PlotType PlotType { get; set; }
+        public ManagementType ManagementType { get; set; }
+        public PlotType PlotType { get; set; }
     }
 }
