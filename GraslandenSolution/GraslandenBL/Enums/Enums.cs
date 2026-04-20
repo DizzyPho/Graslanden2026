@@ -4,6 +4,6 @@ using System.Text;
 
 namespace GraslandenBL.Enums
 {
-    enum ManagementType { }
-    enum Rating { }
+    public enum ManagementType { }
+    public enum Rating { }
 }
