@@ -1,10 +1,9 @@
 ﻿using GraslandenBL.Domain;
-using GraslandenBL.FactoryResults;
 using GraslandenBL.Interfaces;
 
 namespace GraslandenBL.Managers
 {
-    internal class ImportManager
+    public class ImportManager
     {
         private IRepository _repository;
         private IFileReader _fileReader;
@@ -15,7 +14,7 @@ namespace GraslandenBL.Managers
             _fileReader = fileReader;
         }
 
-        public List<FactoryResult<Measurement>> ReadFile()
+        public List<Measurement> ReadFile()
         {
             return _fileReader.ReadFile();
         }
