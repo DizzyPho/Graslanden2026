@@ -30,11 +30,6 @@ namespace GraslandenDL.Repositories
             return grassPlots;
         }
 
-        public List<Inventory> GetAllInventory()
-        {
-            throw new NotImplementedException();
-        }
-
         public List<Species> GetAllSpecies()
         {
 
