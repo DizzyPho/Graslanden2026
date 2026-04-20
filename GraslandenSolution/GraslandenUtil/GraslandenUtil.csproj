@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GraslandenBL\GraslandenBL.csproj" />
+    <ProjectReference Include="..\GraslandenDL\GraslandenDL.csproj" />
+  </ItemGroup>
+
 </Project>
