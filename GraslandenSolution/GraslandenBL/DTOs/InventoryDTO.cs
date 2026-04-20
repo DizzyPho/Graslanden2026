@@ -6,7 +6,7 @@ namespace GraslandenBL.DTOs
 {
     public class InventoryDTO
     {
-        private InventoryDTO(DateTime date, string name)
+        public InventoryDTO(DateTime date, string name)
         {
             Date = date;
             Name = name;
