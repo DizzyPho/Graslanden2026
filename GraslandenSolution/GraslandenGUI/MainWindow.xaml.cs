@@ -51,8 +51,8 @@ namespace GraslandenGUI
                                                             fileReader: fileReader);
             Manager manager = new Manager(repository);
 
-            Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
-            ListBoxInventories.ItemsSource = Inventories;
+            //Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
+            //ListBoxInventories.ItemsSource = Inventories;
             //_importManager.ReadFile();
         }
 
@@ -63,6 +63,10 @@ namespace GraslandenGUI
             if (openFileDialog.ShowDialog() == true)
             {
                 string fileName = openFileDialog.FileName;
+                if(!fileName.EndsWith(".csv"))
+                {
+                    MessageBox.Show("Selecteer a.u.b. een CSV-bestand.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }      
         }
     }
