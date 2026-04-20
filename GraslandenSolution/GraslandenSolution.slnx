@@ -2,6 +2,7 @@
   <Project Path="GraslandenBL/GraslandenBL.csproj" />
   <Project Path="GraslandenDL/GraslandenDL.csproj" />
   <Project Path="GraslandenGUI/GraslandenGUI.csproj" />
+  <Project Path="GraslandenLevenshtein/GraslandenLevenshtein.csproj" Id="15c23324-92d7-405b-8d64-f6bc6fe17a74" />
   <Project Path="GraslandenUtil/GraslandenUtil.csproj" />
   <Project Path="GraslandenValidation/GraslandenValidation.csproj" />
 </Solution>
