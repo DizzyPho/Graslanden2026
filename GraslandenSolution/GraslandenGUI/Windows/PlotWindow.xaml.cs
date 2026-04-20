@@ -1,5 +1,8 @@
-﻿using System;
+﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,9 +20,12 @@ namespace GraslandenGUI.Windows
     /// </summary>
     public partial class PlotWindow : Window
     {
+        private ObservableCollection<MeasurementDTO> Measurements { get; init; }
         public PlotWindow()
         {
             InitializeComponent();
+            Measurements = new ObservableCollection<MeasurementDTO>();
+            ListBoxMeasurements.ItemsSource = Measurements;
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
