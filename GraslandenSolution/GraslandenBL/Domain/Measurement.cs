@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace GraslandenBL.Domain {
-    internal class Measurement {
+    public class Measurement {
         public Species Species { get; set; }
         public string Coverage { get; set; }
         public Plot Plot { get; set; }
