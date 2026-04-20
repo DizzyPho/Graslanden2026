@@ -1,5 +1,7 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.FactoryResults;
 using GraslandenBL.Interfaces;
+using GraslandenDL.Factories;
 
 namespace GraslandenDL.FileReaders
 {
@@ -13,10 +15,20 @@ namespace GraslandenDL.FileReaders
             _inventoryPath = inventoryPath;
             _indicatorValuesPath = indicatorValuesPath;
         }
-
-        public List<Measurement> ImportInventory()
+        
+        public List<FactoryResult> ReadFile()
         {
-            throw new NotImplementedException();
+            Dictionary<string, Species> speciesList = new Dictionary<string, Species>();
+
+            using (StreamReader streamReader = new StreamReader(_indicatorValuesPath))
+            {
+                while(!streamReader.EndOfStream)
+                {
+                    string[] line = streamReader.ReadLine().Split(';');
+                    FactoryResult<Species> newSpecies = SpeciesFactory.CreateSpecies();
+                    if (newSpecies.IsSuccess) speciesList.Add(newSpecies.Result.Name, newSpecies.Result);
+                }
+            }
         }
     }
 }
