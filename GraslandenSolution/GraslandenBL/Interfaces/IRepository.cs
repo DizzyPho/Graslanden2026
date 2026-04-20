@@ -1,4 +1,5 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 
 namespace GraslandenBL.Interfaces
 {
@@ -14,5 +15,6 @@ namespace GraslandenBL.Interfaces
 
         public List<string> GeAllCampuses();
 
+        public List<InventoryDTO> GetInventoryDTOs();
     }
 }

@@ -12,6 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using GraslandenBL.Managers;
+using GraslandenBL.Interfaces;
+using GraslandenUtil.Factories;
 
 namespace GraslandenGUI
 {
@@ -34,8 +37,21 @@ namespace GraslandenGUI
             string importFileType = config.GetSection("AppSettings")["ImportFileType"];
             string DBType = config.GetSection("AppSettings")["DataBaseType"];
             
-            Inventories = new ObservableCollection<InventoryDTO>();
+
+            IRepository repository = RepositoryFactory.CreateRepository(connectionString: dbConnectionString,
+                                                                        databaseType: DBType);
+
+            IFileReader fileReader = FileReaderFactory.CreateFileReader(inventoryFilePath: "",
+                                                                        indicatorValuesPath: indicatorValuesPath,
+                                                                        fileType: importFileType);
+
+            ImportManager importManager = new ImportManager(repository: repository,
+                                                            fileReader: fileReader);
+            Manager manager = new Manager(repository);
+
+            Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
             ListBoxInventories.ItemsSource = Inventories;
+            importManager.ReadFile();
         }
     }
 }

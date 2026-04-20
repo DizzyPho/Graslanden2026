@@ -1,4 +1,5 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -257,6 +258,27 @@ namespace GraslandenDL.Repositories
 
                 transaction.Commit();
             }
+        }
+
+
+        public List<InventoryDTO> GetInventoryDTOs() 
+        {
+            const string query = "SELECT date, name FROM inventory";
+            List<InventoryDTO> inventories = new List<InventoryDTO>(); 
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                }
+            }
+            return inventories;
         }
     }
 }
