@@ -9,12 +9,10 @@ namespace GraslandenBL.Interfaces
 
         public List<Species> GetAllSpecies();
 
-        public List<Inventory> GetAllInventory();
-
         public Dictionary<Plot,string> GetAllGrassPlots();
 
         public List<string> GeAllCampuses();
 
-        public List<InventoryDTO> GetInventories();
+        public List<InventoryDTO> GetInventoryDTOs();
     }
 }

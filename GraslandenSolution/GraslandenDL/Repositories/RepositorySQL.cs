@@ -1,9 +1,11 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 namespace GraslandenDL.Repositories
 {
@@ -16,11 +18,99 @@ namespace GraslandenDL.Repositories
             _connectionString = connectionString;
         }
 
+        public List<string> GeAllCampuses()
+        {
+            List<string> campuses = new List<string>();
+            return campuses;
+        }
+
+        public Dictionary<Plot, string> GetAllGrassPlots()
+        {
+            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
+            return grassPlots;
+        }
+
         public List<Species> GetAllSpecies()
         {
 
-            throw new NotImplementedException();
+            List<Species> species = new List<Species>();
+
+            string query = "SELECT id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance FROM species";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                try
+                {
+                    //Open connection
+                    con.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string name = reader.GetString(1);
+                            string rating = reader.GetString(2);
+                            int moisture = reader.GetInt32(3);
+                            int ph = reader.GetInt32(4);
+                            int nitrogen = reader.GetInt32(5);
+                            int biodiversity;
+                            if (DBNull.Value.Equals(reader[7]))
+                            {
+                                biodiversity = 0;
+                            }
+                            else
+                            {
+                                biodiversity = reader.GetInt32(7);
+                            }
+
+                            int nectarValue;
+                            if (DBNull.Value.Equals(reader[6]))
+                            {
+                                nectarValue = 0;
+                            }
+                            else
+                            {
+                                nectarValue = reader.GetInt32(6);
+                            }
+
+
+                            Species s = new Species(
+                             id,
+                             name,
+                             moisture,
+                             ph,
+                             nitrogen,
+                             nectarValue,
+                             biodiversity,
+
+                             //Sleutel, Begeleidend, Algemeen, Ruderaal, Invasief
+                             rating switch
+                             {
+                                 "Sleutel" => Rating.Sleutel,
+                                 "Begeleidend" => Rating.Begeleidend,
+                                 "Algemeen" => Rating.Algemeen,
+                                 "Ruderaal" => Rating.Ruderaal,
+                                 "Invasief" => Rating.Invasief,
+                                 _ => null
+                             }
+                             );
+                            species.Add(s);
+                        }
+
+                        return species;
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+
+            }
         }
+                
 
         public void ImportInventory(List<Inventory> data)
         {
@@ -168,7 +258,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public List<InventoryDTO> GetInventories() 
+        public List<InventoryDTO> GetInventoryDTOs() 
         {
             const string query = "SELECT date, name FROM inventory";
             List<InventoryDTO> inventories = new List<InventoryDTO>(); 

@@ -14,7 +14,7 @@ namespace GraslandenBL.Domain {
         public int? Biodiversity { get; set; }
         public Rating? Rating { get; set; }
 
-        private Species(int? id, string name, int moisture, int ph, int nitrogen, int? nectarvalue, int? biodiversity, Rating? rating) {
+        public Species(int? id, string name, int moisture, int ph, int nitrogen, int? nectarvalue, int? biodiversity, Rating? rating) {
             Id = id;
             Name = name;
             Moisture = moisture;

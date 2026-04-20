@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using GraslandenBL.Managers;
 using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
+using Microsoft.Win32;
 
 namespace GraslandenGUI
 {
@@ -24,6 +25,7 @@ namespace GraslandenGUI
     public partial class MainWindow : Window
     {
         private ObservableCollection<InventoryDTO> Inventories { get; init; }
+        private ImportManager _importManager;
         public MainWindow()
         {
             InitializeComponent();
@@ -37,8 +39,6 @@ namespace GraslandenGUI
             string importFileType = config.GetSection("AppSettings")["ImportFileType"];
             string DBType = config.GetSection("AppSettings")["DataBaseType"];
             
-            Inventories = new ObservableCollection<InventoryDTO>();
-            ListBoxInventories.ItemsSource = Inventories;
 
             IRepository repository = RepositoryFactory.CreateRepository(connectionString: dbConnectionString,
                                                                         databaseType: DBType);
@@ -47,10 +47,23 @@ namespace GraslandenGUI
                                                                         indicatorValuesPath: indicatorValuesPath,
                                                                         fileType: importFileType);
 
-            ImportManager importManager = new ImportManager(repository: repository,
+            _importManager = new ImportManager(repository: repository,
                                                             fileReader: fileReader);
+            Manager manager = new Manager(repository);
 
-            importManager.ReadFile();
+            Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
+            ListBoxInventories.ItemsSource = Inventories;
+            //_importManager.ReadFile();
+        }
+
+        private void ImportNew_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "CSV Files (*.csv)|*.txt|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string fileName = openFileDialog.FileName;
+            }      
         }
     }
 }
