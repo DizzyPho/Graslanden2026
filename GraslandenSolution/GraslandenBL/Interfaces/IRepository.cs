@@ -11,7 +11,7 @@ namespace GraslandenBL.Interfaces
 
         public Dictionary<Plot,string> GetAllGrassPlots();
 
-        public List<string> GeAllCampuses();
+        public List<string> GetAllCampuses();
 
         public List<InventoryDTO> GetInventoryDTOs();
     }
