@@ -20,12 +20,14 @@ namespace GraslandenDL.Repositories
 
         public List<string> GeAllCampuses()
         {
-            throw new NotImplementedException();
+            List<string> campuses = new List<string>();
+            return campuses;
         }
 
         public Dictionary<Plot, string> GetAllGrassPlots()
         {
-            throw new NotImplementedException();
+            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
+            return grassPlots;
         }
 
         public List<Inventory> GetAllInventory()
