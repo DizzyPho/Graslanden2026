@@ -1,23 +1,29 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Reflection.Metadata;
 
-namespace GraslandenDL.Repositories {
-    public class RepositorySQL : IRepository {
+namespace GraslandenDL.Repositories
+{
+    public class RepositorySQL : IRepository
+    {
         private string _connectionString;
 
-        public RepositorySQL(string connectionString) {
+        public RepositorySQL(string connectionString)
+        {
             _connectionString = connectionString;
         }
 
-        public List<Species> GetAllSpecies() {
+        public List<Species> GetAllSpecies()
+        {
 
             throw new NotImplementedException();
         }
 
-        public void ImportInventory(List<Inventory> data) {
+        public void ImportInventory(List<Inventory> data)
+        {
             string queryInventory = "INSERT INTO inventory(id, date,name) output INSERTED.ID VALUES(@id,@date,@name)";
             string querySpecies = "INSERT INTO species(id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity) output INSERTED.ID VALUES(@id, @name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversit)";
             string queryGrassPlot = "INSERT INTO plot(code, campus, area_sq_meter) output INSERTED.ID VALUES(@code, @campus, @area_sq_meter)";
@@ -33,7 +39,8 @@ namespace GraslandenDL.Repositories {
             using (SqlCommand cmdManagementType = con.CreateCommand())
             using (SqlCommand cmdPlotType = con.CreateCommand())
             using (SqlCommand cmdInventoried_plot = con.CreateCommand())
-            using (SqlCommand cmdMeasurement = con.CreateCommand()) {
+            using (SqlCommand cmdMeasurement = con.CreateCommand())
+            {
                 //Open connection and transaction
                 con.Open();
                 SqlTransaction transaction = con.BeginTransaction();
@@ -88,8 +95,10 @@ namespace GraslandenDL.Repositories {
                 cmdMeasurement.Parameters.Add(new SqlParameter("@idSpecies", SqlDbType.Int));
                 cmdMeasurement.Parameters.Add(new SqlParameter("@coverage", SqlDbType.NVarChar));
 
-                try {
-                    foreach (Inventory inventory in data) {
+                try
+                {
+                    foreach (Inventory inventory in data)
+                    {
                         //Insert inventory
                         cmdInventory.Parameters["@name"].Value = inventory.Name;
                         cmdInventory.Parameters["@date"].Value = inventory.Date;
@@ -98,7 +107,8 @@ namespace GraslandenDL.Repositories {
                         cmdInventory.Parameters["@id"].Value = inventoryId;
 
 
-                        foreach (var item in inventory.Measurements) {
+                        foreach (var item in inventory.Measurements)
+                        {
 
                             //Insert species
                             cmdSpecies.Parameters["@name"].Value = item.Species.Name;
@@ -146,13 +156,36 @@ namespace GraslandenDL.Repositories {
                             cmdMeasurement.Parameters["@coverage"].Value = item.Coverage;
                         }
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     transaction.Rollback();
                     throw ex;
                 }
 
                 transaction.Commit();
             }
+        }
+
+
+        public List<InventoryDTO> GetInventories() 
+        {
+            const string query = "SELECT date, name FROM inventory";
+            List<InventoryDTO> inventories = new List<InventoryDTO>(); 
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                }
+            }
+            return inventories;
         }
     }
 }

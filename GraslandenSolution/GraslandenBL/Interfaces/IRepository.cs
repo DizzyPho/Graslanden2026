@@ -1,4 +1,5 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 
 namespace GraslandenBL.Interfaces
 {
@@ -7,6 +8,6 @@ namespace GraslandenBL.Interfaces
         public void ImportInventory(List<Inventory> data);
 
         public List<Species> GetAllSpecies();
-
+        public List<InventoryDTO> GetInventories();
     }
 }
