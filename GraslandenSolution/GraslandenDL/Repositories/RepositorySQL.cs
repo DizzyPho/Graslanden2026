@@ -18,10 +18,27 @@ namespace GraslandenDL.Repositories
             _connectionString = connectionString;
         }
 
-        public List<string> GeAllCampuses()
+        public HashSet<string> GetAllCampuses()
         {
-            List<string> campuses = new List<string>();
-            return campuses;
+            HashSet<string> campuses = new HashSet<string>();
+            string queryCampus = "SELECT campus FROM grass_plot";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdCampus = new SqlCommand(queryCampus, con))
+            {
+
+                //Open connection
+                con.Open();
+
+                using (SqlDataReader reader = cmdCampus.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        campuses.Add(reader.GetString("campus"));
+                    }
+                    return campuses;
+                }
+            }
         }
 
         public Dictionary<Plot, string> GetAllGrassPlots()
@@ -110,7 +127,7 @@ namespace GraslandenDL.Repositories
 
             }
         }
-                
+
 
         public void ImportInventory(List<Inventory> data)
         {
@@ -258,10 +275,10 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public List<InventoryDTO> GetInventoryDTOs() 
+        public List<InventoryDTO> GetInventoryDTOs()
         {
             const string query = "SELECT date, name FROM inventory";
-            List<InventoryDTO> inventories = new List<InventoryDTO>(); 
+            List<InventoryDTO> inventories = new List<InventoryDTO>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             using (SqlCommand cmd = conn.CreateCommand())
