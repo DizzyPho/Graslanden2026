@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GraslandenBL.Domain
+namespace GraslandenBL.DTOs
 {
-    public class Inventory
+    public class InventoryDTO
     {
-        private Inventory(DateTime date, string name)
+        private InventoryDTO(DateTime date, string name)
         {
             Date = date;
             Name = name;
-            Measurements = new List<Measurement>();
         }
 
         public DateTime Date { get; set; }
         public String Name { get; set; }
-        public List<Measurement> Measurements { get; set; }
-
-
     }
 }
