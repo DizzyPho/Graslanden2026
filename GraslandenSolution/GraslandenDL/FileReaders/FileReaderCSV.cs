@@ -1,7 +1,7 @@
 ﻿using GraslandenBL.Domain;
-using GraslandenBL.FactoryResults;
+using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
-using GraslandenDL.Factories;
+using GraslandenValidation;
 
 namespace GraslandenDL.FileReaders
 {
@@ -9,6 +9,7 @@ namespace GraslandenDL.FileReaders
     {
         private string _inventoryPath;
         private string _indicatorValuesPath;
+        private List<string> _errorMessages = new List<string>();
 
         public FileReaderCSV(string inventoryPath, string indicatorValuesPath)
         {
@@ -16,19 +17,176 @@ namespace GraslandenDL.FileReaders
             _indicatorValuesPath = indicatorValuesPath;
         }
         
-        public List<FactoryResult> ReadFile()
+        public List<Measurement> ReadFile()
         {
+            List<Measurement> results = new List<Measurement>();
             Dictionary<string, Species> speciesList = new Dictionary<string, Species>();
 
             using (StreamReader streamReader = new StreamReader(_indicatorValuesPath))
             {
-                while(!streamReader.EndOfStream)
+                // Skip column names
+                streamReader.ReadLine();
+                while (!streamReader.EndOfStream)
                 {
-                    string[] line = streamReader.ReadLine().Split(';');
-                    FactoryResult<Species> newSpecies = SpeciesFactory.CreateSpecies();
-                    if (newSpecies.IsSuccess) speciesList.Add(newSpecies.Result.Name, newSpecies.Result);
+
+                    //id, name, moisture, ph, nitrogen, nectarValue, biodiversity, rating
+
+                    string[] lineSections = streamReader.ReadLine().Split(',');
+
+                    if (SpeciesValidation.Validate(name: lineSections[0],
+                                                moistureString: lineSections[15],
+                                                phString: lineSections[16],
+                                                nitrogenString: lineSections[17],
+                                                nectarValueString: lineSections[9],
+                                                biodiversityString: lineSections[8],
+                                                ratingString: null, out List<string> errorMessages))
+                    {
+
+
+                        Species newSpecies = new Species(id: null,
+                                                                            name: lineSections[0],
+                                                                            moisture: int.Parse(lineSections[15]),
+                                                                            ph: int.Parse(lineSections[16]),
+                                                                            nitrogen: int.Parse(lineSections[17]),
+                                                                            nectarvalue: int.Parse(lineSections[9]),
+                                                                            biodiversity: int.Parse(lineSections[8]),
+                                                                            rating: null);
+                        speciesList.Add(newSpecies.Name, newSpecies);
+                    }
+                    else
+                    {
+                        _errorMessages.AddRange(errorMessages);
+                    }
                 }
             }
+
+            string currentCampus = "";
+            int currentLineWithinCampus = 0;
+
+            // Plots and their respective column indices
+            Dictionary<string, Plot> plots = new Dictionary<string, Plot>();
+            List<Species> species = new List<Species>();
+
+            // TO DO: replace path with _inventoryPath
+            using(StreamReader streamReader = new StreamReader("C:\\Users\\neytn\\Desktop\\projectwerk\\gras.txt"))
+            {
+                List<string> plotNames = new List<string>();
+                List<double> plotAreas = new List<double>();
+                List<string> plotManagementTypes = new List<string>();
+
+                while(!streamReader.EndOfStream)
+                {
+                    string line = streamReader.ReadLine();
+                    if (line.Contains("Worksheet"))
+                    {
+                        currentCampus = line.Split(':')[1].Replace("---", "").Trim();
+                        currentLineWithinCampus = 0;
+                        plotNames = new List<string>();
+                        plotAreas = new List<double>();
+                        plotManagementTypes = new List<string>();
+                    }
+                    else
+                    {
+                        string[] lineSections = line.Split('|');
+                        if (lineSections[0].Trim() != string.Empty)
+                        {
+                            if (currentLineWithinCampus <= 2)
+                            {
+                                for (int i = 1; i < lineSections.Length; i++)
+                                {
+                                    string currentCell = lineSections[i];
+                                    if (currentCell.Trim() != string.Empty)
+                                    {
+                                        if(currentLineWithinCampus == 0)
+                                        {
+                                            if (currentCell.StartsWith(currentCampus.Substring(0,3).ToUpper()))
+                                            {
+                                                plotNames.Add(currentCell);
+                                            }
+                                        }
+                                        else if(currentLineWithinCampus == 1 && plotAreas.Count < plotNames.Count)
+                                        {
+                                            try
+                                            {
+                                                plotAreas.Add(double.Parse(currentCell));
+                                            }
+                                            catch
+                                            {
+                                                plotAreas.Add(-1);
+                                            }
+                                        }
+                                        else if(currentLineWithinCampus == 2 && plotManagementTypes.Count < plotManagementTypes.Count)
+                                        {
+                                            plotManagementTypes.Add(currentCell);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (currentLineWithinCampus == 3)
+                            {
+                                for (int i = 0; i < plotNames.Count; i++)
+                                {
+                                    ManagementType managementType = ManagementType.Intensief;
+                                    try
+                                    {
+                                        managementType = plotManagementTypes[i].Trim().ToUpper() switch
+                                        {
+                                            "INTENSIEF" => ManagementType.Intensief,
+                                            "EXTENSIEF" => ManagementType.Extensief,
+                                            "NETHEIDSBOORD" => ManagementType.Netheidsboord,
+                                            "SCHAPENWEIDE" => ManagementType.Schapenweide,
+                                        };
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    plots.Add(plotNames[i], new Plot(plotNames[i], plotAreas[i], currentCampus, managementType, new PlotType("test", "test")));
+                                }
+                            }
+                        }
+
+                        if (currentLineWithinCampus > 10)
+                        {
+                            for (int i = 0; i < lineSections.Length; i++)
+                            {
+                                if ((i - 1) % 6 == 0 && lineSections[i].Trim() != "")
+                                {
+                                    if (lineSections[i + 1].Trim() != "")
+                                    {
+                                        try
+                                        {
+                                            Rating rating = lineSections[i + 5].Trim() switch
+                                            {
+                                                "+++" => Rating.Sleutel,
+                                                "++" => Rating.Begeleidend,
+                                                "+" => Rating.Algemeen,
+                                                "0" => Rating.Ruderaal,
+                                                "-" => Rating.Invasief
+                                            };
+
+                                            species.Add(new Species(id: null,
+                                                                    name: lineSections[i].Trim(),
+                                                                    moisture: int.Parse(lineSections[i + 2]),
+                                                                    ph: int.Parse(lineSections[i + 3]),
+                                                                    nitrogen: int.Parse(lineSections[i + 4]),
+                                                                    nectarvalue: null,
+                                                                    biodiversity: null,
+                                                                    rating: rating));
+                                        }
+                                        catch
+                                        {
+                                            _errorMessages.Add($"{currentCampus}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        currentLineWithinCampus++;
+                    }
+                }
+            }
+
+            return results;
         }
     }
 }
