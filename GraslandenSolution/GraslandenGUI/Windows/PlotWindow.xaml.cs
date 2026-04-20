@@ -25,7 +25,7 @@ namespace GraslandenGUI.Windows
         {
             InitializeComponent();
             Measurements = new ObservableCollection<MeasurementDTO>();
-            ListBoxMeasurements.ItemsSource = Measurements;
+            DataGridMeasurements.ItemsSource = Measurements;
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
