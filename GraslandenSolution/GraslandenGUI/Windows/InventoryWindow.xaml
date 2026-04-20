@@ -1,0 +1,28 @@
+﻿<Window x:Class="GraslandenGUI.Windows.InventoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GraslandenGUI.Windows"
+        mc:Ignorable="d"
+        Title="Inventaris" Height="450" Width="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="Inventarisatie ___" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" Margin="10"></TextBlock>
+        <Grid Grid.Row="1" Margin="10" Grid.ColumnSpan="2">
+        </Grid>
+        <TabControl Grid.Row="2" Margin="10" Name="TabControlCampus" Grid.ColumnSpan="2">
+        </TabControl>
+        <Button Grid.Row="3" Grid.Column="0" Content="Terug" Margin="10" Click="ButtonBack"></Button>
+        <Button Grid.Row="3" Grid.Column="1" Content="Bekijk Grasland" Margin="10" Click="ButtonInspectPlot"></Button>
+    </Grid>
+</Window>

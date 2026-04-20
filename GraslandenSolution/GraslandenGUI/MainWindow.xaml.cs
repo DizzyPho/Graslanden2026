@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using GraslandenBL.DTOs;
+using Microsoft.Extensions.Configuration;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -21,6 +23,7 @@ namespace GraslandenGUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ObservableCollection<InventoryDTO> Inventories { get; init; }
         public MainWindow()
         {
             InitializeComponent();
@@ -33,6 +36,9 @@ namespace GraslandenGUI
             string indicatorValuesPath = config.GetSection("AppSettings")["IndicatorValuesPath"];
             string importFileType = config.GetSection("AppSettings")["ImportFileType"];
             string DBType = config.GetSection("AppSettings")["DataBaseType"];
+            
+            Inventories = new ObservableCollection<InventoryDTO>();
+            ListBoxInventories.ItemsSource = Inventories;
 
             IRepository repository = RepositoryFactory.CreateRepository(connectionString: dbConnectionString,
                                                                         databaseType: DBType);
