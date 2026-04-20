@@ -3,4 +3,5 @@
   <Project Path="GraslandenDL/GraslandenDL.csproj" />
   <Project Path="GraslandenGUI/GraslandenGUI.csproj" />
   <Project Path="GraslandenUtil/GraslandenUtil.csproj" />
+  <Project Path="GraslandenValidation/GraslandenValidation.csproj" />
 </Solution>
