@@ -17,7 +17,7 @@ namespace GraslandenBL.Managers
 
         public List<InventoryDTO> GetInventoryDTOs()
         {
-            return _repository.GetInventorieDTOs();
+            return _repository.GetInventoryDTOs();
         }
     }
 }
