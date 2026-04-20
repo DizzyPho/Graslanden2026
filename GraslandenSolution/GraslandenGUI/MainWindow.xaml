@@ -17,7 +17,7 @@
 
         </Grid.RowDefinitions>
         <TextBlock Text="Inventarisaties" Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10"></TextBlock>
-        <ListBox Grid.RowSpan="3" Grid.Row="1" Grid.Column="0" Margin="8"></ListBox>
+        <ListBox Grid.RowSpan="3" Grid.Row="1" Grid.Column="0" Margin="8" Name="ListBoxInventories"></ListBox>
         <Grid Grid.Row="1" Grid.Column="1" Margin="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"></RowDefinition>
