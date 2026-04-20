@@ -180,8 +180,8 @@ CREATE TABLE [dbo].[species](
 	[moisture] [int] NOT NULL,
 	[ph] [int] NOT NULL,
 	[nitrogen] [int] NOT NULL,
-	[nectar_production] [int] NOT NULL,
-	[biodiversity_relevance] [int] NOT NULL,
+	[nectar_production] [int] NULL,
+	[biodiversity_relevance] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
