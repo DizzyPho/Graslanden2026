@@ -10,6 +10,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using GraslandenBL.Managers;
+using GraslandenBL.Interfaces;
+using GraslandenUtil.Factories;
 
 namespace GraslandenGUI
 {
@@ -30,7 +33,18 @@ namespace GraslandenGUI
             string indicatorValuesPath = config.GetSection("AppSettings")["IndicatorValuesPath"];
             string importFileType = config.GetSection("AppSettings")["ImportFileType"];
             string DBType = config.GetSection("AppSettings")["DataBaseType"];
-            
+
+            IRepository repository = RepositoryFactory.CreateRepository(connectionString: dbConnectionString,
+                                                                        databaseType: DBType);
+
+            IFileReader fileReader = FileReaderFactory.CreateFileReader(inventoryFilePath: "",
+                                                                        indicatorValuesPath: indicatorValuesPath,
+                                                                        fileType: importFileType);
+
+            ImportManager importManager = new ImportManager(repository: repository,
+                                                            fileReader: fileReader);
+
+            importManager.ReadFile();
         }
     }
 }
