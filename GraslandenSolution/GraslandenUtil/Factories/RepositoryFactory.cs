@@ -15,7 +15,7 @@ namespace GraslandenUtil.Factories
                     }
                 default:
                     {
-                        throw new NotImplementedException("Database type not implemented.");
+                        throw new NotImplementedException("Databanktype niet ondersteund.");
                     }
             }
         }

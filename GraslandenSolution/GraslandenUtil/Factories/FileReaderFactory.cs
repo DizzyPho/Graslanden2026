@@ -15,7 +15,7 @@ namespace GraslandenUtil.Factories
                     }
                 default:
                     {
-                        throw new NotImplementedException("File type not supported.");
+                        throw new NotImplementedException("Bestandstype niet ondersteund.");
                     }
             }
         }
