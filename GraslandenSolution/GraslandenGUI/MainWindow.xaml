@@ -5,8 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Inventarisaties Graslanden" Height="450" Width="400">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
 
+        </Grid.RowDefinitions>
+        <TextBlock Text="Inventarisaties" Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10"></TextBlock>
+        <ListBox Grid.RowSpan="3" Grid.Row="1" Grid.Column="0" Margin="8"></ListBox>
+        <Grid Grid.Row="1" Grid.Column="1" Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Button Content="Importeer" Padding="5" Margin="8" Grid.Row="0"></Button>
+            <Button Content="Bekijk" Padding="5" Margin="8" Grid.Row="1"></Button>
+            <Button Content="Verwijder" Padding="5" Margin="8" Grid.Row="2"></Button>
+        </Grid>
     </Grid>
 </Window>
