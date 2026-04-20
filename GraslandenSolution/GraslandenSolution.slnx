@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="GraslandenBL/GraslandenBL.csproj" />
   <Project Path="GraslandenDL/GraslandenDL.csproj" />
+  <Project Path="GraslandenGUI/GraslandenGUI.csproj" />
+  <Project Path="GraslandenUtil/GraslandenUtil.csproj" />
 </Solution>
