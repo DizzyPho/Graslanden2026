@@ -19,7 +19,7 @@ namespace GraslandenBL.Domain {
             Name = name;
             Moisture = moisture;
             Ph = ph;
-            biodiversity = biodiversity;
+            Biodiversity = biodiversity;
             Rating = rating;
         }
 
