@@ -8,5 +8,11 @@ namespace GraslandenBL.Interfaces
 
         public List<Species> GetAllSpecies();
 
+        public List<Inventory> GetAllInventory();
+
+        public Dictionary<Plot,string> GetAllGrassPlots();
+
+        public List<string> GeAllCampuses();
+
     }
 }
