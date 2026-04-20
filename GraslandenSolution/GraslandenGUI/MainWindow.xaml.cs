@@ -59,7 +59,7 @@ namespace GraslandenGUI
         private void ImportNew_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "CSV Files (*.csv)|*.txt|All files (*.*)|*.*";
+            openFileDialog.Filter = "CSV Files (*.csv)|*.csv|All files (*.*)|*.*";
             if (openFileDialog.ShowDialog() == true)
             {
                 string fileName = openFileDialog.FileName;
