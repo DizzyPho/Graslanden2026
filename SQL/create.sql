@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [HOGentGraslanden]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Database [HOGentGraslanden]    Script Date: 21/04/2026 13:52:30 ******/
 CREATE DATABASE [HOGentGraslanden]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -82,7 +82,7 @@ ALTER DATABASE [HOGentGraslanden] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, 
 GO
 USE [HOGentGraslanden]
 GO
-/****** Object:  Table [dbo].[grass_plot]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[grass_plot]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -97,7 +97,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[inventoried_plot]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[inventoried_plot]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -114,7 +114,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[inventory]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[inventory]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -129,7 +129,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[management_type]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[management_type]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -143,7 +143,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[measurement]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[measurement]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -154,21 +154,7 @@ CREATE TABLE [dbo].[measurement](
 	[coverage] [nvarchar](50) NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[plot_type]    Script Date: 17/04/2026 11:19:51 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[plot_type](
-	[code] [nvarchar](100) NOT NULL,
-	[description] [nvarchar](500) NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[code] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[species]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Table [dbo].[species]    Script Date: 21/04/2026 13:52:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -190,11 +176,11 @@ PRIMARY KEY CLUSTERED
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [index_campus]    Script Date: 17/04/2026 11:19:51 ******/
+/****** Object:  Index [index_campus]    Script Date: 21/04/2026 13:52:31 ******/
 CREATE NONCLUSTERED INDEX [index_campus] ON [dbo].[grass_plot]
 (
 	[campus] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[inventoried_plot]  WITH CHECK ADD  CONSTRAINT [fk_inventory_id] FOREIGN KEY([inventory_id])
 REFERENCES [dbo].[inventory] ([id])
@@ -210,11 +196,6 @@ ALTER TABLE [dbo].[inventoried_plot]  WITH CHECK ADD  CONSTRAINT [fk_plot_code] 
 REFERENCES [dbo].[grass_plot] ([code])
 GO
 ALTER TABLE [dbo].[inventoried_plot] CHECK CONSTRAINT [fk_plot_code]
-GO
-ALTER TABLE [dbo].[inventoried_plot]  WITH CHECK ADD  CONSTRAINT [fk_plot_type] FOREIGN KEY([plot_type])
-REFERENCES [dbo].[plot_type] ([code])
-GO
-ALTER TABLE [dbo].[inventoried_plot] CHECK CONSTRAINT [fk_plot_type]
 GO
 ALTER TABLE [dbo].[measurement]  WITH CHECK ADD  CONSTRAINT [fk_inventoried_plot_id] FOREIGN KEY([inventoried_plot_id])
 REFERENCES [dbo].[inventoried_plot] ([id])
