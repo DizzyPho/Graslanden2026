@@ -14,5 +14,10 @@ namespace GraslandenBL.DTOs
 
         public DateTime Date { get; set; }
         public String Name { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name} - {Date.ToString("dd/MM/yyyy")}";
+        }
     }
 }
