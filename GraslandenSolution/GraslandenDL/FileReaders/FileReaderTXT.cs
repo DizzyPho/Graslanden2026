@@ -7,17 +7,15 @@ namespace GraslandenDL.FileReaders
 {
     public class FileReaderTXT : IFileReader
     {
-        private string _inventoryPath;
         private string _indicatorValuesPath;
         private List<string> _errorMessages = new List<string>();
 
-        public FileReaderTXT(string inventoryPath, string indicatorValuesPath)
+        public FileReaderTXT(string indicatorValuesPath)
         {
-            _inventoryPath = inventoryPath;
             _indicatorValuesPath = indicatorValuesPath;
         }
         
-        public List<Measurement> ReadFile()
+        public List<Measurement> ReadFile(string inventoryPath)
         {
             List<Measurement> results = new List<Measurement>();
             Dictionary<string, Species> tylerSpeciesList = new Dictionary<string, Species>();
@@ -65,7 +63,7 @@ namespace GraslandenDL.FileReaders
             // List<Species> inventorySpeciesList = new List<Species>();
 
             // TO DO: replace path with _inventoryPath
-            using(StreamReader streamReader = new StreamReader(_inventoryPath))
+            using(StreamReader streamReader = new StreamReader(inventoryPath))
             {
                 List<string> plotNames = new List<string>();
                 List<double> plotAreas = new List<double>();

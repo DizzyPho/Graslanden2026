@@ -43,8 +43,7 @@ namespace GraslandenGUI
             IRepository repository = RepositoryFactory.CreateRepository(connectionString: dbConnectionString,
                                                                         databaseType: DBType);
 
-            IFileReader fileReader = FileReaderFactory.CreateFileReader(inventoryFilePath: "",
-                                                                        indicatorValuesPath: indicatorValuesPath,
+            IFileReader fileReader = FileReaderFactory.CreateFileReader(indicatorValuesPath: indicatorValuesPath,
                                                                         fileType: importFileType);
 
             _importManager = new ImportManager(repository: repository,
@@ -66,6 +65,10 @@ namespace GraslandenGUI
                 if (!fileName.EndsWith(".txt"))
                 {
                     MessageBox.Show("Selecteer a.u.b. een TXT-bestand.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    _importManager.ImportData(fileName);
                 }
             }      
         }

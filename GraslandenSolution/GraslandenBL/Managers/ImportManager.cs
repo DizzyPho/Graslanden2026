@@ -14,9 +14,9 @@ namespace GraslandenBL.Managers
             _fileReader = fileReader;
         }
 
-        public List<Measurement> ReadFile()
+        public void ImportData(string inventoryPath)
         {
-            return _fileReader.ReadFile();
+            _fileReader.ReadFile(inventoryPath);
         }
     }
 }
