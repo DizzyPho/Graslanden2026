@@ -129,7 +129,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public void ImportInventory(List<Inventory> data)
+        public void ImportInventory(Inventory inventory)
         {
             string queryInventory = "INSERT INTO inventory(id, date,name) output INSERTED.ID VALUES(@id,@date,@name)";
             string querySpecies = "INSERT INTO species(id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity) output INSERTED.ID VALUES(@id, @name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversit)";
