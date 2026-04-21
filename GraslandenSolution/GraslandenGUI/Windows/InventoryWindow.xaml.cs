@@ -29,7 +29,7 @@ namespace GraslandenGUI.Windows
 
         private void ButtonBack(object sender, RoutedEventArgs e)
         {
-
+            Close();
         }
     }
 }
