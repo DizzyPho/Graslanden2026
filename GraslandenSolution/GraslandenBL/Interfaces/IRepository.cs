@@ -14,5 +14,6 @@ namespace GraslandenBL.Interfaces
         public HashSet<string> GetAllCampuses();
 
         public List<InventoryDTO> GetInventoryDTOs();
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO);
     }
 }

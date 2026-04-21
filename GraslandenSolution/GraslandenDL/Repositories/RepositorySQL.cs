@@ -294,5 +294,21 @@ namespace GraslandenDL.Repositories
             }
             return inventories;
         }
+
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO)
+        {
+            const string query = "INSERT INTO inventory (date, name) output inserted.ID VALUES (@date, @name)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@date", inventoryDTO.Date);
+                cmd.Parameters.AddWithValue("@name", inventoryDTO.Name);
+                conn.Open();
+                // return id 
+                return (int)cmd.ExecuteScalar();
+            }
+        }
     }
 }

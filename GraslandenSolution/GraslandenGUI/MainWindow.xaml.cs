@@ -16,6 +16,7 @@ using GraslandenBL.Managers;
 using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
 using Microsoft.Win32;
+using GraslandenGUI.Windows;
 
 namespace GraslandenGUI
 {
@@ -26,6 +27,7 @@ namespace GraslandenGUI
     {
         private ObservableCollection<InventoryDTO> Inventories { get; init; }
         private ImportManager _importManager;
+        private Manager _manager;
         public MainWindow()
         {
             InitializeComponent();
@@ -48,10 +50,10 @@ namespace GraslandenGUI
 
             _importManager = new ImportManager(repository: repository,
                                                             fileReader: fileReader);
-            Manager manager = new Manager(repository);
+            _manager = new Manager(repository);
+            Inventories = new ObservableCollection<InventoryDTO>(_manager.GetInventoryDTOs());
+            ListBoxInventories.ItemsSource = Inventories;
 
-            //Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
-            //ListBoxInventories.ItemsSource = Inventories;
             //_importManager.ReadFile();
         }
 
@@ -71,6 +73,24 @@ namespace GraslandenGUI
                     _importManager.ImportData(fileName);
                 }
             }      
+        }
+
+        private void AddNew_Click(object sender, RoutedEventArgs e)
+        {
+            NewInventoryWindow niw = new NewInventoryWindow();
+            niw.ShowDialog();
+            if(niw.Success)
+            {
+                int newInventoryId = _manager.ImportEmptyInventory(niw.Inventory);
+                niw.Inventory.Id = newInventoryId;
+                Inventories.Add(niw.Inventory);
+            }
+        }
+
+        private void InspectInventory_Click(object sender, RoutedEventArgs e)
+        {
+            InventoryWindow iw = new InventoryWindow((InventoryDTO)ListBoxInventories.SelectedItem, _manager);
+            iw.ShowDialog();
         }
     }
 }
