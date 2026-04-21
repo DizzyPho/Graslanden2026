@@ -16,7 +16,11 @@ namespace GraslandenBL.Managers
 
         public void ImportData(string inventoryPath)
         {
-            _fileReader.ReadFile(inventoryPath);
+            Inventory i = new Inventory(DateTime.UtcNow,"Tester");
+            List<Measurement> measurements = _fileReader.ReadFile(inventoryPath);
+            i.Measurements = measurements;
+            _repository.ImportInventory(i);
+
         }
     }
 }

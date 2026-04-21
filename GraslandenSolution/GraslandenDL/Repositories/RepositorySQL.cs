@@ -131,146 +131,139 @@ namespace GraslandenDL.Repositories
 
         public void ImportInventory(Inventory inventory)
         {
-            string queryInventory = "INSERT INTO inventory(id, date,name) output INSERTED.ID VALUES(@id,@date,@name)";
-            string querySpecies = "INSERT INTO species(id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity) output INSERTED.ID VALUES(@id, @name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversit)";
-            string queryGrassPlot = "INSERT INTO plot(code, campus, area_sq_meter) output INSERTED.ID VALUES(@code, @campus, @area_sq_meter)";
-            string queryManagementType = "INSERT INTO management_type(id, type) output INSERTED.ID VALUES(@id, @type)";
-            string queryPlotType = "INSERT INTO plot_type(code, description) output INSERTED.ID VALUES(@code, @description)";
-            string queryInventoried_plot = "INSERT INTO inventoried_plot(id,inventory_id,plot_code,management_type, plot_type) VALUES(@id, @inventory_id, @plot_code, @management_type, @plot_type)";
-            string queryMeasurement = "INSERT INTO measurement(inventoried_plot_id, species_id, coverage) VALUES(@idInventory,@idSpecies,@coverage)";
+            string queryInventory = "INSERT INTO inventory(date,name) output INSERTED.ID VALUES(@date,@name)";
+            const string querySpecies = "select id from species where name = @name";
+            const string insertSpecies = "insert into species (name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance)" +
+                                         "output inserted.id VALUES(@name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversity)";
+            const string queryPlot = "select code from grass_plot where code = @code";
+            const string insertPlot = "insert into grass_plot (code, campus, area_sq_meter) VALUES(@code, @campus, @area_sq_meter)";
+            const string queryManagementType = "select id,type from management_type";
+            const string queryInventoriedPlot = "INSERT INTO inventoried_plot (inventory_id,plot_code,management_type, plot_type) " +
+                                                "OUTPUT inserted.id " +
+                                                "VALUES (@inventory_id, @plot_code, @management_type, @plot_type)";
+            string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage) VALUES (@inventoried_plot_id,@species_id,@coverage)";
 
-            using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdInventory = con.CreateCommand())
-            using (SqlCommand cmdSpecies = con.CreateCommand())
-            using (SqlCommand cmdGrassPlot = con.CreateCommand())
-            using (SqlCommand cmdManagementType = con.CreateCommand())
-            using (SqlCommand cmdPlotType = con.CreateCommand())
-            using (SqlCommand cmdInventoried_plot = con.CreateCommand())
-            using (SqlCommand cmdMeasurement = con.CreateCommand())
+            Dictionary<Species, int> speciesList = new();
+            Dictionary<string, int> managementTypeList = new();
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInventory = conn.CreateCommand())
+            using (SqlCommand cmdSpecies = conn.CreateCommand())
+            using (SqlCommand cmdInsertSpecies = conn.CreateCommand())
+            using (SqlCommand cmdPlot = conn.CreateCommand())
+            using (SqlCommand cmdInsertPlot = conn.CreateCommand())
+            using (SqlCommand cmdManagementType = conn.CreateCommand())
+            using (SqlCommand cmdInventoriedPlot = conn.CreateCommand())
+            using (SqlCommand cmdMeasurement = conn.CreateCommand())
             {
-                //Open connection and transaction
-                con.Open();
-                SqlTransaction transaction = con.BeginTransaction();
-                cmdInventory.Transaction = transaction;
-
-
-                //Parameters for inventory
                 cmdInventory.CommandText = queryInventory;
-                cmdInventory.Parameters.Add(new SqlParameter("@id", SqlDbType.NVarChar));
-                cmdInventory.Parameters.Add(new SqlParameter("@date", SqlDbType.NVarChar));
-                cmdInventory.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar));
+                cmdInventory.Parameters.AddWithValue("@date", inventory.Date);
+                cmdInventory.Parameters.AddWithValue("@name", inventory.Name);
 
-                //Parameters for Species
                 cmdSpecies.CommandText = querySpecies;
-                cmdSpecies.Parameters.Add(new SqlParameter("@id", SqlDbType.Int));
                 cmdSpecies.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar));
-                cmdSpecies.Parameters.Add(new SqlParameter("@rating", SqlDbType.NVarChar));
-                cmdSpecies.Parameters.Add(new SqlParameter("@moisture", SqlDbType.Int));
-                cmdSpecies.Parameters.Add(new SqlParameter("@ph", SqlDbType.Int));
-                cmdSpecies.Parameters.Add(new SqlParameter("@nitrogen", SqlDbType.Int));
-                cmdSpecies.Parameters.Add(new SqlParameter("@nectar_production", SqlDbType.Int));
-                cmdSpecies.Parameters.Add(new SqlParameter("@biodiversity_relevance", SqlDbType.Int));
+                cmdInsertSpecies.CommandText = insertSpecies;
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@rating", SqlDbType.NVarChar));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@moisture", SqlDbType.Int));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@ph", SqlDbType.Int));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@nitrogen", SqlDbType.Int));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@nectar_production", SqlDbType.Int));
+                cmdInsertSpecies.Parameters.Add(new SqlParameter("@biodiversity", SqlDbType.Int));
 
-                //Parameters for Grass Plot
-                cmdGrassPlot.CommandText = queryGrassPlot;
-                cmdGrassPlot.Parameters.Add(new SqlParameter("@code", SqlDbType.NVarChar));
-                cmdGrassPlot.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
-                cmdGrassPlot.Parameters.Add(new SqlParameter("area_sq_meter", SqlDbType.Float));
+                cmdPlot.CommandText = queryPlot;
+                cmdPlot.Parameters.Add(new SqlParameter("@code", SqlDbType.NVarChar));
+                cmdInsertPlot.CommandText = insertPlot;
+                cmdInsertPlot.Parameters.Add(new SqlParameter("@code", SqlDbType.NVarChar));
+                cmdInsertPlot.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
+                cmdInsertPlot.Parameters.Add(new SqlParameter("@area_sq_meter", SqlDbType.Float));
 
-                //Parameters for Management Type
                 cmdManagementType.CommandText = queryManagementType;
-                cmdManagementType.Parameters.Add(new SqlParameter("@id", SqlDbType.Int));
-                cmdManagementType.Parameters.Add(new SqlParameter("@type", SqlDbType.NVarChar));
 
-                //Parameters for Plot Type
-                cmdPlotType.CommandText = queryPlotType;
-                cmdPlotType.Parameters.Add(new SqlParameter("@code", SqlDbType.NVarChar));
-                cmdPlotType.Parameters.Add(new SqlParameter("@description", SqlDbType.NVarChar));
+                cmdInventoriedPlot.CommandText = queryInventoriedPlot;
+                cmdInventoriedPlot.Parameters.Add(new SqlParameter("@plot_code", SqlDbType.NVarChar));
+                cmdInventoriedPlot.Parameters.Add(new SqlParameter("@management_type", SqlDbType.Int));
+                cmdInventoriedPlot.Parameters.Add(new SqlParameter("@plot_type", SqlDbType.NVarChar));
+                cmdInventoriedPlot.Parameters.Add(new SqlParameter("@inventory_id", SqlDbType.Int));
 
-                //Parameters for Inventoried Plot
-                cmdInventoried_plot.CommandText = queryInventoried_plot;
-                cmdInventoried_plot.Parameters.Add(new SqlParameter("@id", SqlDbType.Int));
-                cmdInventoried_plot.Parameters.Add(new SqlParameter("@inventory_id", SqlDbType.Int));
-                cmdInventoried_plot.Parameters.Add(new SqlParameter("@plot_code", SqlDbType.NVarChar));
-                cmdInventoried_plot.Parameters.Add(new SqlParameter("@management_type", SqlDbType.Int));
-                cmdInventoried_plot.Parameters.Add(new SqlParameter("@plot_type", SqlDbType.NVarChar));
-
-
-                //Parameters for Measurment
                 cmdMeasurement.CommandText = queryMeasurement;
-                cmdMeasurement.Parameters.Add(new SqlParameter("@idInventoriedPlotId", SqlDbType.Int));
-                cmdMeasurement.Parameters.Add(new SqlParameter("@idSpecies", SqlDbType.Int));
+                cmdMeasurement.Parameters.Add(new SqlParameter("@inventoried_plot_id", SqlDbType.Int));
+                cmdMeasurement.Parameters.Add(new SqlParameter("@species_id", SqlDbType.Int));
                 cmdMeasurement.Parameters.Add(new SqlParameter("@coverage", SqlDbType.NVarChar));
+
+                conn.Open();
+                SqlTransaction transaction = conn.BeginTransaction();
+
+                cmdInventory.Transaction = transaction;
+                cmdSpecies.Transaction = transaction;
+                cmdInsertSpecies.Transaction = transaction;
+                cmdPlot.Transaction = transaction;
+                cmdInsertPlot.Transaction = transaction;
+                cmdManagementType.Transaction = transaction;
+                cmdInventoriedPlot.Transaction = transaction;
+                cmdMeasurement.Transaction = transaction;
 
                 try
                 {
-                    foreach (Inventory inventory in data)
+                    int inventoryId = (int)cmdInventory.ExecuteScalar();
+                    using (SqlDataReader reader = cmdManagementType.ExecuteReader()) 
                     {
-                        //Insert inventory
-                        cmdInventory.Parameters["@name"].Value = inventory.Name;
-                        cmdInventory.Parameters["@date"].Value = inventory.Date;
-                        //Get Inventory id
-                        int inventoryId = (int)cmdInventory.ExecuteScalar();
-                        cmdInventory.Parameters["@id"].Value = inventoryId;
-
-
-                        foreach (var item in inventory.Measurements)
+                        while (reader.Read())
                         {
-
-                            //Insert species
-                            cmdSpecies.Parameters["@name"].Value = item.Species.Name;
-                            cmdSpecies.Parameters["@rating"].Value = item.Species.Rating;
-                            cmdSpecies.Parameters["@moisture"].Value = item.Species.Moisture;
-                            cmdSpecies.Parameters["@ph"].Value = item.Species.Ph;
-                            cmdSpecies.Parameters["@nitrogen"].Value = item.Species.Nitrogen;
-                            cmdSpecies.Parameters["@nectar_production"].Value = item.Species.Nectarvalue;
-                            cmdSpecies.Parameters["@biodiversity"].Value = item.Species.Biodiversity;
-
-
-                            //Get Species id
-                            int idSpecies = (int)cmdSpecies.ExecuteScalar();
-                            cmdSpecies.Parameters["@id"].Value = idSpecies;
-
-                            //Insert grass pLot
-                            cmdGrassPlot.Parameters["@code"].Value = item.Plot.Code;
-                            cmdGrassPlot.Parameters["@campus"].Value = item.Plot.Campus;
-                            cmdGrassPlot.Parameters["@area_sq_meter"].Value = item.Plot.AreaSqMeters;
-
-                            //Insert ManagementType
-                            cmdManagementType.Parameters["@type"].Value = item.Plot.ManagementType;
-                            //Get ManagementType id
-                            int idManagementType = (int)cmdManagementType.ExecuteScalar();
-                            cmdManagementType.Parameters["@id"].Value = item.Plot.Code;
-
-                            //Insert Plot type 
-                            cmdPlotType.Parameters["@code"].Value = item.Plot.PlotType;
-                            cmdPlotType.Parameters["@description"].Value = item.Plot.PlotType;
-
-                            //Insert Inventoried plot
-                            cmdInventoried_plot.Parameters["@inventory_id"].Value = inventoryId;
-                            cmdInventoried_plot.Parameters["@plot_code"].Value = item.Plot.Code;
-                            cmdInventoried_plot.Parameters["@management_type"].Value = idManagementType;
-                            cmdInventoried_plot.Parameters["@plot_type"].Value = item.Plot.PlotType;
-                            //Get Inventoried_plot id
-                            int idInventoried_plot = (int)cmdInventoried_plot.ExecuteScalar();
-                            cmdInventoried_plot.Parameters["@id"].Value = idInventoried_plot;
-
-
-                            //Now that you have species id and inventoried plot id ->
-                            //Insert measurement
-                            cmdMeasurement.Parameters["@idInventoriedPlotId"].Value = idInventoried_plot;
-                            cmdMeasurement.Parameters["@idSpecies"].Value = idSpecies;
-                            cmdMeasurement.Parameters["@coverage"].Value = item.Coverage;
+                            managementTypeList.Add(reader.GetString(1), reader.GetInt32(0));
                         }
                     }
+                    foreach (Species species in inventory.GetSpecies())
+                    {
+                        cmdSpecies.Parameters["@name"].Value = species.Name;
+                        int? speciesId = (int?)cmdSpecies.ExecuteScalar();
+                        if (speciesId == null)
+                        {
+                            cmdInsertSpecies.Parameters["@name"].Value = species.Name;
+                            cmdInsertSpecies.Parameters["@rating"].Value = species.Rating;
+                            cmdInsertSpecies.Parameters["@moisture"].Value = species.Moisture;
+                            cmdInsertSpecies.Parameters["@ph"].Value = species.Ph;
+                            cmdInsertSpecies.Parameters["@nitrogen"].Value = species.Nitrogen;
+                            cmdInsertSpecies.Parameters["@nectar_production"].Value = species.Nectarvalue is not null ? species.Nectarvalue : DBNull.Value;
+                            cmdInsertSpecies.Parameters["@biodiversity"].Value = species.Biodiversity is not null ? species.Biodiversity : DBNull.Value;
+                            speciesId = (int?)cmdInsertSpecies.ExecuteScalar();
+                        }
+                        speciesList.Add(species, (int)speciesId);
+                    }
+                    int inventoriedPlotId = 0;
+                    foreach (Plot plot in inventory.GetPlots())
+                    {
+                        cmdPlot.Parameters["@code"].Value = plot.Code;
+                        if (cmdPlot.ExecuteScalar() == null)
+                        {
+                            cmdInsertPlot.Parameters["@code"].Value = plot.Code;
+                            cmdInsertPlot.Parameters["@campus"].Value = plot.Campus;
+                            cmdInsertPlot.Parameters["@area_sq_meter"].Value = plot.AreaSqMeters;
+                            cmdInsertPlot.ExecuteNonQuery();
+                        }
+                    }
+                    foreach (Measurement measurement in inventory.Measurements)
+                    {
+                        cmdInventoriedPlot.Parameters["@inventory_id"].Value = inventoryId;
+                        cmdInventoriedPlot.Parameters["@plot_code"].Value = measurement.Plot.Code;
+                        cmdInventoriedPlot.Parameters["@management_type"].Value = managementTypeList[measurement.Plot.ManagementType.ToString()];
+                        cmdInventoriedPlot.Parameters["@plot_type"].Value = measurement.Plot.PlotType;
+                        inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
+
+                        cmdMeasurement.Parameters["@inventoried_plot_id"].Value = inventoriedPlotId;
+                        cmdMeasurement.Parameters["@species_id"].Value = speciesList[measurement.Species];
+                        cmdMeasurement.Parameters["@coverage"].Value = measurement.Coverage;
+                        cmdMeasurement.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
-                    throw ex;
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
                 }
-
-                transaction.Commit();
             }
         }
 
@@ -285,11 +278,13 @@ namespace GraslandenDL.Repositories
             {
                 cmd.CommandText = query;
                 conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                using (SqlDataReader reader = cmd.ExecuteReader()) 
+                { 
 
-                while (reader.Read())
-                {
-                    inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                    while (reader.Read())
+                    {
+                        inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                    }
                 }
             }
             return inventories;
