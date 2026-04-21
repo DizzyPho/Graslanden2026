@@ -21,7 +21,7 @@ namespace GraslandenDL.Repositories
         public HashSet<string> GetAllCampuses()
         {
             HashSet<string> campuses = new HashSet<string>();
-            string queryCampus = "SELECT campus FROM grass_plot";
+            string queryCampus = "SELECT DISTINCT campus FROM grass_plot";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdCampus = new SqlCommand(queryCampus, con))
