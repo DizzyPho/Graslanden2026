@@ -66,24 +66,25 @@ namespace GraslandenDL.Repositories
                             int moisture = reader.GetInt32(3);
                             int ph = reader.GetInt32(4);
                             int nitrogen = reader.GetInt32(5);
-                            int biodiversity;
-                            if (DBNull.Value.Equals(reader[7]))
+                            //check if null
+                            int? nectarValue;
+                            if (reader.IsDBNull(6))
                             {
-                                biodiversity = 0;
-                            }
-                            else
-                            {
-                                biodiversity = reader.GetInt32(7);
-                            }
-
-                            int nectarValue;
-                            if (DBNull.Value.Equals(reader[6]))
-                            {
-                                nectarValue = 0;
+                                nectarValue = null;
                             }
                             else
                             {
                                 nectarValue = reader.GetInt32(6);
+                            }
+                            //check if nulll
+                            int? biodiversity;
+                            if (reader.IsDBNull(7))
+                            {
+                                biodiversity = null;
+                            }
+                            else
+                            {
+                                biodiversity = reader.GetInt32(7);
                             }
 
 
@@ -309,7 +310,7 @@ namespace GraslandenDL.Repositories
         {
             Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
 
-
+            //Join grass_plot, inventoried_plot and plot_type
             string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter,pt.description FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code JOIN ip.plot_type ON pt.code = ip.plot_type WHERE ip.inventory_id = @inventoryID";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
