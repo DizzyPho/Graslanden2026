@@ -27,6 +27,7 @@ namespace GraslandenGUI
     {
         private ObservableCollection<InventoryDTO> Inventories { get; init; }
         private ImportManager _importManager;
+        private Manager _manager;
         public MainWindow()
         {
             InitializeComponent();
@@ -49,11 +50,10 @@ namespace GraslandenGUI
 
             _importManager = new ImportManager(repository: repository,
                                                             fileReader: fileReader);
-            Manager manager = new Manager(repository);
-            Inventories = new ObservableCollection<InventoryDTO>();
+            _manager = new Manager(repository);
+            Inventories = new ObservableCollection<InventoryDTO>(_manager.GetInventoryDTOs());
             ListBoxInventories.ItemsSource = Inventories;
 
-            //Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
             //_importManager.ReadFile();
         }
 
@@ -82,6 +82,7 @@ namespace GraslandenGUI
             if(niw.Success)
             {
                 Inventories.Add(niw.Inventory);
+                _manager.ImportEmptyInventory(niw.Inventory);
             }
         }
     }
