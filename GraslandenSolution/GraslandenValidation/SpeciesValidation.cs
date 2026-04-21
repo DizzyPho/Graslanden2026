@@ -11,16 +11,18 @@ namespace GraslandenValidation
         {
             errors = new List<string>();
             int? id;
-            int moisture;
-            int ph;
-            int nitrogen;
+            int? moisture = null;
+            int? ph = null;
+            int? nitrogen = null;
             int? nectarValue = null;
             int? biodiversity = null;
+            
+            // TO DO: add rating check
             Rating? rating = null;
 
             try
             {
-                moisture = int.Parse(moistureString);
+                if(!string.IsNullOrEmpty(moistureString)) moisture = int.Parse(moistureString);
                 if (moisture < 0) errors.Add($"Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.");
             }
             catch
@@ -30,7 +32,7 @@ namespace GraslandenValidation
 
             try
             {
-                ph = int.Parse(phString);
+                if(!string.IsNullOrEmpty(phString)) ph = int.Parse(phString);
                 if (ph < 0) errors.Add($"Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.");
             }
             catch
@@ -40,7 +42,7 @@ namespace GraslandenValidation
 
             try
             {
-                nitrogen = int.Parse(nitrogenString);
+                if(!string.IsNullOrEmpty(nitrogenString)) nitrogen = int.Parse(nitrogenString);
                 if (nitrogen < 0) errors.Add($"Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.");
             }
             catch
@@ -50,7 +52,7 @@ namespace GraslandenValidation
 
             try
             {
-                if (nectarValueString != null) nectarValue = int.Parse(nectarValueString);
+                if (!string.IsNullOrEmpty(nectarValueString)) nectarValue = int.Parse(nectarValueString);
                 if (nectarValue < 0) errors.Add($"Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.");
             }
             catch
@@ -60,7 +62,7 @@ namespace GraslandenValidation
 
             try
             {
-                if (biodiversityString != null) biodiversity = int.Parse(biodiversityString);
+                if (!string.IsNullOrEmpty(biodiversityString)) biodiversity = int.Parse(biodiversityString);
                 if (biodiversity < 0) errors.Add($"Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.");
             }
             catch
@@ -68,7 +70,7 @@ namespace GraslandenValidation
                 errors.Add($"Biodiversiteit: '{biodiversityString}' moet een getal zijn.");
             }
 
-            if (String.IsNullOrEmpty(name)) errors.Add("Naam mag niet leeg zijn.");
+            if (string.IsNullOrEmpty(name)) errors.Add("Naam mag niet leeg zijn.");
 
             return errors.Count == 0;
         }
