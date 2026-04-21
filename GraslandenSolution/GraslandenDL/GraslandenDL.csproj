@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GraslandenBL\GraslandenBL.csproj" />
+    <ProjectReference Include="..\GraslandenLevenshtein\GraslandenLevenshtein.csproj" />
     <ProjectReference Include="..\GraslandenValidation\GraslandenValidation.csproj" />
   </ItemGroup>
 
