@@ -5,13 +5,13 @@ namespace GraslandenUtil.Factories
 {
     public static class FileReaderFactory
     {
-        public static IFileReader CreateFileReader(string inventoryFilePath, string indicatorValuesPath, string fileType)
+        public static IFileReader CreateFileReader(string indicatorValuesPath, string fileType)
         {
             switch (fileType.Trim().ToUpper())
             {
-                case "CSV":
+                case "TXT":
                     {
-                        return new FileReaderCSV(inventoryFilePath, indicatorValuesPath);
+                        return new FileReaderTXT(indicatorValuesPath);
                     }
                 default:
                     {
