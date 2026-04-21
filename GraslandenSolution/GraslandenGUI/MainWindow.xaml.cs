@@ -86,5 +86,11 @@ namespace GraslandenGUI
                 Inventories.Add(niw.Inventory);
             }
         }
+
+        private void InspectInventory_Click(object sender, RoutedEventArgs e)
+        {
+            InventoryWindow iw = new InventoryWindow((InventoryDTO)ListBoxInventories.SelectedItem, _manager);
+            iw.ShowDialog();
+        }
     }
 }

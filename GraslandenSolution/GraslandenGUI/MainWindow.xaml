@@ -26,7 +26,7 @@
                 <RowDefinition Height="auto"></RowDefinition>
             </Grid.RowDefinitions>
             <Button Content="Importeer" Padding="5" Margin="8" Grid.Row="0" Click="ImportNew_Click"></Button>
-            <Button Content="Bekijk" Padding="5" Margin="8" Grid.Row="1"></Button>
+            <Button Content="Bekijk" Padding="5" Margin="8" Grid.Row="1" Click="InspectInventory_Click"></Button>
             <Button Content="Nieuw" Padding="5" Margin="8" Grid.Row="2" Click="AddNew_Click"></Button>
             <Button Content="Verwijder" Padding="5" Margin="8" Grid.Row="3"></Button>
         </Grid>
