@@ -10,7 +10,7 @@ namespace GraslandenDL.FileReaders
     public class FileReaderTXT : IFileReader
     {
         private string _indicatorValuesPath;
-        private List<string> _errorMessages = new List<string>();
+        public List<string> ErrorMessages { get; private set; } = new List<string>();
 
         public FileReaderTXT(string indicatorValuesPath)
         {
@@ -58,11 +58,11 @@ namespace GraslandenDL.FileReaders
 
                         SpeciesResult speciesResult = speciesBuilder.Build();
                         if(speciesResult.Object != null) tylerSpeciesList.Add(speciesResult.Object.Name, speciesResult.Object);
-                        _errorMessages.AddRange(speciesResult.Errors);
+                        ErrorMessages.AddRange(speciesResult.Errors);
                     }
                     else
                     {
-                        _errorMessages.AddRange(errorMessages);
+                        ErrorMessages.AddRange(errorMessages);
                     }
                     currentLine++;
                 }
@@ -80,7 +80,7 @@ namespace GraslandenDL.FileReaders
             using(StreamReader streamReader = new StreamReader(inventoryPath))
             {
                 List<string> plotNames = new List<string>();
-                List<double> plotAreas = new List<double>();
+                List<string> plotAreas = new List<string>();
                 List<string> plotManagementTypes = new List<string>();
                 List<Measurement> measurements = new List<Measurement>();
                 int currentLine = 1;
@@ -93,7 +93,7 @@ namespace GraslandenDL.FileReaders
                         currentCampus = line.Split(':')[1].Replace("---", "").Trim();
                         currentLineWithinCampus = 0;
                         plotNames = new List<string>();
-                        plotAreas = new List<double>();
+                        plotAreas = new List<string>();
                         plotManagementTypes = new List<string>();
                     }
                     else
@@ -122,14 +122,14 @@ namespace GraslandenDL.FileReaders
                                         {
                                             try
                                             {
-                                                plotAreas.Add(double.Parse(currentCell));
+                                                plotAreas.Add(currentCell);
                                             }
                                             catch
                                             {
-                                                plotAreas.Add(-1);
+                                                plotAreas.Add("ERROR");
                                             }
                                         }
-                                        else if(currentLineWithinCampus == 2 && plotManagementTypes.Count < plotManagementTypes.Count)
+                                        else if(currentLineWithinCampus == 2 && plotManagementTypes.Count < plotNames.Count)
                                         {
                                             plotManagementTypes.Add(currentCell);
                                         }
@@ -141,20 +141,49 @@ namespace GraslandenDL.FileReaders
                                 for (int i = 0; i < plotNames.Count; i++)
                                 {
                                     ManagementType managementType = ManagementType.Intensief;
-                                    try
-                                    {
-                                        managementType = plotManagementTypes[i].Trim().ToUpper() switch
+                                    //try
+                                    //{
+                                        if (PlotValidation.Validate(plotNames[i], plotAreas[i], currentCampus, plotManagementTypes[i], out List<string> plotErrors))
                                         {
-                                            "INTENSIEF" => ManagementType.Intensief,
-                                            "EXTENSIEF" => ManagementType.Extensief,
-                                            "NETHEIDSBOORD" => ManagementType.Netheidsboord,
-                                            "SCHAPENWEIDE" => ManagementType.Schapenweide,
-                                        };
-                                    }
-                                    catch
-                                    {
-                                    }
-                                    plots.Add(plotNames[i], new Plot(plotNames[i], plotAreas[i], currentCampus, managementType, new PlotType("test", "test")));
+                                            if (PlotTypeValidation.Validate("test", "test", out List<string> plotTypeErrors))
+                                            {
+                                                managementType = plotManagementTypes[i].Trim().ToUpper() switch
+                                                {
+                                                    "INTENSIEF" => ManagementType.Intensief,
+                                                    "EXTENSIEF" => ManagementType.Extensief,
+                                                    "NETHEIDSBOORD" => ManagementType.Netheidsboord,
+                                                    "SCHAPENWEIDE" => ManagementType.Schapenweide,
+                                                };
+                                                plots.Add(plotNames[i], new Plot(plotNames[i], double.Parse(plotAreas[i]), currentCampus, managementType, new PlotType("test", "test")));
+                                            }
+                                            else
+                                            {
+                                                foreach (string error in plotTypeErrors)
+                                                {
+                                                    ErrorMessages.Add($"$INVENTORY{currentLine} | {error}");
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (string error in plotErrors)
+                                            {
+                                                ErrorMessages.Add($"$INVENTORY{currentLine} | {error}");
+                                            }
+                                            // Also validate plot type so all errors are immediately shown
+                                            if (!PlotTypeValidation.Validate("test", "test", out List<string> plotTypeErrors))
+                                            {
+                                                foreach(string error in plotTypeErrors)
+                                                {
+                                                    ErrorMessages.Add($"$INVENTORY{currentLine} | {error}");
+                                                }
+                                            }
+                                        }
+                                    //}
+                                    //catch (Exception ex)
+                                    //{
+                                    //    throw ex;
+                                    //}
                                 }
                             }
                         }
@@ -198,11 +227,11 @@ namespace GraslandenDL.FileReaders
                                             SpeciesResult speciesResult = speciesBuilder.Build();
 
                                             results.Add(new Measurement(speciesResult.Object, lineSections[i + 1], currentPlot));
-                                            _errorMessages.AddRange(speciesResult.Errors);
+                                            ErrorMessages.AddRange(speciesResult.Errors);
                                         }
                                         catch (Exception exception)
                                         {
-                                            throw exception;
+                                            ErrorMessages.Add(exception.Message);
                                             //_errorMessages.Add($"{currentCampus}");
                                         }
                                     }
@@ -215,7 +244,7 @@ namespace GraslandenDL.FileReaders
                 }
             }
 
-            List<string> missingValues = new List<string>();
+            //List<string> missingValues = new List<string>();
             // Check gras.txt list to see if species are found in tyler database, then get the values. If values are missing, use own values.
             foreach(Measurement inventoryMeasurement in results)
             {
@@ -230,11 +259,10 @@ namespace GraslandenDL.FileReaders
                         {
                             inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
                         }
-                        else
-                        {
-                            missingValues.Add(tylerSpeciesName);
-
-                        }
+                        //else
+                        //{
+                        //    missingValues.Add(tylerSpeciesName);
+                        //}
                         if (tylerSpecies.Ph != null) inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
                         if (tylerSpecies.Nitrogen != null) inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
                         if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
@@ -243,7 +271,7 @@ namespace GraslandenDL.FileReaders
                 }
                 else
                 {
-                    _errorMessages.Add($"Name: {inventoryMeasurement.Species.Name} not found in Tyler database.");
+                    ErrorMessages.Add($"Name: {inventoryMeasurement.Species.Name} not found in Tyler database.");
                 }
                 //if(tylerSpeciesList.TryGetValue(inventoryMeasurement.Species.Name, out Species tylerSpecies))
                 //{
