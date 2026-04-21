@@ -3,6 +3,7 @@ using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
+using System.Collections;
 using System.Data;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
@@ -32,6 +33,7 @@ namespace GraslandenDL.Repositories
 
                 using (SqlDataReader reader = cmdCampus.ExecuteReader())
                 {
+                    cmdCampus.CommandText = queryCampus;
                     while (reader.Read())
                     {
                         campuses.Add(reader.GetString("campus"));
@@ -58,6 +60,8 @@ namespace GraslandenDL.Repositories
                     con.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
+
+                        cmd.CommandText = query;
                         while (reader.Read())
                         {
                             int id = reader.GetInt32(0);
@@ -310,12 +314,13 @@ namespace GraslandenDL.Repositories
         {
             Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
 
-            //Join grass_plot, inventoried_plot and plot_type
-            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter,pt.description FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code JOIN ip.plot_type ON pt.code = ip.plot_type WHERE ip.inventory_id = @inventoryID";
+            //Join grass_plot, inventoried_plot
+            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
             {
+                cmdGrassPlot.CommandText = queryGrassPlot;
                 //Parameterrs
                 cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
 
@@ -339,10 +344,7 @@ namespace GraslandenDL.Repositories
                     string campus = reader.GetString(reader.GetOrdinal("campus"));
                     double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
 
-                    string description = reader.GetString(reader.GetOrdinal("description"));
-
-                    PlotType plotType = new PlotType(plotTypeCode, description);
-                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotType);
+                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
                     grassPlots.Add(plot, campus);
                 }
 
