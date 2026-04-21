@@ -9,9 +9,9 @@ namespace GraslandenUtil.Factories
         {
             switch (fileType.Trim().ToUpper())
             {
-                case "CSV":
+                case "TXT":
                     {
-                        return new FileReaderCSV(inventoryFilePath, indicatorValuesPath);
+                        return new FileReaderTXT(inventoryFilePath, indicatorValuesPath);
                     }
                 default:
                     {

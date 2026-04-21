@@ -5,13 +5,13 @@ using GraslandenValidation;
 
 namespace GraslandenDL.FileReaders
 {
-    public class FileReaderCSV : IFileReader
+    public class FileReaderTXT : IFileReader
     {
         private string _inventoryPath;
         private string _indicatorValuesPath;
         private List<string> _errorMessages = new List<string>();
 
-        public FileReaderCSV(string inventoryPath, string indicatorValuesPath)
+        public FileReaderTXT(string inventoryPath, string indicatorValuesPath)
         {
             _inventoryPath = inventoryPath;
             _indicatorValuesPath = indicatorValuesPath;
@@ -20,7 +20,7 @@ namespace GraslandenDL.FileReaders
         public List<Measurement> ReadFile()
         {
             List<Measurement> results = new List<Measurement>();
-            Dictionary<string, Species> speciesList = new Dictionary<string, Species>();
+            Dictionary<string, Species> tylerSpeciesList = new Dictionary<string, Species>();
 
             using (StreamReader streamReader = new StreamReader(_indicatorValuesPath))
             {
@@ -47,7 +47,7 @@ namespace GraslandenDL.FileReaders
                                                         biodiversity: int.Parse(lineSections[8]),
                                                         rating: null);
 
-                        speciesList.Add(newSpecies.Name, newSpecies);
+                        tylerSpeciesList.Add(newSpecies.Name, newSpecies);
                     }
                     else
                     {
@@ -62,10 +62,10 @@ namespace GraslandenDL.FileReaders
 
             // Plots and their respective column indices
             Dictionary<string, Plot> plots = new Dictionary<string, Plot>();
-            List<Species> species = new List<Species>();
+            // List<Species> inventorySpeciesList = new List<Species>();
 
             // TO DO: replace path with _inventoryPath
-            using(StreamReader streamReader = new StreamReader("C:\\Users\\neytn\\Desktop\\projectwerk\\gras.txt"))
+            using(StreamReader streamReader = new StreamReader(_inventoryPath))
             {
                 List<string> plotNames = new List<string>();
                 List<double> plotAreas = new List<double>();
@@ -192,6 +192,17 @@ namespace GraslandenDL.FileReaders
             }
 
             // Check gras.txt list to see if species are found in tyler database, then get the values. If values are missing, use own values.
+            foreach(Measurement inventoryMeasurement in results)
+            {
+                if(tylerSpeciesList.TryGetValue(inventoryMeasurement.Species.Name, out Species tylerSpecies))
+                {
+                    if (tylerSpecies.Moisture != null) inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
+                    if (tylerSpecies.Ph != null) inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
+                    if (tylerSpecies.Nitrogen != null) inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
+                    if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
+                    if (tylerSpecies.Biodiversity != null) inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
+                }
+            }
             // gh - hp stuff
             return results;
         }
