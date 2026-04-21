@@ -295,9 +295,9 @@ namespace GraslandenDL.Repositories
             return inventories;
         }
 
-        public void ImportEmptyInventory(InventoryDTO inventoryDTO)
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO)
         {
-            const string query = "INSERT INTO inventory (date, name) VALUES (@date, @name)";
+            const string query = "INSERT INTO inventory (date, name) output inserted.ID VALUES (@date, @name)";
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             using (SqlCommand cmd = conn.CreateCommand())
@@ -306,8 +306,8 @@ namespace GraslandenDL.Repositories
                 cmd.Parameters.AddWithValue("@date", inventoryDTO.Date);
                 cmd.Parameters.AddWithValue("@name", inventoryDTO.Name);
                 conn.Open();
-
-                cmd.ExecuteNonQuery();
+                // return id 
+                return (int)cmd.ExecuteScalar();
             }
         }
     }

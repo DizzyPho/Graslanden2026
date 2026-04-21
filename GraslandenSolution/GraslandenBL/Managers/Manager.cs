@@ -20,9 +20,9 @@ namespace GraslandenBL.Managers
             return _repository.GetInventoryDTOs();
         }
 
-        public void ImportEmptyInventory(InventoryDTO inventoryDTO)
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO)
         {
-            _repository.ImportEmptyInventory(inventoryDTO);
+            return _repository.ImportEmptyInventory(inventoryDTO);
         }
     }
 }

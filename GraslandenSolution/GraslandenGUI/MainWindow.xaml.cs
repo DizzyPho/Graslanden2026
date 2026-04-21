@@ -81,8 +81,9 @@ namespace GraslandenGUI
             niw.ShowDialog();
             if(niw.Success)
             {
+                int newInventoryId = _manager.ImportEmptyInventory(niw.Inventory);
+                niw.Inventory.Id = newInventoryId;
                 Inventories.Add(niw.Inventory);
-                _manager.ImportEmptyInventory(niw.Inventory);
             }
         }
     }
