@@ -59,13 +59,13 @@ namespace GraslandenGUI
         private void ImportNew_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "CSV Files (*.csv)|*.csv|All files (*.*)|*.*";
+            openFileDialog.Filter = "TXT Files (*.txt)|*.txt|All files (*.*)|*.*";
             if (openFileDialog.ShowDialog() == true)
             {
                 string fileName = openFileDialog.FileName;
-                if(!fileName.EndsWith(".csv"))
+                if (!fileName.EndsWith(".txt"))
                 {
-                    MessageBox.Show("Selecteer a.u.b. een CSV-bestand.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Selecteer a.u.b. een TXT-bestand.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }      
         }
