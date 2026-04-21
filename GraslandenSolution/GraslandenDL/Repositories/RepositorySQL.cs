@@ -3,6 +3,7 @@ using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
+using System.Collections;
 using System.Data;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
@@ -32,6 +33,7 @@ namespace GraslandenDL.Repositories
 
                 using (SqlDataReader reader = cmdCampus.ExecuteReader())
                 {
+                    cmdCampus.CommandText = queryCampus;
                     while (reader.Read())
                     {
                         campuses.Add(reader.GetString("campus"));
@@ -58,6 +60,8 @@ namespace GraslandenDL.Repositories
                     con.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
+
+                        cmd.CommandText = query;
                         while (reader.Read())
                         {
                             int id = reader.GetInt32(0);
@@ -316,6 +320,7 @@ namespace GraslandenDL.Repositories
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
             {
+                cmdGrassPlot.CommandText = queryGrassPlot;
                 //Parameterrs
                 cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
 
