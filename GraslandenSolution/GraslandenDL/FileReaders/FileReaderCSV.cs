@@ -28,10 +28,7 @@ namespace GraslandenDL.FileReaders
                 streamReader.ReadLine();
                 while (!streamReader.EndOfStream)
                 {
-
-                    //id, name, moisture, ph, nitrogen, nectarValue, biodiversity, rating
-
-                    string[] lineSections = streamReader.ReadLine().Split(',');
+                    string[] lineSections = streamReader.ReadLine().Split('|');
 
                     if (SpeciesValidation.Validate(name: lineSections[0],
                                                 moistureString: lineSections[15],
@@ -41,16 +38,15 @@ namespace GraslandenDL.FileReaders
                                                 biodiversityString: lineSections[8],
                                                 ratingString: null, out List<string> errorMessages))
                     {
-
-
                         Species newSpecies = new Species(id: null,
-                                                                            name: lineSections[0],
-                                                                            moisture: int.Parse(lineSections[15]),
-                                                                            ph: int.Parse(lineSections[16]),
-                                                                            nitrogen: int.Parse(lineSections[17]),
-                                                                            nectarvalue: int.Parse(lineSections[9]),
-                                                                            biodiversity: int.Parse(lineSections[8]),
-                                                                            rating: null);
+                                                        name: lineSections[0],
+                                                        moisture: int.Parse(lineSections[15]),
+                                                        ph: int.Parse(lineSections[16]),
+                                                        nitrogen: int.Parse(lineSections[17]),
+                                                        nectarvalue: int.Parse(lineSections[9]),
+                                                        biodiversity: int.Parse(lineSections[8]),
+                                                        rating: null);
+
                         speciesList.Add(newSpecies.Name, newSpecies);
                     }
                     else
@@ -60,6 +56,7 @@ namespace GraslandenDL.FileReaders
                 }
             }
 
+            List<string> currentCampusLineSections = new List<string>();
             string currentCampus = "";
             int currentLineWithinCampus = 0;
 
@@ -73,6 +70,7 @@ namespace GraslandenDL.FileReaders
                 List<string> plotNames = new List<string>();
                 List<double> plotAreas = new List<double>();
                 List<string> plotManagementTypes = new List<string>();
+                List<Measurement> measurements = new List<Measurement>();
 
                 while(!streamReader.EndOfStream)
                 {
@@ -88,6 +86,9 @@ namespace GraslandenDL.FileReaders
                     else
                     {
                         string[] lineSections = line.Split('|');
+
+                        if (currentLineWithinCampus == 0) currentCampusLineSections = lineSections.ToList();
+
                         if (lineSections[0].Trim() != string.Empty)
                         {
                             if (currentLineWithinCampus <= 2)
@@ -163,15 +164,19 @@ namespace GraslandenDL.FileReaders
                                                 "0" => Rating.Ruderaal,
                                                 "-" => Rating.Invasief
                                             };
+                                            Plot currentPlot = plots[currentCampusLineSections[i]];
 
-                                            species.Add(new Species(id: null,
+
+                                            Species newSpecies = new Species(id: null,
                                                                     name: lineSections[i].Trim(),
                                                                     moisture: int.Parse(lineSections[i + 2]),
                                                                     ph: int.Parse(lineSections[i + 3]),
                                                                     nitrogen: int.Parse(lineSections[i + 4]),
                                                                     nectarvalue: null,
                                                                     biodiversity: null,
-                                                                    rating: rating));
+                                                                    rating: rating);
+
+                                            measurements.Add(new Measurement(newSpecies, lineSections[i + 1], currentPlot));
                                         }
                                         catch
                                         {
@@ -186,6 +191,8 @@ namespace GraslandenDL.FileReaders
                 }
             }
 
+            // Check gras.txt list to see if species are found in tyler database, then get the values. If values are missing, use own values.
+            // gh - hp stuff
             return results;
         }
     }
