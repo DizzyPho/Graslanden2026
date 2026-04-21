@@ -7,9 +7,9 @@ namespace GraslandenBL.Interfaces
     {
         public void ImportInventory(Inventory inventory);
 
-        public HashSet<Species> GetAllSpecies();
+        public List<Species> GetAllSpecies();
 
-        public Dictionary<Plot,string> GetAllGrassPlots();
+        public Dictionary<Plot,string> GetAllGrassPlots(int inventoryID);
 
         public HashSet<string> GetAllCampuses();
 
