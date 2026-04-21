@@ -16,6 +16,7 @@ using GraslandenBL.Managers;
 using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
 using Microsoft.Win32;
+using GraslandenGUI.Windows;
 
 namespace GraslandenGUI
 {
@@ -50,9 +51,10 @@ namespace GraslandenGUI
             _importManager = new ImportManager(repository: repository,
                                                             fileReader: fileReader);
             Manager manager = new Manager(repository);
+            Inventories = new ObservableCollection<InventoryDTO>();
+            ListBoxInventories.ItemsSource = Inventories;
 
             //Inventories = new ObservableCollection<InventoryDTO>(manager.GetInventoryDTOs());
-            //ListBoxInventories.ItemsSource = Inventories;
             //_importManager.ReadFile();
         }
 
@@ -68,6 +70,16 @@ namespace GraslandenGUI
                     MessageBox.Show("Selecteer a.u.b. een CSV-bestand.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }      
+        }
+
+        private void AddNew_Click(object sender, RoutedEventArgs e)
+        {
+            NewInventoryWindow niw = new NewInventoryWindow();
+            niw.ShowDialog();
+            if(niw.Success)
+            {
+                Inventories.Add(niw.Inventory);
+            }
         }
     }
 }

@@ -27,7 +27,7 @@
             </Grid.RowDefinitions>
             <Button Content="Importeer" Padding="5" Margin="8" Grid.Row="0" Click="ImportNew_Click"></Button>
             <Button Content="Bekijk" Padding="5" Margin="8" Grid.Row="1"></Button>
-            <Button Content="Nieuw" Padding="5" Margin="8" Grid.Row="2"></Button>
+            <Button Content="Nieuw" Padding="5" Margin="8" Grid.Row="2" Click="AddNew_Click"></Button>
             <Button Content="Verwijder" Padding="5" Margin="8" Grid.Row="3"></Button>
         </Grid>
     </Grid>
