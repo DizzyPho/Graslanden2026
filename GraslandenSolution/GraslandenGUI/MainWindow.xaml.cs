@@ -89,6 +89,10 @@ namespace GraslandenGUI
 
         private void InspectInventory_Click(object sender, RoutedEventArgs e)
         {
+            if (ListBoxInventories.SelectedItem == null)
+            {
+                return;
+            }
             InventoryWindow iw = new InventoryWindow((InventoryDTO)ListBoxInventories.SelectedItem, _manager);
             iw.ShowDialog();
         }
