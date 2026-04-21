@@ -285,12 +285,14 @@ namespace GraslandenDL.Repositories
             {
                 cmd.CommandText = query;
                 conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                using (SqlDataReader reader = cmd.ExecuteReader()) 
+                { 
 
                 while (reader.Read())
                 {
                     inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
                 }
+            }
             }
             return inventories;
         }
