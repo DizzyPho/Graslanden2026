@@ -3,6 +3,7 @@ using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
+using System.Collections;
 using System.Data;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
@@ -32,6 +33,7 @@ namespace GraslandenDL.Repositories
 
                 using (SqlDataReader reader = cmdCampus.ExecuteReader())
                 {
+                    cmdCampus.CommandText = queryCampus;
                     while (reader.Read())
                     {
                         campuses.Add(reader.GetString("campus"));
@@ -41,11 +43,6 @@ namespace GraslandenDL.Repositories
             }
         }
 
-        public Dictionary<Plot, string> GetAllGrassPlots()
-        {
-            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
-            return grassPlots;
-        }
 
         public List<Species> GetAllSpecies()
         {
@@ -63,6 +60,8 @@ namespace GraslandenDL.Repositories
                     con.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
+
+                        cmd.CommandText = query;
                         while (reader.Read())
                         {
                             int id = reader.GetInt32(0);
@@ -71,24 +70,25 @@ namespace GraslandenDL.Repositories
                             int moisture = reader.GetInt32(3);
                             int ph = reader.GetInt32(4);
                             int nitrogen = reader.GetInt32(5);
-                            int biodiversity;
-                            if (DBNull.Value.Equals(reader[7]))
+                            //check if null
+                            int? nectarValue;
+                            if (reader.IsDBNull(6))
                             {
-                                biodiversity = 0;
-                            }
-                            else
-                            {
-                                biodiversity = reader.GetInt32(7);
-                            }
-
-                            int nectarValue;
-                            if (DBNull.Value.Equals(reader[6]))
-                            {
-                                nectarValue = 0;
+                                nectarValue = null;
                             }
                             else
                             {
                                 nectarValue = reader.GetInt32(6);
+                            }
+                            //check if nulll
+                            int? biodiversity;
+                            if (reader.IsDBNull(7))
+                            {
+                                biodiversity = null;
+                            }
+                            else
+                            {
+                                biodiversity = reader.GetInt32(7);
                             }
 
 
@@ -310,5 +310,48 @@ namespace GraslandenDL.Repositories
                 return (int)cmd.ExecuteScalar();
             }
         }
+        public Dictionary<Plot, string> GetAllGrassPlots(int inventoryID)
+        {
+            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
+
+            //Join grass_plot, inventoried_plot
+            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
+            {
+                cmdGrassPlot.CommandText = queryGrassPlot;
+                //Parameterrs
+                cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
+
+                //Open connection
+                con.Open();
+                SqlDataReader reader = cmdGrassPlot.ExecuteReader();
+                while (reader.Read())
+                {
+                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
+                    //Netheidsboord, Schapenweide, Intensief, Extensief
+                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
+                    ManagementType managementTypeEnum = managementType switch
+                    {
+                        "Netheidsboord" => ManagementType.Netheidsboord,
+                        "Schapenweide" => ManagementType.Schapenweide,
+                        "Intensief" => ManagementType.Intensief,
+                        "Extensief" => ManagementType.Extensief,
+                    };
+
+                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
+                    string campus = reader.GetString(reader.GetOrdinal("campus"));
+                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
+
+                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
+                    grassPlots.Add(plot, campus);
+                }
+
+            }
+
+            return grassPlots;
+        }
+
     }
 }

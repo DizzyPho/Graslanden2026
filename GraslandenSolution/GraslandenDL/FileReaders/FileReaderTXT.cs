@@ -3,6 +3,7 @@ using GraslandenBL.Domain;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using GraslandenBL.Results;
+using GraslandenLevenshtein;
 using GraslandenValidation;
 
 namespace GraslandenDL.FileReaders
@@ -10,7 +11,10 @@ namespace GraslandenDL.FileReaders
     public class FileReaderTXT : IFileReader
     {
         private string _indicatorValuesPath;
-        private List<string> _errorMessages = new List<string>();
+
+        public List<string> ErrorMessages { get; private set; } = new List<string>();
+
+        public HashSet<string> Remarks { get; private set; } = new HashSet<string>();
 
         public FileReaderTXT(string indicatorValuesPath)
         {
@@ -58,11 +62,11 @@ namespace GraslandenDL.FileReaders
 
                         SpeciesResult speciesResult = speciesBuilder.Build();
                         if(speciesResult.Object != null) tylerSpeciesList.Add(speciesResult.Object.Name, speciesResult.Object);
-                        _errorMessages.AddRange(speciesResult.Errors);
+                        ErrorMessages.AddRange(speciesResult.Errors);
                     }
                     else
                     {
-                        _errorMessages.AddRange(errorMessages);
+                        ErrorMessages.AddRange(errorMessages);
                     }
                     currentLine++;
                 }
@@ -80,11 +84,12 @@ namespace GraslandenDL.FileReaders
             using(StreamReader streamReader = new StreamReader(inventoryPath))
             {
                 List<string> plotNames = new List<string>();
-                List<double> plotAreas = new List<double>();
+                List<string> plotAreas = new List<string>();
                 List<string> plotManagementTypes = new List<string>();
                 List<Measurement> measurements = new List<Measurement>();
                 int currentLine = 1;
-
+                Dictionary<string, int> speciesPerPlot = new Dictionary<string, int>();
+                
                 while(!streamReader.EndOfStream)
                 {
                     string line = streamReader.ReadLine();
@@ -93,7 +98,7 @@ namespace GraslandenDL.FileReaders
                         currentCampus = line.Split(':')[1].Replace("---", "").Trim();
                         currentLineWithinCampus = 0;
                         plotNames = new List<string>();
-                        plotAreas = new List<double>();
+                        plotAreas = new List<string>();
                         plotManagementTypes = new List<string>();
                     }
                     else
@@ -122,14 +127,14 @@ namespace GraslandenDL.FileReaders
                                         {
                                             try
                                             {
-                                                plotAreas.Add(double.Parse(currentCell));
+                                                plotAreas.Add(currentCell);
                                             }
                                             catch
                                             {
-                                                plotAreas.Add(-1);
+                                                plotAreas.Add("ERROR");
                                             }
                                         }
-                                        else if(currentLineWithinCampus == 2 && plotManagementTypes.Count < plotManagementTypes.Count)
+                                        else if(currentLineWithinCampus == 2 && plotManagementTypes.Count < plotNames.Count)
                                         {
                                             plotManagementTypes.Add(currentCell);
                                         }
@@ -141,20 +146,32 @@ namespace GraslandenDL.FileReaders
                                 for (int i = 0; i < plotNames.Count; i++)
                                 {
                                     ManagementType managementType = ManagementType.Intensief;
-                                    try
-                                    {
-                                        managementType = plotManagementTypes[i].Trim().ToUpper() switch
+                                    //try
+                                    //{
+                                        if (PlotValidation.Validate(plotNames[i], plotAreas[i], currentCampus, plotManagementTypes[i], out List<string> plotErrors))
                                         {
-                                            "INTENSIEF" => ManagementType.Intensief,
-                                            "EXTENSIEF" => ManagementType.Extensief,
-                                            "NETHEIDSBOORD" => ManagementType.Netheidsboord,
-                                            "SCHAPENWEIDE" => ManagementType.Schapenweide,
-                                        };
-                                    }
-                                    catch
-                                    {
-                                    }
-                                    plots.Add(plotNames[i], new Plot(plotNames[i], plotAreas[i], currentCampus, managementType, new PlotType("test", "test")));
+                                            managementType = plotManagementTypes[i].Trim().ToUpper() switch
+                                            {
+                                                "INTENSIEF" => ManagementType.Intensief,
+                                                "EXTENSIEF" => ManagementType.Extensief,
+                                                "NETHEIDSBOORD" => ManagementType.Netheidsboord,
+                                                "SCHAPENWEIDE" => ManagementType.Schapenweide,
+                                            };
+                                            plots.Add(plotNames[i], new Plot(plotNames[i], double.Parse(plotAreas[i]), currentCampus, managementType, ""));
+                                            
+                                        }
+                                        else
+                                        {
+                                            foreach (string error in plotErrors)
+                                            {
+                                                ErrorMessages.Add($"$INVENTORY{currentLine} | {error}");
+                                            }
+                                        }
+                                    //}
+                                    //catch (Exception ex)
+                                    //{
+                                    //    throw ex;
+                                    //}
                                 }
                             }
                         }
@@ -163,47 +180,81 @@ namespace GraslandenDL.FileReaders
                         {
                             for (int i = 0; i < lineSections.Length; i++)
                             {
-                                if ((i - 1) % 6 == 0 && lineSections[i].Trim() != "")
+                                // Column == column of a plant name
+                                if ((i - 1) % 6 == 0)
                                 {
-                                    if (lineSections[i + 1].Trim() != "")
+                                    // Plant name isn't empty
+                                    if (lineSections[i].Trim() != "")
+                                    {
+
+                                        if (lineSections[i + 1].Trim() != "")
+                                        {
+                                            try
+                                            {
+                                                //Rating rating = lineSections[i + 5].Trim() switch
+                                                //{
+                                                //    "+++" => Rating.Sleutel,
+                                                //    "++" => Rating.Begeleidend,
+                                                //    "+" => Rating.Algemeen,
+                                                //    "0" => Rating.Ruderaal,
+                                                //    "-" => Rating.Invasief
+                                                //};
+                                                Plot currentPlot = plots[currentCampusLineSections[i]];
+
+
+
+                                                //Species newSpecies = new Species(id: null,
+                                                //                        name: lineSections[i].Trim(),
+                                                //                        moisture: int.Parse(lineSections[i + 2]),
+                                                //                        ph: int.Parse(lineSections[i + 3]),
+                                                //                        nitrogen: int.Parse(lineSections[i + 4]),
+                                                //                        nectarvalue: null,
+                                                //                        biodiversity: null,
+                                                //                        rating: rating);
+
+                                                SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i], $"INVENTORY{currentLine}")
+                                                    .AddMoisture(lineSections[i + 2])
+                                                    .AddPh(lineSections[i + 3])
+                                                    .AddNitrogen(lineSections[i + 4])
+                                                    .AddRating(lineSections[i + 5]);
+
+                                                SpeciesResult speciesResult = speciesBuilder.Build();
+                                                ErrorMessages.AddRange(speciesResult.Errors);
+                                                if (MeasurementValidation.Validate(lineSections[i + 1], out List<string> measurementErrors))
+                                                {
+                                                    results.Add(new Measurement(speciesResult.Object, lineSections[i + 1], currentPlot));
+                                                }
+                                                else
+                                                {
+                                                    ErrorMessages.AddRange(measurementErrors);
+                                                }
+                                                if (!speciesPerPlot.ContainsKey(currentPlot.Code))
+                                                {
+                                                    speciesPerPlot.Add(currentPlot.Code, 1);
+                                                }
+                                                else speciesPerPlot[currentPlot.Code]++;
+                                            }
+                                            catch (Exception exception)
+                                            {
+                                                ErrorMessages.Add(exception.Message);
+                                                //_errorMessages.Add($"{currentCampus}");
+                                            }
+                                        }
+                                    }
+                                    else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
                                     {
                                         try
                                         {
-                                            //Rating rating = lineSections[i + 5].Trim() switch
-                                            //{
-                                            //    "+++" => Rating.Sleutel,
-                                            //    "++" => Rating.Begeleidend,
-                                            //    "+" => Rating.Algemeen,
-                                            //    "0" => Rating.Ruderaal,
-                                            //    "-" => Rating.Invasief
-                                            //};
                                             Plot currentPlot = plots[currentCampusLineSections[i]];
 
-
-                                            //Species newSpecies = new Species(id: null,
-                                            //                        name: lineSections[i].Trim(),
-                                            //                        moisture: int.Parse(lineSections[i + 2]),
-                                            //                        ph: int.Parse(lineSections[i + 3]),
-                                            //                        nitrogen: int.Parse(lineSections[i + 4]),
-                                            //                        nectarvalue: null,
-                                            //                        biodiversity: null,
-                                            //                        rating: rating);
-
-                                            SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i], $"INVENTORY{currentLine}")
-                                                .AddMoisture(lineSections[i + 2])
-                                                .AddPh(lineSections[i + 3])
-                                                .AddNitrogen(lineSections[i + 4])
-                                                .AddRating(lineSections[i + 5]);
-
-                                            SpeciesResult speciesResult = speciesBuilder.Build();
-
-                                            results.Add(new Measurement(speciesResult.Object, lineSections[i + 1], currentPlot));
-                                            _errorMessages.AddRange(speciesResult.Errors);
+                                            if (speciesPerPlot[currentPlot.Code] == currentLineWithinCampus - 15)
+                                            {
+                                                currentPlot.PlotType = lineSections[i + 2];
+                                            }
                                         }
-                                        catch (Exception exception)
+                                        catch
                                         {
-                                            throw exception;
-                                            //_errorMessages.Add($"{currentCampus}");
+
                                         }
                                     }
                                 }
@@ -211,16 +262,41 @@ namespace GraslandenDL.FileReaders
                         }
                         currentLineWithinCampus++;
                     }
-                        currentLine++;
+                    currentLine++;
                 }
             }
-
-            List<string> missingValues = new List<string>();
+            List<string> allSpeciesNames = results.Select(m => m.Species.Name).ToList();
+            //List<string> missingValues = new List<string>();
             // Check gras.txt list to see if species are found in tyler database, then get the values. If values are missing, use own values.
             foreach(Measurement inventoryMeasurement in results)
             {
+                foreach(string speciesName in allSpeciesNames)
+                {
+                    int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
+                    if (distance < 4 && distance > 1)
+                    {
+                        Remarks.Add($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?");
+                    }
+                }
+                //string tylerSpeciesName = "";
+                //foreach(string tylerName in tylerSpeciesList.Keys)
+                //{
+                //    if(string.IsNullOrEmpty(tylerSpeciesName) && tylerName.StartsWith(inventoryMeasurement.Species.Name))
+                //    {
+                //        tylerSpeciesName = tylerName;
+                //        break;
+                //    }
+                //    else if(Levenshtein.Distance(inventoryMeasurement.Species.Name, tylerName) < 5)
+                //    {
+                //        Remarks.Add($"{inventoryMeasurement.Species.Name}, {tylerName}");
+                //        break;
+                //    }
+                //}
+
+
                 List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
                 if (tylerNameResults.Count > 0)
+                //if(!string.IsNullOrEmpty(tylerSpeciesName))
                 {
                     string tylerSpeciesName = tylerNameResults.First();
                     if (!string.IsNullOrEmpty(tylerSpeciesName))
@@ -230,11 +306,10 @@ namespace GraslandenDL.FileReaders
                         {
                             inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
                         }
-                        else
-                        {
-                            missingValues.Add(tylerSpeciesName);
-
-                        }
+                        //else
+                        //{
+                        //    missingValues.Add(tylerSpeciesName);
+                        //}
                         if (tylerSpecies.Ph != null) inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
                         if (tylerSpecies.Nitrogen != null) inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
                         if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
@@ -243,7 +318,7 @@ namespace GraslandenDL.FileReaders
                 }
                 else
                 {
-                    _errorMessages.Add($"Name: {inventoryMeasurement.Species.Name} not found in Tyler database.");
+                    Remarks.Add($"Naam: {inventoryMeasurement.Species.Name} niet gevonden in Tylerdatabank. Inventarisatiewaarden werden gebruikt.");
                 }
                 //if(tylerSpeciesList.TryGetValue(inventoryMeasurement.Species.Name, out Species tylerSpecies))
                 //{

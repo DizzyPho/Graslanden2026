@@ -9,7 +9,7 @@ namespace GraslandenGUI.Models
 {
     public class PlotUI : INotifyPropertyChanged
     {
-        public PlotUI(string code, double areaSqMeters, string campus, ManagementType managementType, PlotType plotType)
+        public PlotUI(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
         {
             Code = code;
             AreaSqMeters = areaSqMeters;
@@ -22,7 +22,7 @@ namespace GraslandenGUI.Models
         private double _areaSqMeters;
         private string _campus;
         private ManagementType _managementType;
-        private PlotType _plotType;
+        private string _plotType;
 
         public string Code { 
             get { return _code; }
@@ -47,7 +47,7 @@ namespace GraslandenGUI.Models
             set { _managementType = value; OnPropertyChanged("ManagementType"); }
         }
 
-        public PlotType PlotType
+        public string PlotType
         {
             get { return _plotType; }
             set { _plotType = value; OnPropertyChanged("PlotType"); }
