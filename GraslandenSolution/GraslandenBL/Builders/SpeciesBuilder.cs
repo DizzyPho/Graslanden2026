@@ -8,15 +8,12 @@ namespace GraslandenBL.Builders
     {
         private Species _species;
         private List<string> _errors;
-        private string _locationWithinFile;
 
-        public SpeciesBuilder(string name, string locationWithinFile)
+        public SpeciesBuilder(string name)
         {
-            _locationWithinFile = locationWithinFile;
             _errors = new List<string>();
-
             _species = new Species();
-            if (string.IsNullOrEmpty(name)) _errors.Add($"{_locationWithinFile} | Naam mag niet leeg zijn.");
+            if (string.IsNullOrEmpty(name)) _errors.Add($"Naam mag niet leeg zijn.");
             else _species.Name = name;
         }
 
@@ -27,11 +24,11 @@ namespace GraslandenBL.Builders
             try
             {
                 if (!string.IsNullOrEmpty(moistureString)) _species.Moisture = int.Parse(moistureString);
-                if (moisture < 0) _errors.Add($"{_locationWithinFile} | {_species.Name} | Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.");
+                if (moisture < 0) _errors.Add($"{_species.Name} | Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.");
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Vochtgehalte: '{moistureString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Vochtgehalte: '{moistureString}' moet een getal zijn.");
             }
             return this;
         }
@@ -43,11 +40,11 @@ namespace GraslandenBL.Builders
             try
             {
                 if (!string.IsNullOrEmpty(phString)) _species.Ph = int.Parse(phString);
-                if (ph < 0) _errors.Add($"{_locationWithinFile} | {_species.Name} | Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.");
+                if (ph < 0) _errors.Add($"{_species.Name} | Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.");
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Zuurtegraad: '{phString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Zuurtegraad: '{phString}' moet een getal zijn.");
             }
             return this;
         }
@@ -59,11 +56,11 @@ namespace GraslandenBL.Builders
             try
             {
                 if (!string.IsNullOrEmpty(nitrogenString)) _species.Nitrogen = int.Parse(nitrogenString);
-                if (nitrogen < 0) _errors.Add($"{_locationWithinFile} | {_species.Name} | Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.");
+                if (nitrogen < 0) _errors.Add($"{_species.Name} | Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.");
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Stikstofgehalte: '{nitrogenString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Stikstofgehalte: '{nitrogenString}' moet een getal zijn.");
             }
             return this;
         }
@@ -75,11 +72,11 @@ namespace GraslandenBL.Builders
             try
             {
                 if (!string.IsNullOrEmpty(nectarValueString)) _species.Nectarvalue = int.Parse(nectarValueString);
-                if (nectarValue < 0) _errors.Add($"{_locationWithinFile} | {_species.Name} | Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.");
+                if (nectarValue < 0) _errors.Add($"{_species.Name} | Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.");
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Nectarwaarde: '{nectarValueString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Nectarwaarde: '{nectarValueString}' moet een getal zijn.");
             }
             return this;
         }
@@ -91,11 +88,11 @@ namespace GraslandenBL.Builders
             try
             {
                 if (!string.IsNullOrEmpty(biodiversityString)) _species.Biodiversity = int.Parse(biodiversityString);
-                if (biodiversity < 0) _errors.Add($"{_locationWithinFile} | {_species.Name} | Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.");
+                if (biodiversity < 0) _errors.Add($"{_species.Name} | Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.");
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Biodiversiteit: '{biodiversityString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Biodiversiteit: '{biodiversityString}' moet een getal zijn.");
             }
             return this;
         }
@@ -116,7 +113,7 @@ namespace GraslandenBL.Builders
             }
             catch
             {
-                _errors.Add($"{_locationWithinFile} | {_species.Name} | Rating: '{ratingString}' is ongeldig.");
+                _errors.Add($"{_species.Name} | Rating: '{ratingString}' is ongeldig.");
             }
             return this;
         }
