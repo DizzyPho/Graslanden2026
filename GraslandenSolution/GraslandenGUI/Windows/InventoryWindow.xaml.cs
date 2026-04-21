@@ -1,4 +1,7 @@
-﻿using System;
+﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
+using GraslandenBL.Managers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -17,9 +20,19 @@ namespace GraslandenGUI.Windows
     /// </summary>
     public partial class InventoryWindow : Window
     {
-        public InventoryWindow()
+        Manager _manager;
+        private Inventory CurrentInventory { get; init; }
+        public InventoryWindow(InventoryDTO inventoryDTO, Manager manager)
         {
             InitializeComponent();
+            TextBlockTitle.Text = $"Inventarisatie '{inventoryDTO.ToString()}'";
+            _manager = manager;
+            HashSet<String> campuses = _manager.GetAllCampuses();
+            foreach (String campus in campuses)
+            {
+                TabItem tabItem = new TabItem { Header = campus , Name = campus };
+                TabControlCampus.Items.Add(tabItem);
+            }
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)
@@ -29,7 +42,7 @@ namespace GraslandenGUI.Windows
 
         private void ButtonBack(object sender, RoutedEventArgs e)
         {
-
+            Close();
         }
     }
 }

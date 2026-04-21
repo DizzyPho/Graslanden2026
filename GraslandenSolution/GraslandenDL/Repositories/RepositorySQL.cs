@@ -21,7 +21,7 @@ namespace GraslandenDL.Repositories
         public HashSet<string> GetAllCampuses()
         {
             HashSet<string> campuses = new HashSet<string>();
-            string queryCampus = "SELECT campus FROM grass_plot";
+            string queryCampus = "SELECT DISTINCT campus FROM grass_plot";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdCampus = new SqlCommand(queryCampus, con))
@@ -124,7 +124,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public void ImportInventory(List<Inventory> data)
+        public void ImportInventory(Inventory inventory)
         {
             string queryInventory = "INSERT INTO inventory(id, date,name) output INSERTED.ID VALUES(@id,@date,@name)";
             string querySpecies = "INSERT INTO species(id, name, rating, moisture, ph, nitrogen, nectar_production, biodiversity) output INSERTED.ID VALUES(@id, @name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversit)";
@@ -288,6 +288,22 @@ namespace GraslandenDL.Repositories
                 }
             }
             return inventories;
+        }
+
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO)
+        {
+            const string query = "INSERT INTO inventory (date, name) output inserted.ID VALUES (@date, @name)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@date", inventoryDTO.Date);
+                cmd.Parameters.AddWithValue("@name", inventoryDTO.Name);
+                conn.Open();
+                // return id 
+                return (int)cmd.ExecuteScalar();
+            }
         }
         public Dictionary<Plot, string> GetAllGrassPlots(int inventoryID)
         {

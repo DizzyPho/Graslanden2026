@@ -1,23 +1,23 @@
-﻿using GraslandenBL.Domain;
+﻿using GraslandenBL.Builders;
+using GraslandenBL.Domain;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
+using GraslandenBL.Results;
 using GraslandenValidation;
 
 namespace GraslandenDL.FileReaders
 {
     public class FileReaderTXT : IFileReader
     {
-        private string _inventoryPath;
         private string _indicatorValuesPath;
         private List<string> _errorMessages = new List<string>();
 
-        public FileReaderTXT(string inventoryPath, string indicatorValuesPath)
+        public FileReaderTXT(string indicatorValuesPath)
         {
-            _inventoryPath = inventoryPath;
             _indicatorValuesPath = indicatorValuesPath;
         }
         
-        public List<Measurement> ReadFile()
+        public List<Measurement> ReadFile(string inventoryPath)
         {
             List<Measurement> results = new List<Measurement>();
             Dictionary<string, Species> tylerSpeciesList = new Dictionary<string, Species>();
@@ -26,6 +26,8 @@ namespace GraslandenDL.FileReaders
             {
                 // Skip column names
                 streamReader.ReadLine();
+                int currentLine = 2;
+
                 while (!streamReader.EndOfStream)
                 {
                     string[] lineSections = streamReader.ReadLine().Split('|');
@@ -38,21 +40,31 @@ namespace GraslandenDL.FileReaders
                                                 biodiversityString: lineSections[8],
                                                 ratingString: null, out List<string> errorMessages))
                     {
-                        Species newSpecies = new Species(id: null,
-                                                        name: lineSections[0],
-                                                        moisture: int.Parse(lineSections[15]),
-                                                        ph: int.Parse(lineSections[16]),
-                                                        nitrogen: int.Parse(lineSections[17]),
-                                                        nectarvalue: int.Parse(lineSections[9]),
-                                                        biodiversity: int.Parse(lineSections[8]),
-                                                        rating: null);
+                        //Species newSpecies = new Species(id: null,
+                        //                                name: lineSections[0],
+                        //                                moisture: int.Parse(lineSections[15]),
+                        //                                ph: int.Parse(lineSections[16]),
+                        //                                nitrogen: int.Parse(lineSections[17]),
+                        //                                nectarvalue: int.Parse(lineSections[9]),
+                        //                                biodiversity: int.Parse(lineSections[8]),
+                        //                                rating: null);
 
-                        tylerSpeciesList.Add(newSpecies.Name, newSpecies);
+                        SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[0], $"TYLER{currentLine}")
+                            .AddMoisture(lineSections[15])
+                            .AddPh(lineSections[16])
+                            .AddNitrogen(lineSections[17])
+                            .AddNectarValue(lineSections[9])
+                            .AddBiodiversity(lineSections[8]);
+
+                        SpeciesResult speciesResult = speciesBuilder.Build();
+                        if(speciesResult.Object != null) tylerSpeciesList.Add(speciesResult.Object.Name, speciesResult.Object);
+                        _errorMessages.AddRange(speciesResult.Errors);
                     }
                     else
                     {
                         _errorMessages.AddRange(errorMessages);
                     }
+                    currentLine++;
                 }
             }
 
@@ -65,12 +77,13 @@ namespace GraslandenDL.FileReaders
             // List<Species> inventorySpeciesList = new List<Species>();
 
             // TO DO: replace path with _inventoryPath
-            using(StreamReader streamReader = new StreamReader(_inventoryPath))
+            using(StreamReader streamReader = new StreamReader(inventoryPath))
             {
                 List<string> plotNames = new List<string>();
                 List<double> plotAreas = new List<double>();
                 List<string> plotManagementTypes = new List<string>();
                 List<Measurement> measurements = new List<Measurement>();
+                int currentLine = 1;
 
                 while(!streamReader.EndOfStream)
                 {
@@ -156,31 +169,41 @@ namespace GraslandenDL.FileReaders
                                     {
                                         try
                                         {
-                                            Rating rating = lineSections[i + 5].Trim() switch
-                                            {
-                                                "+++" => Rating.Sleutel,
-                                                "++" => Rating.Begeleidend,
-                                                "+" => Rating.Algemeen,
-                                                "0" => Rating.Ruderaal,
-                                                "-" => Rating.Invasief
-                                            };
+                                            //Rating rating = lineSections[i + 5].Trim() switch
+                                            //{
+                                            //    "+++" => Rating.Sleutel,
+                                            //    "++" => Rating.Begeleidend,
+                                            //    "+" => Rating.Algemeen,
+                                            //    "0" => Rating.Ruderaal,
+                                            //    "-" => Rating.Invasief
+                                            //};
                                             Plot currentPlot = plots[currentCampusLineSections[i]];
 
 
-                                            Species newSpecies = new Species(id: null,
-                                                                    name: lineSections[i].Trim(),
-                                                                    moisture: int.Parse(lineSections[i + 2]),
-                                                                    ph: int.Parse(lineSections[i + 3]),
-                                                                    nitrogen: int.Parse(lineSections[i + 4]),
-                                                                    nectarvalue: null,
-                                                                    biodiversity: null,
-                                                                    rating: rating);
+                                            //Species newSpecies = new Species(id: null,
+                                            //                        name: lineSections[i].Trim(),
+                                            //                        moisture: int.Parse(lineSections[i + 2]),
+                                            //                        ph: int.Parse(lineSections[i + 3]),
+                                            //                        nitrogen: int.Parse(lineSections[i + 4]),
+                                            //                        nectarvalue: null,
+                                            //                        biodiversity: null,
+                                            //                        rating: rating);
 
-                                            measurements.Add(new Measurement(newSpecies, lineSections[i + 1], currentPlot));
+                                            SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i], $"INVENTORY{currentLine}")
+                                                .AddMoisture(lineSections[i + 2])
+                                                .AddPh(lineSections[i + 3])
+                                                .AddNitrogen(lineSections[i + 4])
+                                                .AddRating(lineSections[i + 5]);
+
+                                            SpeciesResult speciesResult = speciesBuilder.Build();
+
+                                            results.Add(new Measurement(speciesResult.Object, lineSections[i + 1], currentPlot));
+                                            _errorMessages.AddRange(speciesResult.Errors);
                                         }
-                                        catch
+                                        catch (Exception exception)
                                         {
-                                            _errorMessages.Add($"{currentCampus}");
+                                            throw exception;
+                                            //_errorMessages.Add($"{currentCampus}");
                                         }
                                     }
                                 }
@@ -188,20 +211,44 @@ namespace GraslandenDL.FileReaders
                         }
                         currentLineWithinCampus++;
                     }
+                        currentLine++;
                 }
             }
 
+            List<string> missingValues = new List<string>();
             // Check gras.txt list to see if species are found in tyler database, then get the values. If values are missing, use own values.
             foreach(Measurement inventoryMeasurement in results)
             {
-                if(tylerSpeciesList.TryGetValue(inventoryMeasurement.Species.Name, out Species tylerSpecies))
+                List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
+                if (tylerNameResults.Count > 0)
                 {
-                    if (tylerSpecies.Moisture != null) inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
-                    if (tylerSpecies.Ph != null) inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
-                    if (tylerSpecies.Nitrogen != null) inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
-                    if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
-                    if (tylerSpecies.Biodiversity != null) inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
+                    string tylerSpeciesName = tylerNameResults.First();
+                    if (!string.IsNullOrEmpty(tylerSpeciesName))
+                    {
+                        Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
+                        if (tylerSpecies.Moisture != null)
+                        {
+                            inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
+                        }
+                        else
+                        {
+                            missingValues.Add(tylerSpeciesName);
+
+                        }
+                        if (tylerSpecies.Ph != null) inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
+                        if (tylerSpecies.Nitrogen != null) inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
+                        if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
+                        if (tylerSpecies.Biodiversity != null) inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
+                    }
                 }
+                else
+                {
+                    _errorMessages.Add($"Name: {inventoryMeasurement.Species.Name} not found in Tyler database.");
+                }
+                //if(tylerSpeciesList.TryGetValue(inventoryMeasurement.Species.Name, out Species tylerSpecies))
+                //{
+                //}
+                // TO DO: give error when value not found
             }
             // gh - hp stuff
             return results;

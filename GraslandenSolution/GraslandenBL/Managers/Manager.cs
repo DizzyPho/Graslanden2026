@@ -15,9 +15,19 @@ namespace GraslandenBL.Managers
             _repository = repository;
         }
 
+        public HashSet<String> GetAllCampuses()
+        {
+            return _repository.GetAllCampuses();
+        }
+
         public List<InventoryDTO> GetInventoryDTOs()
         {
             return _repository.GetInventoryDTOs();
+        }
+
+        public int ImportEmptyInventory(InventoryDTO inventoryDTO)
+        {
+            return _repository.ImportEmptyInventory(inventoryDTO);
         }
     }
 }
