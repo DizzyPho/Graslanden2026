@@ -547,6 +547,7 @@ namespace GraslandenDL.Repositories
                         "Schapenweide" => ManagementType.Schapenweide,
                         "Intensief" => ManagementType.Intensief,
                         "Extensief" => ManagementType.Extensief,
+                            _ => throw new Exception("Invalid management type")
                     };
 
                     string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
