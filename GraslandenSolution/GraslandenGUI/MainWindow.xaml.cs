@@ -62,7 +62,7 @@ namespace GraslandenGUI
                 {
                     NewInventoryWindow niw = new NewInventoryWindow();
                     niw.ShowDialog();
-                    ProgressBarWindow progressBarWindow = new ProgressBarWindow();
+                    ProgressBarWindow progressBarWindow = new ProgressBarWindow("De inventarisatie wordt geïmporteerd, even geduld.");
                     progressBarWindow.ShowDialog();
                     if(niw.Inventory == null)
                     {

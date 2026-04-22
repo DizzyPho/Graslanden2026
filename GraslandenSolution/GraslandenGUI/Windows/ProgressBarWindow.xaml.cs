@@ -11,9 +11,10 @@ namespace GraslandenGUI.Windows
     /// </summary>
     public partial class ProgressBarWindow : Window
     {
-        public ProgressBarWindow()
+        public ProgressBarWindow(string message)
         {
             InitializeComponent();
+            TextBoxMessage.Text = message;
         }
     }
 }
