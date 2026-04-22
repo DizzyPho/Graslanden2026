@@ -16,14 +16,15 @@ namespace GraslandenBL.Managers
         }
 
         // returns ID of inventory in DB
-        public InventoryDTO ImportData(string inventoryPath, DateTime inventoryDate, string inventoryName)
+        public InventoryDTO ImportData(string inventoryPath, InventoryDTO inventoryDTO)
         {
-            Inventory inventory = new Inventory(inventoryDate, inventoryName);
+            Inventory inventory = new Inventory(inventoryDTO.Date, inventoryDTO.Name);
             List<Measurement> measurements = _fileReader.ReadFile(inventoryPath);
             inventory.Measurements = measurements;
             int inventoryId = _repository.ImportInventory(inventory);
+            inventoryDTO.Id = inventoryId;
 
-            return new InventoryDTO(inventoryId, inventoryDate, inventoryName);
+            return inventoryDTO;
         }
     }
 }
