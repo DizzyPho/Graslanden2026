@@ -91,5 +91,22 @@ namespace GraslandenGUI
             InventoryWindow iw = new InventoryWindow((InventoryDTO)ListBoxInventories.SelectedItem, _manager);
             iw.ShowDialog();
         }
+
+        private void DeleteInventory_Click(object sender, RoutedEventArgs e)
+        {
+            if(ListBoxInventories.SelectedItem == null)
+            {
+                return;
+            }
+            InventoryDTO selectedItem = (InventoryDTO)ListBoxInventories.SelectedItem;
+            if(_manager.DeleteInventory(selectedItem.Id))
+            {
+                Inventories.Remove(selectedItem);
+            }
+            else
+            {
+                // TO DO: add failed message
+            }
+        }
     }
 }
