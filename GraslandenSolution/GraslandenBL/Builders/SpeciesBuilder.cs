@@ -102,15 +102,7 @@ namespace GraslandenBL.Builders
             Rating? rating = null;
             try
             {
-                _species.Rating = ratingString.Trim() switch
-                {
-                    "+++" => Rating.Sleutel,
-                    "++" => Rating.Begeleidend,
-                    "+" => Rating.Algemeen,
-                    "0" => Rating.Ruderaal,
-                    "-" => Rating.Invasief,
-                    _ => throw new ArgumentException()
-                };
+                _species.Rating = Species.ParseRating(ratingString.Trim()); 
             }
             catch
             {
