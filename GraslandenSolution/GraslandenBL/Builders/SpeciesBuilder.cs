@@ -108,7 +108,8 @@ namespace GraslandenBL.Builders
                     "++" => Rating.Begeleidend,
                     "+" => Rating.Algemeen,
                     "0" => Rating.Ruderaal,
-                    "-" => Rating.Invasief
+                    "-" => Rating.Invasief,
+                    _ => throw new ArgumentException()
                 };
             }
             catch

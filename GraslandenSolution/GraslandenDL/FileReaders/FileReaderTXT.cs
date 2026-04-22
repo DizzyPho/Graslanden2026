@@ -164,6 +164,7 @@ namespace GraslandenDL.FileReaders
                                             "EXTENSIEF" => ManagementType.Extensief,
                                             "NETHEIDSBOORD" => ManagementType.Netheidsboord,
                                             "SCHAPENWEIDE" => ManagementType.Schapenweide,
+                                            _ => throw new Exception("Invalid ManagementType")
                                         };
 
                                         // Plot type gets filled in later

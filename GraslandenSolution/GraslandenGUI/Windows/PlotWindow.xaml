@@ -18,7 +18,11 @@
         <Grid Grid.Row="1" Margin="10">
         </Grid>
         <TextBlock Grid.Row="2" Text="Metingen" Padding="10 0"></TextBlock>
-        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements"></DataGrid>
+        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                
+            </DataGrid.Columns>
+        </DataGrid>
         <Button Grid.Row="4" Content="Terug" Margin="10" Click="ButtonBack"></Button>
     </Grid>
 </Window>
