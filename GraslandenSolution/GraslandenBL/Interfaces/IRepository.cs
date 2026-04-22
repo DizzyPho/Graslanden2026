@@ -16,7 +16,7 @@ namespace GraslandenBL.Interfaces
         public int ImportEmptyInventory(InventoryDTO inventoryDTO);
 
         public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId);
-        public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code);
+        public List<MeasurementDTO> GetMeasurementsDTOForPlot(int inventoryID, string code);
         public void InsertSpecies(Species species);
         public bool DeleteInventory(int inventoryId);
 
