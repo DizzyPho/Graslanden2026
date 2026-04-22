@@ -301,48 +301,6 @@ namespace GraslandenDL.Repositories
                 return (int)cmd.ExecuteScalar();
             }
         }
-        public Dictionary<Plot, string> GetAllGrassPlots(int inventoryID)
-        {
-            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
-
-            //Join grass_plot, inventoried_plot
-            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID";
-
-            using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
-            {
-                cmdGrassPlot.CommandText = queryGrassPlot;
-                //Parameterrs
-                cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
-
-                //Open connection
-                con.Open();
-                SqlDataReader reader = cmdGrassPlot.ExecuteReader();
-                while (reader.Read())
-                {
-                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
-                    //Netheidsboord, Schapenweide, Intensief, Extensief
-                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
-                    ManagementType managementTypeEnum = managementType switch
-                    {
-                        "Netheidsboord" => ManagementType.Netheidsboord,
-                        "Schapenweide" => ManagementType.Schapenweide,
-                        "Intensief" => ManagementType.Intensief,
-                        "Extensief" => ManagementType.Extensief,
-                    };
-
-                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
-                    string campus = reader.GetString(reader.GetOrdinal("campus"));
-                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-
-                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
-                    grassPlots.Add(plot, campus);
-                    }
-
-                }
-
-            return grassPlots;
-        }
         public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
             const string queryInventoriedPlot = "select id from inventoried_plot where inventory_id = @inventory_id and plot_code = @plot_code";
@@ -554,14 +512,10 @@ namespace GraslandenDL.Repositories
                 cmd.ExecuteNonQuery();
             }
         }
-        //TODO Geef campusDTO met info van 1 inventarisatie
         public CampusDTO GetCampusDTO(int inventoryID, string campus)
         {
-            //----------------------------------------------------------------------------
             //public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes
             List<Plot> plots = new List<Plot>();
-
-           
 
             //Join grass_plot, inventoried_plot
             string queryGetPlots = "SELECT ip.plot_code, gp.area_sq_meter, gp.campus, ip.management_type, ip.plot_type FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID AND gp.campus = @campus";
