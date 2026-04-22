@@ -3,10 +3,7 @@ using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
-using System.Collections;
 using System.Data;
-using System.Reflection.Metadata;
-using System.Xml.Linq;
 
 namespace GraslandenDL.Repositories
 {
@@ -127,7 +124,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public void ImportInventory(Inventory inventory)
+        public int ImportInventory(Inventory inventory)
         {
             string queryInventory = "INSERT INTO inventory(date,name) output INSERTED.ID VALUES(@date,@name)";
             const string querySpecies = "select id from species where name = @name";
@@ -254,6 +251,7 @@ namespace GraslandenDL.Repositories
                         cmdMeasurement.ExecuteNonQuery();
                     }
                     transaction.Commit();
+                    return inventoryId;
                 }
                 catch (Exception ex)
                 {
@@ -268,7 +266,7 @@ namespace GraslandenDL.Repositories
 
         public List<InventoryDTO> GetInventoryDTOs()
         {
-            const string query = "SELECT date, name FROM inventory";
+            const string query = "SELECT id, date, name FROM inventory";
             List<InventoryDTO> inventories = new List<InventoryDTO>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -281,7 +279,7 @@ namespace GraslandenDL.Repositories
 
                     while (reader.Read())
                     {
-                        inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                        inventories.Add(new InventoryDTO(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2)));
                     }
                 }
             }
@@ -303,7 +301,99 @@ namespace GraslandenDL.Repositories
                 return (int)cmd.ExecuteScalar();
             }
         }
+        public Dictionary<Plot, string> GetAllGrassPlots(int inventoryID)
+        {
+            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
 
+            //Join grass_plot, inventoried_plot
+            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
+            {
+                cmdGrassPlot.CommandText = queryGrassPlot;
+                //Parameterrs
+                cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
+
+                //Open connection
+                con.Open();
+                SqlDataReader reader = cmdGrassPlot.ExecuteReader();
+                while (reader.Read())
+                {
+                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
+                    //Netheidsboord, Schapenweide, Intensief, Extensief
+                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
+                    ManagementType managementTypeEnum = managementType switch
+                    {
+                        "Netheidsboord" => ManagementType.Netheidsboord,
+                        "Schapenweide" => ManagementType.Schapenweide,
+                        "Intensief" => ManagementType.Intensief,
+                        "Extensief" => ManagementType.Extensief,
+                    };
+
+                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
+                    string campus = reader.GetString(reader.GetOrdinal("campus"));
+                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
+
+                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
+                    grassPlots.Add(plot, campus);
+                    }
+
+                }
+
+            return grassPlots;
+        }
+        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
+        {
+            const string queryInventoriedPlot = "select id from inventoried_plot where inventory_id = @inventory_id and plot_code = @plot_code";
+            const string querySpecies = "select id from species where name = @name";
+            const string queryMeasurement = "insert into measurement (inventoried_plot_id, species_id, coverage) VALUES (@inventoried_plot_id,@species_id,@coverage)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInventoriedPlot = conn.CreateCommand())
+            using (SqlCommand cmdSpecies = conn.CreateCommand())
+            using (SqlCommand cmdMeasurement = conn.CreateCommand())
+            {
+                cmdInventoriedPlot.CommandText = queryInventoriedPlot;
+                cmdSpecies.CommandText = querySpecies;
+                cmdMeasurement.CommandText = queryMeasurement;
+
+                cmdInventoriedPlot.Parameters.AddWithValue("@inventory_id", inventoryId);
+                cmdInventoriedPlot.Parameters.AddWithValue("@plot_code", plotCode);
+
+                cmdSpecies.Parameters.AddWithValue("@name", species);
+
+                conn.Open();
+                SqlTransaction transaction = conn.BeginTransaction();
+                cmdInventoriedPlot.Transaction = transaction;
+                cmdSpecies.Transaction = transaction;
+                cmdMeasurement.Transaction = transaction;
+                try
+                {
+                    int inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
+                    int? speciesId = (int?)cmdSpecies.ExecuteScalar();
+
+                    if (speciesId != null)
+                    {
+                        cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
+                        cmdMeasurement.Parameters.AddWithValue("@species_id", speciesId);
+                        cmdMeasurement.Parameters.AddWithValue("@coverage", coverage);
+                        cmdMeasurement.ExecuteNonQuery();
+                        transaction.Commit();
+                        return true;
+                    }
+
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
+        }
         public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code)
         {
             List<Measurement> measurementsList = new List<Measurement>();
@@ -367,6 +457,103 @@ namespace GraslandenDL.Repositories
             }
         }
 
+        public bool DeleteInventory(int inventoryId)
+        {
+            // Queries
+            string inventoriedPlotSelectQuery = "SELECT id FROM inventoried_plot WHERE inventory_id = @inventoryId";
+            string measurementQuery = "DELETE FROM measurement WHERE inventoried_plot_id = @inventoriedPlotId";
+            string inventoriedPlotDeleteQuery = "DELETE FROM inventoried_plot WHERE inventory_id = @inventoryId";
+            string inventoryQuery = "DELETE FROM inventory WHERE id = @inventoryId";
+
+            List<int> inventoriedPlotIds = new List<int>();
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand inventoriedPlotSelectCommand = connection.CreateCommand())
+                {
+                    using (SqlCommand measurementCommand = connection.CreateCommand())
+                    {
+                        using (SqlCommand inventoriedPlotDeleteCommand = connection.CreateCommand())
+                        {
+                            using (SqlCommand inventoryCommand = connection.CreateCommand())
+                            {
+                                // CommandText
+                                inventoriedPlotSelectCommand.CommandText = inventoriedPlotSelectQuery;
+                                measurementCommand.CommandText = measurementQuery;
+                                inventoriedPlotDeleteCommand.CommandText = inventoriedPlotDeleteQuery;
+                                inventoryCommand.CommandText = inventoryQuery;
+
+
+                                // Parameters
+                                inventoriedPlotSelectCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+                                measurementCommand.Parameters.Add(new SqlParameter("@inventoriedPlotId", SqlDbType.Int));
+                                inventoriedPlotDeleteCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+                                inventoryCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+
+                                connection.Open();
+
+                                // Transaction
+                                SqlTransaction transaction = connection.BeginTransaction();
+                                inventoriedPlotSelectCommand.Transaction = transaction;
+                                measurementCommand.Transaction = transaction;
+                                inventoriedPlotDeleteCommand.Transaction = transaction;
+                                inventoryCommand.Transaction = transaction;
+
+                                try
+                                {
+                                    // Get all inventoried_plot_ids of inventory
+                                    SqlDataReader reader = inventoriedPlotSelectCommand.ExecuteReader();
+                                    while (reader.Read())
+                                    {
+                                        inventoriedPlotIds.Add(reader.GetInt32(reader.GetOrdinal("id")));
+                                    }
+                                    reader.Close();
+
+                                    foreach (int id in inventoriedPlotIds)
+                                    {
+                                        measurementCommand.Parameters["@inventoriedPlotId"].Value = id;
+
+                                        measurementCommand.ExecuteNonQuery();
+                                    }
+
+                                    inventoriedPlotDeleteCommand.ExecuteNonQuery();
+                                    inventoryCommand.ExecuteNonQuery();
+
+                                    transaction.Commit();
+                                    return true;
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    transaction.Rollback();
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void InsertSpecies(Species species)
+        {
+            const string query = "insert into species(name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance)" +
+                                 "VALUES(@name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversity)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", species.Name);
+                cmd.Parameters.AddWithValue("@rating", species.Rating);
+                cmd.Parameters.AddWithValue("@moisture", species.Moisture);
+                cmd.Parameters.AddWithValue("@ph", species.Ph);
+                cmd.Parameters.AddWithValue("@nitrogen", species.Nitrogen);
+                cmd.Parameters.AddWithValue("@nectar_production", species.Nectarvalue != null ? species.Nectarvalue : DBNull.Value);
+                cmd.Parameters.AddWithValue("@biodiversity", species.Biodiversity != null ? species.Biodiversity : DBNull.Value);
+                cmd.ExecuteNonQuery();
+            }
+        }
         //TODO Geef campusDTO met info van 1 inventarisatie
         public CampusDTO GetCampusDTO(int inventoryID, string campus)
         {

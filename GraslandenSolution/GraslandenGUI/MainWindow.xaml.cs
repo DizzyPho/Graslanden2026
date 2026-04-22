@@ -4,14 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using GraslandenBL.Managers;
 using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
@@ -53,8 +45,6 @@ namespace GraslandenGUI
             _manager = new Manager(repository);
             Inventories = new ObservableCollection<InventoryDTO>(_manager.GetInventoryDTOs());
             ListBoxInventories.ItemsSource = Inventories;
-
-            //_importManager.ReadFile();
         }
 
         private void ImportNew_Click(object sender, RoutedEventArgs e)
@@ -70,7 +60,17 @@ namespace GraslandenGUI
                 }
                 else
                 {
-                    _importManager.ImportData(fileName);
+                    NewInventoryWindow niw = new NewInventoryWindow();
+                    niw.ShowDialog();
+                    ProgressBarWindow progressBarWindow = new ProgressBarWindow("De inventarisatie wordt geïmporteerd, even geduld.");
+                    progressBarWindow.ShowDialog();
+                    if(niw.Inventory == null)
+                    {
+                        return;
+                    }
+                    Inventories.Add(_importManager.ImportData(fileName, niw.Inventory));
+                    progressBarWindow.Close();
+                    MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }      
         }
@@ -95,6 +95,23 @@ namespace GraslandenGUI
             }
             InventoryWindow iw = new InventoryWindow((InventoryDTO)ListBoxInventories.SelectedItem, _manager);
             iw.ShowDialog();
+        }
+
+        private void DeleteInventory_Click(object sender, RoutedEventArgs e)
+        {
+            if(ListBoxInventories.SelectedItem == null)
+            {
+                return;
+            }
+            InventoryDTO selectedItem = (InventoryDTO)ListBoxInventories.SelectedItem;
+            if(_manager.DeleteInventory(selectedItem.Id))
+            {
+                Inventories.Remove(selectedItem);
+            }
+            else
+            {
+                // TO DO: add failed message
+            }
         }
     }
 }

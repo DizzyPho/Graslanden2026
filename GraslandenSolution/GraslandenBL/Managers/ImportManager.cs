@@ -1,4 +1,5 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 using GraslandenBL.Interfaces;
 
 namespace GraslandenBL.Managers
@@ -14,13 +15,16 @@ namespace GraslandenBL.Managers
             _fileReader = fileReader;
         }
 
-        public void ImportData(string inventoryPath)
+        // returns ID of inventory in DB
+        public InventoryDTO ImportData(string inventoryPath, InventoryDTO inventoryDTO)
         {
-            Inventory i = new Inventory(DateTime.UtcNow,"Tester");
+            Inventory inventory = new Inventory(inventoryDTO.Date, inventoryDTO.Name);
             List<Measurement> measurements = _fileReader.ReadFile(inventoryPath);
-            i.Measurements = measurements;
-            _repository.ImportInventory(i);
+            inventory.Measurements = measurements;
+            int inventoryId = _repository.ImportInventory(inventory);
+            inventoryDTO.Id = inventoryId;
 
+            return inventoryDTO;
         }
     }
 }
