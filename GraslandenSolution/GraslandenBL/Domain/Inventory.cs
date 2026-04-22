@@ -6,16 +6,18 @@ namespace GraslandenBL.Domain
 {
     public class Inventory
     {
-        public Inventory(DateTime date, string name)
+        public Inventory(DateTime date, string name, List<string> errors)
         {
             Date = date;
             Name = name;
             Measurements = new List<Measurement>();
+            Errors = errors;
         }
 
         public DateTime Date { get; set; }
         public String Name { get; set; }
         public List<Measurement> Measurements { get; set; }
+        public List<string> Errors { get; set; }
 
         public List<Species> GetSpecies()
         {
