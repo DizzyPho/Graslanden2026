@@ -4,14 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using GraslandenBL.Managers;
 using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
@@ -68,7 +60,12 @@ namespace GraslandenGUI
                 }
                 else
                 {
-                    _importManager.ImportData(fileName);
+                    ProgressBarWindow progressBarWindow = new ProgressBarWindow();
+                    progressBarWindow.Show();
+                    _importManager.ImportData(fileName, DateTime.Now , "test");
+                    Inventories.Add(_importManager.ImportData(fileName, DateTime.Now, "test"));
+                    progressBarWindow.Close();
+                    MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }      
         }
