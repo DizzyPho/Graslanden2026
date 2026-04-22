@@ -359,7 +359,8 @@ namespace GraslandenDL.Repositories
         {
             List<MeasurementDTO> measurementDTOList = new List<MeasurementDTO>();
 
-            string queryMeasurement = "SELECT m.species_id, m.coverage FROM measurement m " +
+            string queryMeasurement = "SELECT m.coverage, m.species_id FROM measurement m " +
+                "JOIN inventoried_plot ip ON m.inventoried_plot_id = ip.id " +
                 //Select only those where inventory_id = @inventoryID AND plot_code = @code
                 "WHERE ip.inventory_id = @inventoryID AND ip.plot_code =@code";
 
