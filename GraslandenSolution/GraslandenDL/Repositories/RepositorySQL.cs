@@ -454,7 +454,7 @@ namespace GraslandenDL.Repositories
                                     return true;
                                 }
 
-                                catch (Exception ex)
+                                catch
                                 {
                                     transaction.Rollback();
                                     return false;
