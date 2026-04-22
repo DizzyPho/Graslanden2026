@@ -21,13 +21,14 @@ namespace GraslandenBL.Managers
         {
             Inventory inventory = new Inventory(inventoryDTO.Date, inventoryDTO.Name);
             List<Measurement> measurements = _fileReader.ReadFile(inventoryPath, out Dictionary<string, MessageType> messages);
-            if(messages.Count > 0)
-            {
-                // _repository.ImportMessages(messages);
-            }
             inventory.Measurements = measurements;
             int inventoryId = _repository.ImportInventory(inventory);
             inventoryDTO.Id = inventoryId;
+
+            if(messages.Count > 0)
+            {
+                // _repository.ImportMessages(messages, inventoryId);
+            }
 
             return inventoryDTO;
         }
