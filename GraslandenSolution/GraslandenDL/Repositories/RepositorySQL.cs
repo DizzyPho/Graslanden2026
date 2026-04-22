@@ -341,9 +341,9 @@ namespace GraslandenDL.Repositories
 
                     Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
                     grassPlots.Add(plot, campus);
-                }
+                    }
 
-            }
+                }
 
             return grassPlots;
         }
@@ -383,7 +383,6 @@ namespace GraslandenDL.Repositories
                     string coverage = reader.GetString(reader.GetOrdinal("coverage"));
 
                     int inventoriedPlotId = reader.GetInt32(reader.GetOrdinal("inventoried_plot_id"));
-                    //Rebuild Plot
                     //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
                     double area_sq_meter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
                     
@@ -402,16 +401,10 @@ namespace GraslandenDL.Repositories
 
                     int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
 
-                    //Find the species to build the measurement
                     //public Measurement(Species species, string coverage, Plot plot)
-                    for (int i = 0; i < speciesList.Count - 1; i++)
-                    {
-                        if (speciesId == speciesList[i].Id)
-                        {
-                            Measurement measurement = new Measurement(speciesList[i], coverage, plot);
-                            measurementsList.Add(measurement);
-                        }
-                    }
+                    Measurement measurement = new Measurement(speciesList[speciesId], coverage, plot);
+                    measurementsList.Add(measurement);
+
                 }
 
                 return measurementsList;
