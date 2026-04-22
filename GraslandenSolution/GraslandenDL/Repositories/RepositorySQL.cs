@@ -451,7 +451,7 @@ namespace GraslandenDL.Repositories
             string inventoriedPlotDeleteQuery = "DELETE FROM inventoried_plot WHERE inventory_id = @inventoryId";
             string inventoryQuery = "DELETE FROM inventory WHERE id = @inventoryId";
             string messageQuery = "DELETE FROM message WHERE inventory_id = @inventoryId";
-            
+
             List<int> inventoriedPlotIds = new List<int>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -515,10 +515,11 @@ namespace GraslandenDL.Repositories
                                         return true;
                                     }
 
-                                catch
-                                {
-                                    transaction.Rollback();
-                                    return false;
+                                    catch
+                                    {
+                                        transaction.Rollback();
+                                        return false;
+                                    }
                                 }
                             }
                         }
