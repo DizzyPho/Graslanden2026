@@ -37,6 +37,7 @@ namespace GraslandenGUI.Windows
             {
                 CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, campus);
                 CampusInfo[campus] = selectedCampus;
+                DataGrid dataGridPlots = new DataGrid { ItemsSource = selectedCampus.Plots };
                 TabItem tabItem = new TabItem 
                 {
                     Header = campus, Name = campus, Content = new DataGrid 
