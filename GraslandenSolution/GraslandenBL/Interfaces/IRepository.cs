@@ -19,6 +19,6 @@ namespace GraslandenBL.Interfaces
         public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId);
         public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code);
         public void InsertSpecies(Species species);
-        public void DeleteInventory(int inventoryId);
+        public bool DeleteInventory(int inventoryId);
     }
 }

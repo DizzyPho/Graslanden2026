@@ -16,6 +16,11 @@ namespace GraslandenBL.Managers
             _repository = repository;
         }
 
+        public bool DeleteInventory(int inventoryId)
+        {
+            return _repository.DeleteInventory(inventoryId);
+        }
+
         public HashSet<String> GetAllCampuses()
         {
             return _repository.GetAllCampuses();
