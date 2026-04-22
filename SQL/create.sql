@@ -211,3 +211,6 @@ USE [master]
 GO
 ALTER DATABASE [HOGentGraslanden] SET  READ_WRITE 
 GO
+
+INSERT INTO [dbo].[management_type] VALUES ('Intensief'),('Extensief'),('Netheidsboord'),('Schapenweide')
+GO
