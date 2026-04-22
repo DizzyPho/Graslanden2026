@@ -40,5 +40,10 @@ namespace GraslandenBL.Managers
         {
             return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }
+
+        public CampusDTO GetCampus(int inventoryId, string campus)
+        {
+            return _repository.GetCampusDTO(inventoryId, campus);
+        }
     }
 }
