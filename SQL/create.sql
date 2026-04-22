@@ -176,6 +176,17 @@ PRIMARY KEY CLUSTERED
 GO
 SET ANSI_PADDING ON
 GO
+CREATE TABLE message (
+	id int identity(1,1),
+	object_id int,
+	object_type nvarchar(50),
+	inventory_id int not null,
+	description nvarchar(500) not null,
+	isSolved bit DEFAULT 0 not null,
+	messageType nvarchar(50) not null,
+	CONSTRAINT pk_message PRIMARY KEY (id)
+)
+GO
 /****** Object:  Index [index_campus]    Script Date: 21/04/2026 13:52:31 ******/
 CREATE NONCLUSTERED INDEX [index_campus] ON [dbo].[grass_plot]
 (
