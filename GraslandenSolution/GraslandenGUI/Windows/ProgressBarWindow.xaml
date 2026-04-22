@@ -11,7 +11,7 @@
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Text="De inventarisatie wordt geïmporteerd, even geduld." Margin="10" Grid.Row="0"></TextBlock>
+        <TextBlock Name="TextBoxMessage"  Margin="10" Grid.Row="0"></TextBlock>
         <ProgressBar Grid.Row="1" Margin="10" Width="250" Height="15" IsIndeterminate="True"></ProgressBar>
     </Grid>
 </Window>

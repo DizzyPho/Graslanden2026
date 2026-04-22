@@ -30,7 +30,6 @@ namespace GraslandenDL.Repositories
 
                 using (SqlDataReader reader = cmdCampus.ExecuteReader())
                 {
-                    cmdCampus.CommandText = queryCampus;
                     while (reader.Read())
                     {
                         campuses.Add(reader.GetString("campus"));
@@ -58,7 +57,6 @@ namespace GraslandenDL.Repositories
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
 
-                        cmd.CommandText = query;
                         while (reader.Read())
                         {
                             int id = reader.GetInt32(0);
@@ -203,7 +201,7 @@ namespace GraslandenDL.Repositories
                 try
                 {
                     int inventoryId = (int)cmdInventory.ExecuteScalar();
-                    using (SqlDataReader reader = cmdManagementType.ExecuteReader()) 
+                    using (SqlDataReader reader = cmdManagementType.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -276,8 +274,8 @@ namespace GraslandenDL.Repositories
             {
                 cmd.CommandText = query;
                 conn.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader()) 
-                { 
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
 
                     while (reader.Read())
                     {
@@ -302,48 +300,6 @@ namespace GraslandenDL.Repositories
                 // return id 
                 return (int)cmd.ExecuteScalar();
             }
-        }
-        public Dictionary<Plot, string> GetAllGrassPlots(int inventoryID)
-        {
-            Dictionary<Plot, string> grassPlots = new Dictionary<Plot, string>();
-
-            //Join grass_plot, inventoried_plot
-            string queryGrassPlot = "SELECT ip.plot_code, ip.management_type, ip.plot_type, gp.campus,gp.area_sq_meter FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID";
-
-            using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdGrassPlot = new SqlCommand(queryGrassPlot, con))
-            {
-                cmdGrassPlot.CommandText = queryGrassPlot;
-                //Parameterrs
-                cmdGrassPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
-
-                //Open connection
-                con.Open();
-                SqlDataReader reader = cmdGrassPlot.ExecuteReader();
-                while (reader.Read())
-                {
-                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
-                    //Netheidsboord, Schapenweide, Intensief, Extensief
-                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
-                    ManagementType managementTypeEnum = managementType switch
-                    {
-                        "Netheidsboord" => ManagementType.Netheidsboord,
-                        "Schapenweide" => ManagementType.Schapenweide,
-                        "Intensief" => ManagementType.Intensief,
-                        "Extensief" => ManagementType.Extensief,
-                    };
-
-                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
-                    string campus = reader.GetString(reader.GetOrdinal("campus"));
-                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-
-                    Plot plot = new Plot(code, areaSqMeterString, campus, managementTypeEnum, plotTypeCode);
-                    grassPlots.Add(plot, campus);
-                    }
-
-                }
-
-            return grassPlots;
         }
         public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
@@ -416,7 +372,7 @@ namespace GraslandenDL.Repositories
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdMeasurements = new SqlCommand(queryMeasurement, con))
             {
-                cmdMeasurements.CommandText = queryMeasurement;
+
 
                 //Parameters
                 cmdMeasurements.Parameters.AddWithValue("@inventoryID", inventoryID);
@@ -433,7 +389,7 @@ namespace GraslandenDL.Repositories
                     int inventoriedPlotId = reader.GetInt32(reader.GetOrdinal("inventoried_plot_id"));
                     //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
                     double area_sq_meter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-                    
+
                     string campus = reader.GetString(reader.GetOrdinal("campus"));
                     string managementType = reader.GetString(reader.GetOrdinal("management_type"));
                     ManagementType managementTypeEnum = managementType switch
@@ -445,7 +401,7 @@ namespace GraslandenDL.Repositories
                     };
                     string plot_type = reader.GetString(reader.GetOrdinal("plot_type"));
 
-                    Plot plot = new Plot(code,area_sq_meter,campus, managementTypeEnum,plot_type);
+                    Plot plot = new Plot(code, area_sq_meter, campus, managementTypeEnum, plot_type);
 
                     int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
 
@@ -554,6 +510,51 @@ namespace GraslandenDL.Repositories
                 cmd.Parameters.AddWithValue("@nectar_production", species.Nectarvalue != null ? species.Nectarvalue : DBNull.Value);
                 cmd.Parameters.AddWithValue("@biodiversity", species.Biodiversity != null ? species.Biodiversity : DBNull.Value);
                 cmd.ExecuteNonQuery();
+            }
+        }
+        public CampusDTO GetCampusDTO(int inventoryID, string campus)
+        {
+            //public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes
+            List<Plot> plots = new List<Plot>();
+
+            //Join grass_plot, inventoried_plot
+            string queryGetPlots = "SELECT ip.plot_code, gp.area_sq_meter, gp.campus, ip.management_type, ip.plot_type FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID AND gp.campus = @campus";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdCampusDTO = con.CreateCommand())
+            {
+                //Parameters
+                cmdCampusDTO.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdCampusDTO.Parameters.AddWithValue("@campus", campus);
+
+                //Open connection
+                con.Open();
+                cmdCampusDTO.CommandText = queryGetPlots;
+
+                SqlDataReader reader = cmdCampusDTO.ExecuteReader();
+                while (reader.Read())
+                {
+                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
+                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
+                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
+                    string campusValue = reader.GetString(reader.GetOrdinal("campus"));
+                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
+                    ManagementType managementTypeEnum = managementType switch
+                    {
+                        "Netheidsboord" => ManagementType.Netheidsboord,
+                        "Schapenweide" => ManagementType.Schapenweide,
+                        "Intensief" => ManagementType.Intensief,
+                        "Extensief" => ManagementType.Extensief,
+                    };
+
+                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
+                    Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
+                    plots.Add(plot);
+                }
+
+                Dictionary<string, PlotValue> plotTyes = new Dictionary<string, PlotValue>();
+                CampusDTO campusDTO = new CampusDTO();
+                return campusDTO;
             }
         }
     }
