@@ -6,7 +6,7 @@ namespace GraslandenBL.Domain
 {
     public class Inventory
     {
-        public Inventory(DateTime date, string name, List<string> errors)
+        public Inventory(DateTime date, string name, List<string> errors = null)
         {
             Date = date;
             Name = name;

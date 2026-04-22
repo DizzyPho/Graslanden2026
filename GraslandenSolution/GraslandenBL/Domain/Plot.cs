@@ -7,7 +7,7 @@ namespace GraslandenBL.Domain
 {
     public class Plot
     {
-        public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, List<string> errors)
+        public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, List<string> errors = null)
         {
             Code = code;
             AreaSqMeters = areaSqMeters;

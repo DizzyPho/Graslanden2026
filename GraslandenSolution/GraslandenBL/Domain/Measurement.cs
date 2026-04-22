@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GraslandenBL.Domain {
     public class Measurement {
-        public Measurement(Species species, string coverage, Plot plot, List<string> errors)
+        public Measurement(Species species, string coverage, Plot plot, List<string> errors = null)
         {
             Species = species;
             Coverage = coverage;
