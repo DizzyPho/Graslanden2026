@@ -110,7 +110,7 @@ namespace GraslandenGUI
             }
             else
             {
-                // TO DO: add failed message
+                MessageBox.Show("Er is iets foutgelopen, probeer opnieuw a.u.b.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
