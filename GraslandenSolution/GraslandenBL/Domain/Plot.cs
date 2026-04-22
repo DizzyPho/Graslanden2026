@@ -21,5 +21,16 @@ namespace GraslandenBL.Domain
         public string Campus { get; set; }
         public ManagementType ManagementType { get; set; }
         public string PlotType { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Plot plot &&
+                   Code == plot.Code;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Code);
+        }
     }
 }
