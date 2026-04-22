@@ -350,7 +350,7 @@ namespace GraslandenDL.Repositories
         }
         public void InsertMeasurement(Measurement measurement)
         {
-
+        }
         public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code)
         {
             List<Measurement> measurementsList = new List<Measurement>();
