@@ -207,10 +207,12 @@ REFERENCES [dbo].[species] ([id])
 GO
 ALTER TABLE [dbo].[measurement] CHECK CONSTRAINT [fk_species_id]
 GO
+
+INSERT INTO [dbo].[management_type] VALUES ('Intensief'),('Extensief'),('Netheidsboord'),('Schapenweide')
+GO
+
 USE [master]
 GO
 ALTER DATABASE [HOGentGraslanden] SET  READ_WRITE 
 GO
 
-INSERT INTO [dbo].[management_type] VALUES ('Intensief'),('Extensief'),('Netheidsboord'),('Schapenweide')
-GO
