@@ -63,13 +63,13 @@ namespace GraslandenGUI
                     NewInventoryWindow niw = new NewInventoryWindow();
                     niw.ShowDialog();
                     ProgressBarWindow progressBarWindow = new ProgressBarWindow("De inventarisatie wordt geïmporteerd, even geduld.");
-                    progressBarWindow.ShowDialog();
+                    //progressBarWindow.ShowDialog();
                     if(niw.Inventory == null)
                     {
                         return;
                     }
                     Inventories.Add(_importManager.ImportData(fileName, niw.Inventory));
-                    progressBarWindow.Close();
+                    //progressBarWindow.Close();
                     MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }      
@@ -106,7 +106,10 @@ namespace GraslandenGUI
             InventoryDTO selectedItem = (InventoryDTO)ListBoxInventories.SelectedItem;
             if(_manager.DeleteInventory(selectedItem.Id))
             {
+                ProgressBarWindow progressBarWindow = new ProgressBarWindow("Inventarisatie verwijderen...");
+                //progressBarWindow.Show();
                 Inventories.Remove(selectedItem);
+                //progressBarWindow.Close();
             }
             else
             {
