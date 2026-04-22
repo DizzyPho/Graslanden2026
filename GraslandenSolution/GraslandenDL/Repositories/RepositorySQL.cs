@@ -271,7 +271,7 @@ namespace GraslandenDL.Repositories
 
         public List<InventoryDTO> GetInventoryDTOs()
         {
-            const string query = "SELECT date, name FROM inventory";
+            const string query = "SELECT id, date, name FROM inventory";
             List<InventoryDTO> inventories = new List<InventoryDTO>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -284,7 +284,7 @@ namespace GraslandenDL.Repositories
 
                     while (reader.Read())
                     {
-                        inventories.Add(new InventoryDTO(reader.GetDateTime(0), reader.GetString(1)));
+                        inventories.Add(new InventoryDTO(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2)));
                     }
                 }
             }
