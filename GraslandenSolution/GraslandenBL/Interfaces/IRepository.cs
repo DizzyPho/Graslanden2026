@@ -17,5 +17,6 @@ namespace GraslandenBL.Interfaces
         public int ImportEmptyInventory(InventoryDTO inventoryDTO);
 
         public void InsertMeasurement(Measurement measurement);
+        public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code);
     }
 }
