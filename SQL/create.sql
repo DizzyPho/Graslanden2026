@@ -149,6 +149,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[measurement](
+	[id] [int] IDENTITY(1,1) NOT NULL,
 	[inventoried_plot_id] [int] NOT NULL,
 	[species_id] [int] NOT NULL,
 	[coverage] [nvarchar](50) NOT NULL
