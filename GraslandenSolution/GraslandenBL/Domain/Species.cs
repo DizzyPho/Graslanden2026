@@ -30,5 +30,18 @@ namespace GraslandenBL.Domain {
 
         public Species() { }
 
+        public static Rating ParseRating(string ratingString)
+        {
+            Rating rating = ratingString switch
+            {
+                "+++" =>  Enums.Rating.Begeleidend,
+                "++" => Enums.Rating.Begeleidend,
+                "+" => Enums.Rating.Algemeen,
+                "0" => Enums.Rating.Ruderaal,
+                "-" => Enums.Rating.Invasief,
+                _ => throw new ArgumentException()
+            };
+            return rating;
+        }
     }
 }
