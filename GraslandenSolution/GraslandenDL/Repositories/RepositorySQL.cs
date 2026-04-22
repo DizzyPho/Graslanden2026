@@ -345,8 +345,56 @@ namespace GraslandenDL.Repositories
 
             return grassPlots;
         }
-        public void InsertMeasurement(Measurement measurement)
+        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
+            const string queryInventoriedPlot = "select id from inventoried_plot where inventory_id = @inventory_id and plot_code = @plot_code";
+            const string querySpecies = "select id from species where name = @name";
+            const string queryMeasurement = "insert into measurement (inventoried_plot_id, species_id, coverage) VALUES (@inventoried_plot_id,@species_id,@coverage)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInventoriedPlot = conn.CreateCommand())
+            using (SqlCommand cmdSpecies = conn.CreateCommand())
+            using (SqlCommand cmdMeasurement = conn.CreateCommand())
+            {
+                cmdInventoriedPlot.CommandText = queryInventoriedPlot;
+                cmdSpecies.CommandText = querySpecies;
+                cmdMeasurement.CommandText = queryMeasurement;
+
+                cmdInventoriedPlot.Parameters.AddWithValue("@inventory_id", inventoryId);
+                cmdInventoriedPlot.Parameters.AddWithValue("@plot_code", plotCode);
+
+                cmdSpecies.Parameters.AddWithValue("@name", species);
+
+                conn.Open();
+                SqlTransaction transaction = conn.BeginTransaction();
+                cmdInventoriedPlot.Transaction = transaction;
+                cmdSpecies.Transaction = transaction;
+                cmdMeasurement.Transaction = transaction;
+                try
+                {
+                    int inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
+                    int? speciesId = (int?)cmdSpecies.ExecuteScalar();
+
+                    if (speciesId != null)
+                    {
+                        cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
+                        cmdMeasurement.Parameters.AddWithValue("@species_id", speciesId);
+                        cmdMeasurement.Parameters.AddWithValue("@coverage", coverage);
+                        cmdMeasurement.ExecuteNonQuery();
+                        transaction.Commit();
+                        return true;
+                    }
+
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
         }
         public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code)
         {
@@ -486,6 +534,26 @@ namespace GraslandenDL.Repositories
                         }
                     }
                 }
+            }
+        }
+
+        public void InsertSpecies(Species species)
+        {
+            const string query = "insert into species(name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance)" +
+                                 "VALUES(@name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversity)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", species.Name);
+                cmd.Parameters.AddWithValue("@rating", species.Rating);
+                cmd.Parameters.AddWithValue("@moisture", species.Moisture);
+                cmd.Parameters.AddWithValue("@ph", species.Ph);
+                cmd.Parameters.AddWithValue("@nitrogen", species.Nitrogen);
+                cmd.Parameters.AddWithValue("@nectar_production", species.Nectarvalue != null ? species.Nectarvalue : DBNull.Value);
+                cmd.Parameters.AddWithValue("@biodiversity", species.Biodiversity != null ? species.Biodiversity : DBNull.Value);
+                cmd.ExecuteNonQuery();
             }
         }
     }
