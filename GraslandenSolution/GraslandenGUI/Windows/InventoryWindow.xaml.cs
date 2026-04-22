@@ -1,9 +1,11 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Enums;
 using GraslandenBL.Managers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -23,6 +25,7 @@ namespace GraslandenGUI.Windows
     public partial class InventoryWindow : Window
     {
         Manager _manager;
+        TabItem _selectedTabItem;
         private Dictionary<String, CampusDTO> CampusInfo { get; set; }
         private InventoryDTO CurrentInventory { get; init; }
         public InventoryWindow(InventoryDTO inventoryDTO, Manager manager)
@@ -40,18 +43,16 @@ namespace GraslandenGUI.Windows
                 DataGrid dataGridPlots = new DataGrid { ItemsSource = selectedCampus.Plots };
                 TabItem tabItem = new TabItem 
                 {
-                    Header = campus, Name = campus, Content = new DataGrid 
-                    { 
-                        ItemsSource = selectedCampus.Plots
-                    } 
+                    Header = campus, Name = campus, Content = dataGridPlots
                 };
                 TabControlCampus.Items.Add(tabItem);
             }
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)
-        {
-
+        { 
+            PlotWindow pw = new PlotWindow(_manager, (Plot)((DataGrid)_selectedTabItem.Content).SelectedItem, CurrentInventory.Id);
+            pw.Show();
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
@@ -61,9 +62,10 @@ namespace GraslandenGUI.Windows
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(e.Source == TabControlCampus)
+            _selectedTabItem = ((TabItem)TabControlCampus.SelectedItem);
+            if (e.Source == TabControlCampus)
             {
-                FillCampusInfo(CampusInfo[((TabItem)TabControlCampus.SelectedItem).Name]);
+                FillCampusInfo(CampusInfo[_selectedTabItem.Name]);
             }
         }
 
