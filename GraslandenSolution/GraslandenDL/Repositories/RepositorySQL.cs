@@ -227,6 +227,7 @@ namespace GraslandenDL.Repositories
                             managementTypeList.Add(reader.GetString(1), reader.GetInt32(0));
                         }
                     }
+
                     foreach (Species species in inventory.GetSpecies())
                     {
                         cmdSpecies.Parameters["@name"].Value = species.Name;
@@ -242,15 +243,15 @@ namespace GraslandenDL.Repositories
                             cmdInsertSpecies.Parameters["@biodiversity"].Value = species.Biodiversity is not null ? species.Biodiversity : DBNull.Value;
 
                             speciesId = (int?)cmdInsertSpecies.ExecuteScalar();
-
-                            foreach (KeyValuePair<string, MessageType> message in species.Errors)
-                            {
-                                cmdMessage.Parameters["@objectId"].Value = (int)speciesId;
-                                cmdMessage.Parameters["@objectType"].Value = nameof(species);
-                                cmdMessage.Parameters["@description"].Value = message.Key;
-                                cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
-                                cmdMessage.ExecuteNonQuery();
-                            }
+                        }
+                        
+                        foreach (KeyValuePair<string, MessageType> message in species.Errors)
+                        {
+                            cmdMessage.Parameters["@objectId"].Value = (int)speciesId;
+                            cmdMessage.Parameters["@objectType"].Value = nameof(species);
+                            cmdMessage.Parameters["@description"].Value = message.Key;
+                            cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.ExecuteNonQuery();
                         }
                         speciesList.Add(species, (int)speciesId);
                     }
@@ -287,9 +288,8 @@ namespace GraslandenDL.Repositories
                         cmdMeasurement.Parameters["@inventoried_plot_id"].Value = inventoriedPlotIds[measurement.Plot.Code];
                         cmdMeasurement.Parameters["@species_id"].Value = speciesList[measurement.Species];
                         cmdMeasurement.Parameters["@coverage"].Value = measurement.Coverage;
-                        int? measurementId = (int?)cmdMeasurement.ExecuteScalar();
+                        int measurementId = (int)cmdMeasurement.ExecuteScalar();
                         
-                        if(measurementId != null)
                         foreach (KeyValuePair<string, MessageType> message in measurement.Errors)
                         {
                             cmdMessage.Parameters["@objectId"].Value = measurementId;
@@ -469,7 +469,8 @@ namespace GraslandenDL.Repositories
             string measurementQuery = "DELETE FROM measurement WHERE inventoried_plot_id = @inventoriedPlotId";
             string inventoriedPlotDeleteQuery = "DELETE FROM inventoried_plot WHERE inventory_id = @inventoryId";
             string inventoryQuery = "DELETE FROM inventory WHERE id = @inventoryId";
-
+            string messageQuery = "DELETE FROM message WHERE inventory_id = @inventoryId";
+            
             List<int> inventoriedPlotIds = new List<int>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -482,56 +483,62 @@ namespace GraslandenDL.Repositories
                         {
                             using (SqlCommand inventoryCommand = connection.CreateCommand())
                             {
-                                // CommandText
-                                inventoriedPlotSelectCommand.CommandText = inventoriedPlotSelectQuery;
-                                measurementCommand.CommandText = measurementQuery;
-                                inventoriedPlotDeleteCommand.CommandText = inventoriedPlotDeleteQuery;
-                                inventoryCommand.CommandText = inventoryQuery;
-
-
-                                // Parameters
-                                inventoriedPlotSelectCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
-                                measurementCommand.Parameters.Add(new SqlParameter("@inventoriedPlotId", SqlDbType.Int));
-                                inventoriedPlotDeleteCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
-                                inventoryCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
-
-                                connection.Open();
-
-                                // Transaction
-                                SqlTransaction transaction = connection.BeginTransaction();
-                                inventoriedPlotSelectCommand.Transaction = transaction;
-                                measurementCommand.Transaction = transaction;
-                                inventoriedPlotDeleteCommand.Transaction = transaction;
-                                inventoryCommand.Transaction = transaction;
-
-                                try
+                                using (SqlCommand messageCommand = connection.CreateCommand())
                                 {
-                                    // Get all inventoried_plot_ids of inventory
-                                    SqlDataReader reader = inventoriedPlotSelectCommand.ExecuteReader();
-                                    while (reader.Read())
+                                    // CommandText
+                                    inventoriedPlotSelectCommand.CommandText = inventoriedPlotSelectQuery;
+                                    measurementCommand.CommandText = measurementQuery;
+                                    inventoriedPlotDeleteCommand.CommandText = inventoriedPlotDeleteQuery;
+                                    inventoryCommand.CommandText = inventoryQuery;
+                                    messageCommand.CommandText = messageQuery;
+
+                                    // Parameters
+                                    inventoriedPlotSelectCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+                                    measurementCommand.Parameters.Add(new SqlParameter("@inventoriedPlotId", SqlDbType.Int));
+                                    inventoriedPlotDeleteCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+                                    inventoryCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+                                    messageCommand.Parameters.AddWithValue("@inventoryId", inventoryId);
+
+                                    connection.Open();
+
+                                    // Transaction
+                                    SqlTransaction transaction = connection.BeginTransaction();
+                                    inventoriedPlotSelectCommand.Transaction = transaction;
+                                    measurementCommand.Transaction = transaction;
+                                    inventoriedPlotDeleteCommand.Transaction = transaction;
+                                    inventoryCommand.Transaction = transaction;
+                                    messageCommand.Transaction = transaction;
+
+                                    try
                                     {
-                                        inventoriedPlotIds.Add(reader.GetInt32(reader.GetOrdinal("id")));
-                                    }
-                                    reader.Close();
+                                        // Get all inventoried_plot_ids of inventory
+                                        SqlDataReader reader = inventoriedPlotSelectCommand.ExecuteReader();
+                                        while (reader.Read())
+                                        {
+                                            inventoriedPlotIds.Add(reader.GetInt32(reader.GetOrdinal("id")));
+                                        }
+                                        reader.Close();
 
-                                    foreach (int id in inventoriedPlotIds)
+                                        foreach (int id in inventoriedPlotIds)
+                                        {
+                                            measurementCommand.Parameters["@inventoriedPlotId"].Value = id;
+
+                                            measurementCommand.ExecuteNonQuery();
+                                        }
+
+                                        inventoriedPlotDeleteCommand.ExecuteNonQuery();
+                                        inventoryCommand.ExecuteNonQuery();
+                                        messageCommand.ExecuteNonQuery();
+
+                                        transaction.Commit();
+                                        return true;
+                                    }
+
+                                    catch (Exception ex)
                                     {
-                                        measurementCommand.Parameters["@inventoriedPlotId"].Value = id;
-
-                                        measurementCommand.ExecuteNonQuery();
+                                        transaction.Rollback();
+                                        return false;
                                     }
-
-                                    inventoriedPlotDeleteCommand.ExecuteNonQuery();
-                                    inventoryCommand.ExecuteNonQuery();
-
-                                    transaction.Commit();
-                                    return true;
-                                }
-
-                                catch (Exception ex)
-                                {
-                                    transaction.Rollback();
-                                    return false;
                                 }
                             }
                         }
