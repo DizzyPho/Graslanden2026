@@ -5,18 +5,20 @@ using System.Text;
 
 namespace GraslandenBL.Domain {
     public class Measurement {
-        public Measurement(Species species, string coverage, Plot plot, List<string> errors = null)
+        public Measurement(Species species, string coverage, Plot plot, Dictionary<string, MessageType> errors = null)
         {
             Species = species;
             Coverage = coverage;
             Plot = plot;
-            Errors = errors;
+            if (errors != null)
+                Errors = errors;
+            else Errors = new Dictionary<string, MessageType>();
         }
 
         public Species Species { get; set; }
         public string Coverage { get; set; }
         public Plot Plot { get; set; }
-        public List<string> Errors { get; set; }
+        public Dictionary<string, MessageType> Errors { get; set; }
 
     }
 }
