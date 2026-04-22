@@ -22,7 +22,7 @@ namespace GraslandenGUI.Windows
     public partial class InventoryWindow : Window
     {
         Manager _manager;
-        ObservableCollection<Plot> Plots { get; set; }
+        Dictionary<String, ObservableCollection<Plot>> Plots;
         private InventoryDTO CurrentInventory { get; init; }
         public InventoryWindow(InventoryDTO inventoryDTO, Manager manager)
         {
@@ -33,8 +33,16 @@ namespace GraslandenGUI.Windows
             HashSet<String> campuses = _manager.GetAllCampuses();
             foreach (String campus in campuses)
             {
-                TabItem tabItem = new TabItem { Header = campus , Name = campus };
+                CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, (campus));
+                TabItem tabItem = new TabItem 
+                {
+                    Header = campus, Name = campus, Content = new DataGrid 
+                    { 
+                        ItemsSource = selectedCampus.Plots
+                    } 
+                };
                 TabControlCampus.Items.Add(tabItem);
+
             }
         }
 
@@ -46,12 +54,6 @@ namespace GraslandenGUI.Windows
         private void ButtonBack(object sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, ((TabItem)TabControlCampus.SelectedItem).Name);
-            Plots = new ObservableCollection<Plot>(selectedCampus.Plots);
         }
     }
 }

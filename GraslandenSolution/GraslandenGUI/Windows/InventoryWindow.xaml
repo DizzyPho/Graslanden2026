@@ -20,7 +20,7 @@
         <TextBlock Text="" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Name="TextBlockTitle"></TextBlock>
         <Grid Grid.Row="1" Margin="10" Grid.ColumnSpan="2">
         </Grid>
-        <TabControl Grid.Row="2" Margin="10" Name="TabControlCampus" Grid.ColumnSpan="2" SelectionChanged="TabControl_SelectionChanged">
+        <TabControl Grid.Row="2" Margin="10" Name="TabControlCampus" Grid.ColumnSpan="2">
         </TabControl>
         <Button Grid.Row="3" Grid.Column="0" Content="Terug" Margin="10" Click="ButtonBack"></Button>
         <Button Grid.Row="3" Grid.Column="1" Content="Bekijk Grasland" Margin="10" Click="ButtonInspectPlot"></Button>
