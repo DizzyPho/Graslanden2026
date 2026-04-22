@@ -129,7 +129,7 @@ namespace GraslandenDL.Repositories
         }
 
 
-        public void ImportInventory(Inventory inventory)
+        public int ImportInventory(Inventory inventory)
         {
             string queryInventory = "INSERT INTO inventory(date,name) output INSERTED.ID VALUES(@date,@name)";
             const string querySpecies = "select id from species where name = @name";
@@ -256,6 +256,7 @@ namespace GraslandenDL.Repositories
                         cmdMeasurement.ExecuteNonQuery();
                     }
                     transaction.Commit();
+                    return inventoryId;
                 }
                 catch (Exception ex)
                 {

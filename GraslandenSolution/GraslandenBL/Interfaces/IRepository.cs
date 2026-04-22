@@ -5,7 +5,7 @@ namespace GraslandenBL.Interfaces
 {
     public interface IRepository
     {
-        public void ImportInventory(Inventory inventory);
+        public int ImportInventory(Inventory inventory);
 
         public List<Species> GetAllSpecies();
 
