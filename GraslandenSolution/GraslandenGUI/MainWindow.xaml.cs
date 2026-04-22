@@ -62,7 +62,6 @@ namespace GraslandenGUI
                 {
                     ProgressBarWindow progressBarWindow = new ProgressBarWindow();
                     progressBarWindow.Show();
-                    _importManager.ImportData(fileName, DateTime.Now , "test");
                     Inventories.Add(_importManager.ImportData(fileName, DateTime.Now, "test"));
                     progressBarWindow.Close();
                     MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
