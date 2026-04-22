@@ -42,7 +42,6 @@ namespace GraslandenGUI.Windows
                     } 
                 };
                 TabControlCampus.Items.Add(tabItem);
-
             }
         }
 
