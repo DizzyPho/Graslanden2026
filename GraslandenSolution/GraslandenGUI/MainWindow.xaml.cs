@@ -45,8 +45,6 @@ namespace GraslandenGUI
             _manager = new Manager(repository);
             Inventories = new ObservableCollection<InventoryDTO>(_manager.GetInventoryDTOs());
             ListBoxInventories.ItemsSource = Inventories;
-
-            //_importManager.ReadFile();
         }
 
         private void ImportNew_Click(object sender, RoutedEventArgs e)

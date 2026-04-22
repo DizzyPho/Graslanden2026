@@ -462,5 +462,24 @@ namespace GraslandenDL.Repositories
             }
         }
 
+        public void DeleteInventory(int inventoryId)
+        {
+            string inventoriedPlotQuery = "SELECT id FROM inventoried_plot WHERE inventory_id = @inventoryId";
+
+            List<int> inventoriedPlotIds = new List<int>();
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand inventoriedPlotCommand = connection.CreateCommand())
+                {
+                    SqlDataReader reader = inventoriedPlotCommand.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        inventoriedPlotIds.Add((int)reader["id"]);
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
     }
 }
