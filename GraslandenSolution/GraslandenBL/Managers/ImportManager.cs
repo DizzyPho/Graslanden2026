@@ -27,7 +27,7 @@ namespace GraslandenBL.Managers
 
             if(messages.Count > 0)
             {
-                // _repository.ImportMessages(messages, inventoryId);
+                _repository.InsertMessages(inventoryId, messages);
             }
 
             return inventoryDTO;
