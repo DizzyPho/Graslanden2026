@@ -9,8 +9,6 @@ namespace GraslandenBL.Interfaces
 
         public List<Species> GetAllSpecies();
 
-        public Dictionary<Plot,string> GetAllGrassPlots(int inventoryID);
-
         public HashSet<string> GetAllCampuses();
 
         public List<InventoryDTO> GetInventoryDTOs();
@@ -20,5 +18,7 @@ namespace GraslandenBL.Interfaces
         public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code);
         public void InsertSpecies(Species species);
         public bool DeleteInventory(int inventoryId);
+
+        public CampusDTO GetCampusDTO(int inventoryID,string campus);
     }
 }

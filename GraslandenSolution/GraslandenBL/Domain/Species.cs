@@ -13,8 +13,8 @@ namespace GraslandenBL.Domain {
         public int? Nectarvalue { get; set; }
         public int? Biodiversity { get; set; }
         public Rating? Rating { get; set; }
-
-        public Species(int? id, string name, int? moisture, int? ph, int? nitrogen, int? nectarvalue, int? biodiversity, Rating? rating) {
+        public Dictionary<string, MessageType> Errors { get; set; }
+        public Species(int? id, string name, int? moisture, int? ph, int? nitrogen, int? nectarvalue, int? biodiversity, Rating? rating, Dictionary<string, MessageType> errors = null) {
             Id = id;
             Name = name;
             Moisture = moisture;
@@ -23,6 +23,9 @@ namespace GraslandenBL.Domain {
             Nectarvalue = nectarvalue;
             Biodiversity = biodiversity;
             Rating = rating;
+            if (errors != null)
+                Errors = errors;
+            else Errors = new Dictionary<string, MessageType>();
         }
 
         public Species() { }

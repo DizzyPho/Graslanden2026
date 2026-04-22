@@ -62,14 +62,14 @@ namespace GraslandenGUI
                 {
                     NewInventoryWindow niw = new NewInventoryWindow();
                     niw.ShowDialog();
-                    ProgressBarWindow progressBarWindow = new ProgressBarWindow("De inventarisatie wordt geïmporteerd, even geduld.");
-                    //progressBarWindow.ShowDialog();
+                    // ProgressBarWindow progressBarWindow = new ProgressBarWindow();
+                    // progressBarWindow.ShowDialog();
                     if(niw.Inventory == null)
                     {
                         return;
                     }
                     Inventories.Add(_importManager.ImportData(fileName, niw.Inventory));
-                    //progressBarWindow.Close();
+                    // progressBarWindow.Close();
                     MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }      

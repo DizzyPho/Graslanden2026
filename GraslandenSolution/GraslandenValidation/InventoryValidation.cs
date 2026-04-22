@@ -10,7 +10,7 @@ namespace GraslandenValidation
         {
             errors = new List<string>();
             if (date > DateTime.Now) errors.Add("Datum mag niet in de toekomst zijn.");
-            if (String.IsNullOrEmpty(name)) errors.Add("Naam mag niet leeg zijn.");
+            if (String.IsNullOrWhiteSpace(name)) errors.Add("Naam mag niet leeg zijn.");
 
             return errors.Count == 0;
         }

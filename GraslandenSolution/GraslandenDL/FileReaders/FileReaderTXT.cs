@@ -12,19 +12,17 @@ namespace GraslandenDL.FileReaders
     {
         private string _indicatorValuesPath;
 
-        public List<string> ErrorMessages { get; private set; } = new List<string>();
-
-        public HashSet<string> Remarks { get; private set; } = new HashSet<string>();
 
         public FileReaderTXT(string indicatorValuesPath)
         {
             _indicatorValuesPath = indicatorValuesPath;
         }
         
-        public List<Measurement> ReadFile(string inventoryPath)
+        public List<Measurement> ReadFile(string inventoryPath, out Dictionary<string, MessageType> messages)
         {
             List<Measurement> results = new List<Measurement>();
             Dictionary<string, Species> tylerSpeciesList = new Dictionary<string, Species>();
+            messages = new Dictionary<string, MessageType>();
 
             #region TylerDatabase
             using (StreamReader streamReader = new StreamReader(_indicatorValuesPath))
@@ -45,19 +43,13 @@ namespace GraslandenDL.FileReaders
                                                     .AddNitrogen(nitrogenString: lineSections[17])
                                                     .AddNectarValue(nectarValueString: lineSections[9])
                                                     .AddBiodiversity(biodiversityString: lineSections[8]);
-                    SpeciesResult speciesResult = speciesBuilder.Build();
+                    Species species = speciesBuilder.Build();
 
                     // Object is only null if name is empty/null
-                    if (speciesResult.Object != null)
+                    if (species != null)
                     {
-                        tylerSpeciesList.Add(key: speciesResult.Object.Name,
-                                                value: speciesResult.Object);
-                    }
-
-                    // Collect every error location & message in a collective list
-                    foreach(string exception in speciesResult.Errors)
-                    {
-                        ErrorMessages.Add($"TYLER{currentLine} | {exception}");
+                        tylerSpeciesList.Add(key: species.Name,
+                                                value: species);
                     }
 
                     currentLine++;
@@ -187,7 +179,7 @@ namespace GraslandenDL.FileReaders
                                         // Collect every error location & message in a collective list
                                         foreach (string error in plotErrors)
                                         {
-                                            ErrorMessages.Add($"$INVENTORY{currentLine} | {error}");
+                                            messages.Add($"$INVENTORY{currentLine} | {error}", MessageType.Error);
                                         }
                                     }
                                 }
@@ -216,23 +208,20 @@ namespace GraslandenDL.FileReaders
                                             .AddNitrogen(lineSections[i + 4])
                                             .AddRating(lineSections[i + 5]);
 
-                                        SpeciesResult speciesResult = speciesBuilder.Build();
-
-                                        // Collect every error location & message in a collective list
-                                        foreach (string exception in speciesResult.Errors)
-                                        {
-                                            ErrorMessages.Add($"INVENTORY{currentLine} | {exception}");
-                                        }
+                                        Species species = speciesBuilder.Build();
 
                                         // Is the data valid? If false, return error messages
                                         if (MeasurementValidation.Validate(lineSections[i + 1], out List<string> measurementErrors))
                                         {
-                                            results.Add(new Measurement(speciesResult.Object, lineSections[i + 1], currentPlot));
-                                            allSpeciesNames.Add(speciesResult.Object.Name);
+                                            results.Add(new Measurement(species, lineSections[i + 1], currentPlot));
+                                            allSpeciesNames.Add(species.Name);
                                         }
                                         else
                                         {
-                                            ErrorMessages.AddRange(measurementErrors);
+                                            foreach(string error in measurementErrors)
+                                            {
+                                                messages.Add($"$INVENTORY{currentLine} | {error}", MessageType.Error);
+                                            }
                                         }
 
                                         // Add and increment species count of plot
@@ -278,9 +267,9 @@ namespace GraslandenDL.FileReaders
                     if (distance < 5 && distance > 1)
                     {
                         // Remarks need to be unique
-                        if (!Remarks.Contains($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                        if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
                         {
-                            Remarks.Add($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?");
+                            messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
                         }
                     }
                 }
@@ -303,7 +292,7 @@ namespace GraslandenDL.FileReaders
                     }
                     else
                     {
-                        Remarks.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt; inventarisatiewaarde werd gebruikt.");
+                        inventoryMeasurement.Errors.TryAdd($"{tylerSpeciesName} | Vochtgehalte ontbreekt; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
                     }
 
                     if (tylerSpecies.Ph != null)
@@ -312,7 +301,7 @@ namespace GraslandenDL.FileReaders
                     }
                     else
                     {
-                        Remarks.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt; inventarisatiewaarde werd gebruikt.");
+                        inventoryMeasurement.Errors.TryAdd($"{tylerSpeciesName} | Zuurtegraad ontbreekt; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
                     }
 
                     if (tylerSpecies.Nitrogen != null)
@@ -321,18 +310,21 @@ namespace GraslandenDL.FileReaders
                     }
                     else
                     {
-                        Remarks.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt; inventarisatiewaarde werd gebruikt.");
+                        inventoryMeasurement.Errors.TryAdd($"{tylerSpeciesName} | Stikstofgehalte ontbreekt; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
                     }
 
                     // These aren't included in inventory file
                     if (tylerSpecies.Nectarvalue != null) inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
                     if (tylerSpecies.Biodiversity != null) inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
-
+                    if(inventoryMeasurement.Errors != null && inventoryMeasurement.Errors.Count > 0)
+                    {
+                        Console.WriteLine();
+                    }
                 }
                 else
                 {
                     // If the species was not found in the Tyler database, we use the inventory values and log the remark.
-                    Remarks.Add($"Naam: {inventoryMeasurement.Species.Name} niet gevonden in Tylerdatabank. Inventarisatiewaarden werden gebruikt.");
+                    messages.TryAdd($"Naam: {inventoryMeasurement.Species.Name} niet gevonden in Tylerdatabank. Inventarisatiewaarden werden gebruikt.", MessageType.Remark);
                 }
             }
             #endregion

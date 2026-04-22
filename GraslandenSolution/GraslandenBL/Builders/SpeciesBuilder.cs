@@ -7,13 +7,13 @@ namespace GraslandenBL.Builders
     public class SpeciesBuilder
     {
         private Species _species;
-        private List<string> _errors;
+        private Dictionary<string, MessageType> _errors;
 
         public SpeciesBuilder(string name)
         {
-            _errors = new List<string>();
+            _errors = new Dictionary<string, MessageType>();
             _species = new Species();
-            if (string.IsNullOrEmpty(name)) _errors.Add($"Naam mag niet leeg zijn.");
+            if (string.IsNullOrWhiteSpace(name)) _errors.Add($"Naam mag niet leeg zijn.", MessageType.Error);
             else _species.Name = name;
         }
 
@@ -23,12 +23,12 @@ namespace GraslandenBL.Builders
 
             try
             {
-                if (!string.IsNullOrEmpty(moistureString)) _species.Moisture = int.Parse(moistureString);
-                if (moisture < 0) _errors.Add($"{_species.Name} | Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.");
+                if (!string.IsNullOrWhiteSpace(moistureString)) _species.Moisture = int.Parse(moistureString);
+                if (moisture < 0) _errors.Add($"{_species.Name} | Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Vochtgehalte: '{moistureString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Vochtgehalte: '{moistureString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
@@ -39,12 +39,12 @@ namespace GraslandenBL.Builders
 
             try
             {
-                if (!string.IsNullOrEmpty(phString)) _species.Ph = int.Parse(phString);
-                if (ph < 0) _errors.Add($"{_species.Name} | Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.");
+                if (!string.IsNullOrWhiteSpace(phString)) _species.Ph = int.Parse(phString);
+                if (ph < 0) _errors.Add($"{_species.Name} | Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Zuurtegraad: '{phString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Zuurtegraad: '{phString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
@@ -55,12 +55,12 @@ namespace GraslandenBL.Builders
 
             try
             {
-                if (!string.IsNullOrEmpty(nitrogenString)) _species.Nitrogen = int.Parse(nitrogenString);
-                if (nitrogen < 0) _errors.Add($"{_species.Name} | Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.");
+                if (!string.IsNullOrWhiteSpace(nitrogenString)) _species.Nitrogen = int.Parse(nitrogenString);
+                if (nitrogen < 0) _errors.Add($"{_species.Name} | Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Stikstofgehalte: '{nitrogenString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Stikstofgehalte: '{nitrogenString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
@@ -71,12 +71,12 @@ namespace GraslandenBL.Builders
 
             try
             {
-                if (!string.IsNullOrEmpty(nectarValueString)) _species.Nectarvalue = int.Parse(nectarValueString);
-                if (nectarValue < 0) _errors.Add($"{_species.Name} | Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.");
+                if (!string.IsNullOrWhiteSpace(nectarValueString)) _species.Nectarvalue = int.Parse(nectarValueString);
+                if (nectarValue < 0) _errors.Add($"{_species.Name} | Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Nectarwaarde: '{nectarValueString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Nectarwaarde: '{nectarValueString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
@@ -87,12 +87,12 @@ namespace GraslandenBL.Builders
 
             try
             {
-                if (!string.IsNullOrEmpty(biodiversityString)) _species.Biodiversity = int.Parse(biodiversityString);
-                if (biodiversity < 0) _errors.Add($"{_species.Name} | Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.");
+                if (!string.IsNullOrWhiteSpace(biodiversityString)) _species.Biodiversity = int.Parse(biodiversityString);
+                if (biodiversity < 0) _errors.Add($"{_species.Name} | Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Biodiversiteit: '{biodiversityString}' moet een getal zijn.");
+                _errors.Add($"{_species.Name} | Biodiversiteit: '{biodiversityString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
@@ -113,15 +113,19 @@ namespace GraslandenBL.Builders
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Rating: '{ratingString}' is ongeldig.");
+                _errors.Add($"{_species.Name} | Rating: '{ratingString}' is ongeldig.", MessageType.Error);
             }
             return this;
         }
 
-        public SpeciesResult Build()
+        public Species Build()
         {
-            if (!string.IsNullOrEmpty(_species.Name)) return new SpeciesResult(_species, _errors);
-            else return new SpeciesResult(null, _errors);
+            if (!string.IsNullOrWhiteSpace(_species.Name))
+            {
+                _species.Errors = _errors;
+                return _species;
+            }
+            else return null;
         }
     }
 }
