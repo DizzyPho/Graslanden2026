@@ -2,6 +2,7 @@
 using GraslandenBL.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace GraslandenBL.Managers
@@ -28,6 +29,11 @@ namespace GraslandenBL.Managers
         public int ImportEmptyInventory(InventoryDTO inventoryDTO)
         {
             return _repository.ImportEmptyInventory(inventoryDTO);
+        }
+        // returns false if speciesName not found
+        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
+        {
+            return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }
     }
 }
