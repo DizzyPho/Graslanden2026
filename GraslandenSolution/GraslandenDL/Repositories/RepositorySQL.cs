@@ -355,66 +355,35 @@ namespace GraslandenDL.Repositories
                 }
             }
         }
-        public List<Measurement> GetMeasurementsForPlot(int inventoryID, string code)
+        public List<MeasurementDTO> GetMeasurementsDTOForPlot(int inventoryID, string code)
         {
-            List<Measurement> measurementsList = new List<Measurement>();
+            List<MeasurementDTO> measurementDTOList = new List<MeasurementDTO>();
 
-            //Get all species
-            List<Species> speciesList = GetAllSpecies();
-            speciesList = GetAllSpecies();
-
-            //Join inventoried_plot on measurement, join grass_plot, management_type on inventoried_plot
-            string queryMeasurement = "SELECT m.coverage, m.species_id, m.inventoried_plot_id, mt.type, ip.plot_type, gp.campus, gp.area_sq_meter" +
-                "FROM measurement m " +
-                "JOIN inventoried_plot ip ON m.inventoried_plot_id = ip.id " +
-                "JOIN grass_plot gp ON gp.code = ip.plot_code " +
-                "JOIN management_type mt ON mt.id = ip.management_type JOIN species s ON s.id = m.id" +
+            string queryMeasurement = "SELECT m.species_id, m.coverage FROM measurement m " +
                 //Select only those where inventory_id = @inventoryID AND plot_code = @code
                 "WHERE ip.inventory_id = @inventoryID AND ip.plot_code =@code";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdMeasurements = new SqlCommand(queryMeasurement, con))
+            using (SqlCommand cmdMeasurementDTO = new SqlCommand(queryMeasurement, con))
             {
-
-
                 //Parameters
-                cmdMeasurements.Parameters.AddWithValue("@inventoryID", inventoryID);
-                cmdMeasurements.Parameters.AddWithValue("@code", code);
+                cmdMeasurementDTO.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdMeasurementDTO.Parameters.AddWithValue("@code", code);
 
-                //Open conection
+                //Open conection 
                 con.Open();
-                SqlDataReader reader = cmdMeasurements.ExecuteReader();
+                SqlDataReader reader = cmdMeasurementDTO.ExecuteReader();
+                //read!!
                 while (reader.Read())
                 {
-
+                    int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
                     string coverage = reader.GetString(reader.GetOrdinal("coverage"));
 
-                    int inventoriedPlotId = reader.GetInt32(reader.GetOrdinal("inventoried_plot_id"));
-                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
-                    double area_sq_meter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-
-                    string campus = reader.GetString(reader.GetOrdinal("campus"));
-                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
-                    ManagementType managementTypeEnum = managementType switch
-                    {
-                        "Netheidsboord" => ManagementType.Netheidsboord,
-                        "Schapenweide" => ManagementType.Schapenweide,
-                        "Intensief" => ManagementType.Intensief,
-                        "Extensief" => ManagementType.Extensief,
-                    };
-                    string plot_type = reader.GetString(reader.GetOrdinal("plot_type"));
-
-                    Plot plot = new Plot(code, area_sq_meter, campus, managementTypeEnum, plot_type);
-
-                    int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
-
-                    //public Measurement(Species species, string coverage, Plot plot)
-                    Measurement measurement = new Measurement(speciesList[speciesId], coverage, plot);
-                    measurementsList.Add(measurement);
-
+                    //public MeasurementDTO(int speciesid, string coverage)
+                    MeasurementDTO measurementDTO = new MeasurementDTO(speciesId, coverage);
+                    measurementDTOList.Add(measurementDTO);
                 }
-
-                return measurementsList;
+                return measurementDTOList;
             }
         }
 
