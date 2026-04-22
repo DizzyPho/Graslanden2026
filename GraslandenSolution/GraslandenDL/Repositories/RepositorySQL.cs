@@ -5,6 +5,7 @@ using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Collections;
 using System.Data;
+using System.Data.Common;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
 
@@ -479,6 +480,26 @@ namespace GraslandenDL.Repositories
                     }
                     Console.WriteLine();
                 }
+            }
+        }
+
+        public void InsertSpecies(Species species)
+        {
+            const string query = "insert into species(name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance)" +
+                                 "VALUES(@name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversity)";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlCommand cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", species.Name);
+                cmd.Parameters.AddWithValue("@rating", species.Rating);
+                cmd.Parameters.AddWithValue("@moisture", species.Moisture);
+                cmd.Parameters.AddWithValue("@ph", species.Ph);
+                cmd.Parameters.AddWithValue("@nitrogen", species.Nitrogen);
+                cmd.Parameters.AddWithValue("@nectar_production", species.Nectarvalue != null ? species.Nectarvalue : DBNull.Value);
+                cmd.Parameters.AddWithValue("@biodiversity", species.Biodiversity != null ? species.Biodiversity : DBNull.Value);
+                cmd.ExecuteNonQuery();
             }
         }
     }
