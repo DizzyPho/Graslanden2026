@@ -7,18 +7,18 @@ namespace GraslandenValidation
 {
     public static class PlotValidation
     {
-        public static bool Validate(string code, string areaSqMeters, string campus, string managementTypeString, out List<string> errors)
+        public static bool Validate(string code, string areaString, string campus, string managementTypeString, out List<string> errors)
         {
             errors = new List<string>();
 
             if (String.IsNullOrEmpty(code)) errors.Add("Graslandcode mag niet leeg zijn.");
-            if (double.TryParse(areaSqMeters, out double areaSqMetersDouble))
+            if (double.TryParse(areaString, out double areaSqMetersDouble))
             {                
-                if (areaSqMetersDouble <= 0) errors.Add($"Ongeldige oppervlakte '${areaSqMeters}'. Moet een strikt positief getal zijn.");
+                if (areaSqMetersDouble <= 0) errors.Add($"Ongeldige oppervlakte '${areaString}'. Moet een strikt positief getal zijn.");
             }
             else
             {
-                errors.Add($"Ongeldige oppervlakte '{areaSqMeters}'. Moet een getal zijn");
+                errors.Add($"Ongeldige oppervlakte '{areaString}'. Moet een getal zijn");
             }
             if (String.IsNullOrEmpty(campus)) errors.Add("Campusnaam mag niet leeg zijn.");
 
