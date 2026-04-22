@@ -4,6 +4,7 @@ using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics.Metrics;
 
 namespace GraslandenDL.Repositories
 {
@@ -134,11 +135,13 @@ namespace GraslandenDL.Repositories
             const string insertPlot = "insert into grass_plot (code, campus, area_sq_meter) VALUES(@code, @campus, @area_sq_meter)";
             const string queryManagementType = "select id,type from management_type";
             const string queryInventoriedPlot = "INSERT INTO inventoried_plot (inventory_id,plot_code,management_type, plot_type) " +
-                                                "OUTPUT inserted.id " +
+                                                "output inserted.id " +
                                                 "VALUES (@inventory_id, @plot_code, @management_type, @plot_type)";
-            string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage) VALUES (@inventoried_plot_id,@species_id,@coverage)";
+            string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage)" +
+                                      "VALUES (@inventoried_plot_id,@species_id,@coverage)";
 
             Dictionary<Species, int> speciesList = new();
+            Dictionary<string, int> inventoriedPlotIds = new();
             Dictionary<string, int> managementTypeList = new();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -225,7 +228,7 @@ namespace GraslandenDL.Repositories
                         }
                         speciesList.Add(species, (int)speciesId);
                     }
-                    int inventoriedPlotId = 0;
+
                     foreach (Plot plot in inventory.GetPlots())
                     {
                         cmdPlot.Parameters["@code"].Value = plot.Code;
@@ -236,16 +239,15 @@ namespace GraslandenDL.Repositories
                             cmdInsertPlot.Parameters["@area_sq_meter"].Value = plot.AreaSqMeters;
                             cmdInsertPlot.ExecuteNonQuery();
                         }
+                        cmdInventoriedPlot.Parameters["@inventory_id"].Value = inventoryId;
+                        cmdInventoriedPlot.Parameters["@plot_code"].Value = plot.Code;
+                        cmdInventoriedPlot.Parameters["@management_type"].Value = managementTypeList[plot.ManagementType.ToString()];
+                        cmdInventoriedPlot.Parameters["@plot_type"].Value = plot.PlotType;
+                        inventoriedPlotIds.Add(plot.Code, (int)cmdInventoriedPlot.ExecuteScalar());
                     }
                     foreach (Measurement measurement in inventory.Measurements)
                     {
-                        cmdInventoriedPlot.Parameters["@inventory_id"].Value = inventoryId;
-                        cmdInventoriedPlot.Parameters["@plot_code"].Value = measurement.Plot.Code;
-                        cmdInventoriedPlot.Parameters["@management_type"].Value = managementTypeList[measurement.Plot.ManagementType.ToString()];
-                        cmdInventoriedPlot.Parameters["@plot_type"].Value = measurement.Plot.PlotType;
-                        inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
-
-                        cmdMeasurement.Parameters["@inventoried_plot_id"].Value = inventoriedPlotId;
+                        cmdMeasurement.Parameters["@inventoried_plot_id"].Value = inventoriedPlotIds[measurement.Plot.Code];
                         cmdMeasurement.Parameters["@species_id"].Value = speciesList[measurement.Species];
                         cmdMeasurement.Parameters["@coverage"].Value = measurement.Coverage;
                         cmdMeasurement.ExecuteNonQuery();

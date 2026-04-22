@@ -25,5 +25,16 @@ namespace GraslandenBL.Domain
         public ManagementType ManagementType { get; set; }
         public string PlotType { get; set; }
         public Dictionary<string, MessageType> Errors { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Plot plot &&
+                   Code == plot.Code;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Code);
+        }
     }
 }

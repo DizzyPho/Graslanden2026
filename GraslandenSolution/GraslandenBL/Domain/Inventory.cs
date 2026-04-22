@@ -24,12 +24,12 @@ namespace GraslandenBL.Domain
 
         public List<Species> GetSpecies()
         {
-            return Measurements.Select(m => m.Species).ToList();
+            return Measurements.Select(m => m.Species).Distinct().ToList();
         }
 
         public List<Plot> GetPlots()
         {
-            return Measurements.Select(m => m.Plot).ToList();
+            return Measurements.Select(m => m.Plot).Distinct().ToList();
         }
     }
 }

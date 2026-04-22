@@ -106,11 +106,14 @@ namespace GraslandenGUI
             InventoryDTO selectedItem = (InventoryDTO)ListBoxInventories.SelectedItem;
             if(_manager.DeleteInventory(selectedItem.Id))
             {
+                ProgressBarWindow progressBarWindow = new ProgressBarWindow("Inventarisatie verwijderen...");
+                //progressBarWindow.Show();
                 Inventories.Remove(selectedItem);
+                //progressBarWindow.Close();
             }
             else
             {
-                // TO DO: add failed message
+                MessageBox.Show("Er is iets foutgelopen, probeer opnieuw a.u.b.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
