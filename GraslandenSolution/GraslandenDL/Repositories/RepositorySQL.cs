@@ -348,6 +348,9 @@ namespace GraslandenDL.Repositories
 
             return grassPlots;
         }
+        public void InsertMeasurement(Measurement measurement)
+        {
 
+        }
     }
 }
