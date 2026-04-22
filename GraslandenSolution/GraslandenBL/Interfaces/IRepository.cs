@@ -1,5 +1,6 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Enums;
 
 namespace GraslandenBL.Interfaces
 {
@@ -20,5 +21,7 @@ namespace GraslandenBL.Interfaces
         public bool DeleteInventory(int inventoryId);
 
         public CampusDTO GetCampusDTO(int inventoryID,string campus);
+
+        public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
     }
 }
