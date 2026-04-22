@@ -5,6 +5,7 @@ using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.Transactions;
 
 namespace GraslandenDL.Repositories
 {
@@ -577,6 +578,44 @@ namespace GraslandenDL.Repositories
 
                 CampusDTO campusDTO = new CampusDTO(plots, plotTypes);
                 return campusDTO;
+            }
+        }
+
+        public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages)
+        {
+            string queryInsertMessage = "INSERT INTO message(inventory_id, description, messageType) VALUES(@inventory_id, @description, @messageType)";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInsertMessages = con.CreateCommand())
+            {
+                //PARA
+                cmdInsertMessages.CommandText = queryInsertMessage;
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@inventory_id", SqlDbType.Int));
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@description", SqlDbType.NVarChar));
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@messageType", SqlDbType.NVarChar));
+
+                //Open connection and transaction
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                cmdInsertMessages.Transaction = transaction;
+
+                try
+                {   //For each key (description) value(messagetype) add them
+                    foreach (KeyValuePair<string,MessageType> messageType in messages)
+                    {
+                        cmdInsertMessages.Parameters["@inventory_id"].Value = inventoryID;
+                        cmdInsertMessages.Parameters["@description"].Value = messageType.Key;
+                        cmdInsertMessages.Parameters["@messageType"].Value = messageType.Value;
+                        cmdInsertMessages.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
     }
