@@ -5,6 +5,7 @@ using GraslandenBL.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.Transactions;
 
 namespace GraslandenDL.Repositories
 {
@@ -564,43 +565,101 @@ namespace GraslandenDL.Repositories
             List<Plot> plots = new List<Plot>();
 
             //Join grass_plot, inventoried_plot
-            string queryGetPlots = "SELECT ip.plot_code, gp.area_sq_meter, gp.campus, ip.management_type, ip.plot_type FROM inventoried_plot ip JOIN grass_plot gp ON ip.plot_code = gp.code WHERE ip.inventory_id = @inventoryID AND gp.campus = @campus";
+            const string queryGetPlots = "SELECT i.plot_code, gp.area_sq_meter, gp.campus, mt.type, i.plot_type FROM inventoried_plot i " +
+                "JOIN grass_plot gp ON i.plot_code = gp.code " +
+                "JOIN management_type mt on mt.id = i.management_type " +
+                "WHERE i.inventory_id = @inventoryID AND gp.campus = @campus";
+            const string queryPlotTypeValues = "select plot_type, count(plot_type) as count, sum(g.area_sq_meter) as area_sum from inventoried_plot i " +
+                "join grass_plot g on i.plot_code = g.code group by plot_type,inventory_id,campus " +
+                "having campus = @campus and inventory_id = @inventoryID";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdCampusDTO = con.CreateCommand())
+            using (SqlCommand cmdPlotTypeValues = con.CreateCommand())
             {
                 //Parameters
                 cmdCampusDTO.Parameters.AddWithValue("@inventoryID", inventoryID);
                 cmdCampusDTO.Parameters.AddWithValue("@campus", campus);
 
+                cmdPlotTypeValues.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdPlotTypeValues.Parameters.AddWithValue("@campus", campus);
+
                 //Open connection
                 con.Open();
                 cmdCampusDTO.CommandText = queryGetPlots;
-
-                SqlDataReader reader = cmdCampusDTO.ExecuteReader();
-                while (reader.Read())
+                cmdPlotTypeValues.CommandText = queryPlotTypeValues;
+                using (SqlDataReader reader = cmdCampusDTO.ExecuteReader())
                 {
-                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
-                    string code = reader.GetString(reader.GetOrdinal("plot_code"));
-                    double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-                    string campusValue = reader.GetString(reader.GetOrdinal("campus"));
-                    string managementType = reader.GetString(reader.GetOrdinal("management_type"));
-                    ManagementType managementTypeEnum = managementType switch
+                    while (reader.Read())
                     {
-                        "Netheidsboord" => ManagementType.Netheidsboord,
-                        "Schapenweide" => ManagementType.Schapenweide,
-                        "Intensief" => ManagementType.Intensief,
-                        "Extensief" => ManagementType.Extensief,
-                    };
+                        //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
+                        string code = reader.GetString(reader.GetOrdinal("plot_code"));
+                        double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
+                        string campusValue = reader.GetString(reader.GetOrdinal("campus"));
+                        string managementType = reader.GetString(reader.GetOrdinal("type"));
+                        ManagementType managementTypeEnum = managementType switch
+                        {
+                            "Netheidsboord" => ManagementType.Netheidsboord,
+                            "Schapenweide" => ManagementType.Schapenweide,
+                            "Intensief" => ManagementType.Intensief,
+                            "Extensief" => ManagementType.Extensief,
+                            _ => throw new Exception("Invalid management type")
+                        };
 
-                    string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
-                    Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
-                    plots.Add(plot);
+                        string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
+                        Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
+                        plots.Add(plot);
+                    }
+                }
+                Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
+                using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        plotTypes.Add(reader.GetString(0), new PlotValue(reader.GetInt32(1), reader.GetDouble(2)));
+                    }
                 }
 
-                Dictionary<string, PlotValue> plotTyes = new Dictionary<string, PlotValue>();
-                CampusDTO campusDTO = new CampusDTO();
+                CampusDTO campusDTO = new CampusDTO(plots, plotTypes);
                 return campusDTO;
+            }
+        }
+
+        public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages)
+        {
+            string queryInsertMessage = "INSERT INTO message(inventory_id, description, messageType) VALUES(@inventory_id, @description, @messageType)";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInsertMessages = con.CreateCommand())
+            {
+                //PARA
+                cmdInsertMessages.CommandText = queryInsertMessage;
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@inventory_id", SqlDbType.Int));
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@description", SqlDbType.NVarChar));
+                cmdInsertMessages.Parameters.Add(new SqlParameter("@messageType", SqlDbType.NVarChar));
+
+                //Open connection and transaction
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                cmdInsertMessages.Transaction = transaction;
+
+                try
+                {   //For each key (description) value(messagetype) add them
+                    foreach (KeyValuePair<string,MessageType> messageType in messages)
+                    {
+                        cmdInsertMessages.Parameters["@inventory_id"].Value = inventoryID;
+                        cmdInsertMessages.Parameters["@description"].Value = messageType.Key;
+                        cmdInsertMessages.Parameters["@messageType"].Value = messageType.Value;
+                        cmdInsertMessages.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ using GraslandenBL.DTOs;
 using GraslandenBL.Managers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,17 +22,27 @@ namespace GraslandenGUI.Windows
     public partial class InventoryWindow : Window
     {
         Manager _manager;
-        private Inventory CurrentInventory { get; init; }
+        Dictionary<String, ObservableCollection<Plot>> Plots;
+        private InventoryDTO CurrentInventory { get; init; }
         public InventoryWindow(InventoryDTO inventoryDTO, Manager manager)
         {
             InitializeComponent();
+            CurrentInventory = inventoryDTO;
             TextBlockTitle.Text = $"Inventarisatie '{inventoryDTO.ToString()}'";
             _manager = manager;
             HashSet<String> campuses = _manager.GetAllCampuses();
             foreach (String campus in campuses)
             {
-                TabItem tabItem = new TabItem { Header = campus , Name = campus };
+                CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, (campus));
+                TabItem tabItem = new TabItem 
+                {
+                    Header = campus, Name = campus, Content = new DataGrid 
+                    { 
+                        ItemsSource = selectedCampus.Plots
+                    } 
+                };
                 TabControlCampus.Items.Add(tabItem);
+
             }
         }
 
