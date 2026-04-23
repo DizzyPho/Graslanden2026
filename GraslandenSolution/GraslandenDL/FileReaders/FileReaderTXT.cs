@@ -16,7 +16,7 @@ namespace GraslandenDL.FileReaders
         {
             _indicatorValuesPath = indicatorValuesPath;
         }
-        
+
         public List<Measurement> ReadFile(string inventoryPath, out Dictionary<string, MessageType> messages)
         {
             List<Measurement> results = new List<Measurement>();
@@ -34,7 +34,7 @@ namespace GraslandenDL.FileReaders
                 while (!streamReader.EndOfStream)
                 {
                     string[] lineSections = streamReader.ReadLine().Split('|');
-                    
+
                     // Make object through builder
                     // Builder always returns list of error messages in case of missing/wrong values
                     SpeciesBuilder speciesBuilder = new SpeciesBuilder(name: lineSections[0])
@@ -69,8 +69,8 @@ namespace GraslandenDL.FileReaders
 
             // This list is used to check for similar plant names
             HashSet<string> allSpeciesNames = new HashSet<string>();
-         
-            using(StreamReader streamReader = new StreamReader(inventoryPath))
+
+            using (StreamReader streamReader = new StreamReader(inventoryPath))
             {
                 int currentLine = 1;
 
@@ -84,10 +84,11 @@ namespace GraslandenDL.FileReaders
                 // Keep how many species every plot has
                 // This will be used to get values at bottom of every plot list
                 Dictionary<string, int> speciesPerPlot = new Dictionary<string, int>();
-                
-                while(!streamReader.EndOfStream)
+
+                while (!streamReader.EndOfStream)
                 {
                     string line = streamReader.ReadLine();
+                    bool wasPlotFound = true;
 
                     // Extract campus name from tab title
                     if (line.Contains("Worksheet"))
@@ -97,6 +98,7 @@ namespace GraslandenDL.FileReaders
                         plotNames = new List<string>();
                         plotAreas = new List<string>();
                         plotManagementTypes = new List<string>();
+                        wasPlotFound = true;
                     }
                     else
                     {
@@ -118,18 +120,37 @@ namespace GraslandenDL.FileReaders
                                     if (currentCell.Trim() != string.Empty)
                                     {
                                         // Plot codes
-                                        if(currentLineWithinCampus == 0)
+                                        if (currentLineWithinCampus == 0)
                                         {
+
+                                            string campusCode = "";
+                                            foreach (char character in currentCell)
+                                            {
+                                                if (!char.IsDigit(character)) campusCode += character;
+                                            }
+
                                             // Only save actual plot codes
-                                            if (currentCell.StartsWith(currentCampus.Substring(startIndex: 0, length: 3)
+                                            if (campusCode.Length > 0
+                                                && campusCode.Length <= currentCampus.Length
+                                                    && currentCell.StartsWith(currentCampus.Substring(startIndex: 0, length: campusCode.Length)
                                                                                     .ToUpper()))
                                             {
                                                 plotNames.Add(currentCell);
                                             }
+                                            else
+                                            {
+                                                // Check for typos
+                                                if (campusCode.Length > 0
+                                                            && campusCode.Length <= currentCampus.Length
+                                                            && Levenshtein.Distance(campusCode, currentCampus.Substring(startIndex: 0, length: campusCode.Length).ToUpper()) < 3)
+                                                {
+                                                    messages.Add($"{currentCampus} {currentCell} | Ongeldige plotcode", MessageType.Error);
+                                                }
+                                            }
                                         }
 
                                         // Areas (throw away data past plot info table)
-                                        else if(currentLineWithinCampus == 1 && plotAreas.Count < plotNames.Count)
+                                        else if (currentLineWithinCampus == 1 && plotAreas.Count < plotNames.Count)
                                         {
                                             plotAreas.Add(currentCell);
                                         }
@@ -141,9 +162,10 @@ namespace GraslandenDL.FileReaders
                                         }
                                     }
                                 }
+                                if (plotNames.Count == 0) wasPlotFound = false;
                             }
                             // Combine data once every list has been filled
-                            else if (currentLineWithinCampus == 3)
+                            else if (currentLineWithinCampus == 3 && wasPlotFound == true)
                             {
                                 for (int i = 0; i < plotNames.Count; i++)
                                 {
@@ -153,34 +175,42 @@ namespace GraslandenDL.FileReaders
                                         areaString: plotAreas[i],
                                         campus: currentCampus,
                                         managementTypeString: plotManagementTypes[i],
-                                        out List<string> plotErrors))
+                                        out Dictionary<string, MessageType> plotMessages))
                                     {
                                         // Default value that gets overwritten
                                         ManagementType managementType = ManagementType.Intensief;
 
+                                        // Exception will not get thrown since value has already been validated
                                         managementType = plotManagementTypes[i].Trim().ToUpper() switch
                                         {
                                             "INTENSIEF" => ManagementType.Intensief,
                                             "EXTENSIEF" => ManagementType.Extensief,
                                             "NETHEIDSBOORD" => ManagementType.Netheidsboord,
                                             "SCHAPENWEIDE" => ManagementType.Schapenweide,
-                                            _ => throw new Exception("Invalid ManagementType")
+                                            _ => throw new Exception("Managementtype niet gevonden")
                                         };
 
                                         // Plot type gets filled in later
-                                        plots.Add(key: plotNames[i],
-                                                  value: new Plot(code: plotNames[i],
+                                        Plot newPlot = new Plot(code: plotNames[i],
                                                                   areaSqMeters: double.Parse(plotAreas[i]),
                                                                   campus: currentCampus,
                                                                   managementType: managementType,
-                                                                  plotType: ""));
+                                                                  plotType: "");
+
+                                        foreach (KeyValuePair<string, MessageType> remark in plotMessages)
+                                        {
+                                            newPlot.Errors.Add($"{currentCampus} {plotNames[i]} | {remark.Key}", remark.Value);
+                                        }
+
+                                        plots.Add(key: plotNames[i],
+                                                          value: newPlot);
                                     }
                                     else
                                     {
                                         // Collect every error location & message in a collective list
-                                        foreach (string error in plotErrors)
+                                        foreach (KeyValuePair<string, MessageType> error in plotMessages)
                                         {
-                                            messages.Add($"$INVENTORY{currentLine} | {error}", MessageType.Error);
+                                            messages.Add($"{currentCampus} {plotNames[i]} | {error.Key}", MessageType.Error);
                                         }
                                     }
                                 }
@@ -188,7 +218,7 @@ namespace GraslandenDL.FileReaders
                         }
 
                         // Every line past the plot info table
-                        else
+                        else if (wasPlotFound == true)
                         {
                             for (int i = 0; i < lineSections.Length; i++)
                             {
@@ -199,45 +229,53 @@ namespace GraslandenDL.FileReaders
                                     if (lineSections[i].Trim() != "" && lineSections[i + 1].Trim() != "")
                                     {
                                         // Retrieve plot from plot code in same column
-                                        Plot currentPlot = plots[firstLineCurrentCampus[i]];
-
-                                        // Make object through builder
-                                        // Builder always returns list of error messages in case of missing/wrong values
-                                        SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i])
-                                            .AddMoisture(lineSections[i + 2])
-                                            .AddPh(lineSections[i + 3])
-                                            .AddNitrogen(lineSections[i + 4])
-                                            .AddRating(lineSections[i + 5]);
-
-                                        Species species = speciesBuilder.Build();
-                    
-                                        // Is the data valid? If false, return error messages
-                                        if (MeasurementValidation.Validate(lineSections[i + 1], out List<string> measurementErrors))
+                                        if (plots.TryGetValue(firstLineCurrentCampus[i], out Plot currentPlot))
                                         {
-                                            results.Add(new Measurement(species, lineSections[i + 1], currentPlot));
-                                            allSpeciesNames.Add(species.Name);
-                                        }
-                                        else
-                                        {
-                                            foreach(string error in measurementErrors)
+                                            // Make object through builder
+                                            // Builder always returns list of error messages in case of missing/wrong values
+                                            SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i])
+                                                .AddMoisture(lineSections[i + 2])
+                                                .AddPh(lineSections[i + 3])
+                                                .AddNitrogen(lineSections[i + 4])
+                                                .AddRating(lineSections[i + 5]);
+
+                                            Species species = speciesBuilder.Build();
+
+                                            // Is the data valid? If false, return error messages
+                                            if (MeasurementValidation.Validate(lineSections[i + 1], out Dictionary<string, MessageType> measurementMessages))
                                             {
-                                                messages.Add($"$INVENTORY{currentLine} | {error}", MessageType.Error);
-                                            }
-                                        }
+                                                Measurement newMeasurement = new Measurement(species, lineSections[i + 1], currentPlot);
 
-                                        // Add and increment species count of plot
-                                        if (!speciesPerPlot.ContainsKey(currentPlot.Code))
-                                        {
-                                            speciesPerPlot.Add(currentPlot.Code, 1);
+                                                foreach (KeyValuePair<string, MessageType> remark in measurementMessages)
+                                                {
+                                                    newMeasurement.Errors.Add($"INV{currentLine} | {remark.Key}", remark.Value);
+                                                }
+
+                                                results.Add(newMeasurement);
+                                                allSpeciesNames.Add(species.Name);
+                                            }
+                                            else
+                                            {
+                                                foreach (KeyValuePair<string, MessageType> error in measurementMessages)
+                                                {
+                                                    messages.Add($"INV{currentLine} | {error.Key}", error.Value);
+                                                }
+                                            }
+
+                                            // Add and increment species count of plot
+                                            if (!speciesPerPlot.ContainsKey(currentPlot.Code))
+                                            {
+                                                speciesPerPlot.Add(currentPlot.Code, 1);
+                                            }
+                                            else speciesPerPlot[currentPlot.Code]++;
                                         }
-                                        else speciesPerPlot[currentPlot.Code]++;
                                     }
-                                    
+
                                     // Every line with general data info at bottom of a plot's species list
                                     else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
                                     {
                                         // Find plot code and add plot type
-                                        if(plots.TryGetValue(firstLineCurrentCampus[i], out Plot currentPlot))
+                                        if (plots.TryGetValue(firstLineCurrentCampus[i], out Plot currentPlot))
                                         {
                                             if (speciesPerPlot[currentPlot.Code] == currentLineWithinCampus - 15)
                                             {
@@ -259,7 +297,7 @@ namespace GraslandenDL.FileReaders
             foreach (Measurement inventoryMeasurement in results)
             {
                 // Check for spelling mistakes
-                foreach(string speciesName in allSpeciesNames)
+                foreach (string speciesName in allSpeciesNames)
                 {
                     // Amount of differing characters + 1
                     int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
@@ -350,7 +388,7 @@ namespace GraslandenDL.FileReaders
                     {
                         inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
 
-                        if(tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
+                        if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
                     }
                     else
                     {
@@ -373,14 +411,16 @@ namespace GraslandenDL.FileReaders
             // General remarks for species that weren't found in Tyler database & how many times they appear
             foreach (KeyValuePair<string, int> name in unfoundNames)
             {
-                if(name.Value > 1)
+                if (name.Value > 1)
                     messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} metingen.", MessageType.Remark);
                 else
-                messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
+                    messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
             }
             #endregion
 
-            return results;
+            if (results.Count > 0)
+                return results;
+            else throw new Exception("Er werd geen enkel plot gevonden. Was dit het juiste bestand?");
         }
     }
 }
