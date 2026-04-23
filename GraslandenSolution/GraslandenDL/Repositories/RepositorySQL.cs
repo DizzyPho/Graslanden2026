@@ -691,43 +691,62 @@ namespace GraslandenDL.Repositories
             }
         }
 
-        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type)
+        public Plot InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type)
         {
             //get management type id
             string queryGetManagementTypeID = "SELECT id FROM management_type WHERE type = @management_type";
+
             //insert inventoried plot with given management type id
             string queryInsertInventoriedPlot = "INSERT INTO inventoried_plot(inventory_id, plot_code, management_type, plot_type) VALUES(@inventoryID, @code, @management_type_id, @plot_type)";
+
+            //If plot exsists return data of plot else return null
+            string queryGetPlot = "SELECT campus, area_sq_meter FROM grass_plot WHERE code = @code";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdInsertInventoriedPlot = con.CreateCommand())
             using (SqlCommand cmdCheckManagementType = con.CreateCommand())
+            using (SqlCommand cmdGetPlot = con.CreateCommand())
             {
                 cmdCheckManagementType.CommandText = queryGetManagementTypeID;
                 cmdInsertInventoriedPlot.CommandText = queryInsertInventoriedPlot;
+                cmdGetPlot.CommandText = queryGetPlot;
 
                 cmdCheckManagementType.Parameters.AddWithValue("@management_type", managementType.ToString());
 
                 cmdInsertInventoriedPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
                 cmdInsertInventoriedPlot.Parameters.AddWithValue("@code", code);
                 cmdInsertInventoriedPlot.Parameters.AddWithValue("@plot_type", plot_Type);
+
+                cmdGetPlot.Parameters.AddWithValue("@code", code);
+
                 //open connection and transaction
                 con.Open();
                 SqlTransaction transaction = con.BeginTransaction();
                 cmdCheckManagementType.Transaction = transaction;
                 cmdInsertInventoriedPlot.Transaction = transaction;
+                cmdGetPlot.Transaction = transaction;
                 try
                 {
                     //get the id of management type
                     int managementType_id = (int)cmdCheckManagementType.ExecuteScalar();
                     cmdInsertInventoriedPlot.Parameters.AddWithValue("@management_type_id", managementType_id);
                     cmdInsertInventoriedPlot.ExecuteNonQuery();
-                    transaction.Commit();
-                    return true;
+
+                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, Dictionary<string, MessageType> errors = null)
+                    using (SqlDataReader reader = cmdGetPlot.ExecuteReader())
+                    {
+                        string campus = reader.GetString(0);
+                        double area_sq_meterOrdinal = reader.GetDouble(1);
+                        Plot plot = new Plot(code, area_sq_meterOrdinal, campus, managementType, plot_Type);
+
+                        transaction.Commit();
+                        return plot;
+                    }
                 }
                 catch (Exception)
                 {
                     transaction.Rollback();
-                    return false;
+                    return null;
                     throw;
                 }
             }
