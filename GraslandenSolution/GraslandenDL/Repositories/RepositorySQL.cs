@@ -790,6 +790,7 @@ namespace GraslandenDL.Repositories
             using (SqlCommand cmdGetMessagesDTO = con.CreateCommand())
             {
                 //Open conection 
+                cmdGetMessagesDTO.CommandText = queryGetAllMessages;
                 con.Open();
                 using (SqlDataReader reader = cmdGetMessagesDTO.ExecuteReader())
                 {
