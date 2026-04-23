@@ -38,7 +38,7 @@ namespace GraslandenBL.Managers
             return _repository.ImportEmptyInventory(inventoryDTO);
         }
         // returns false if speciesName not found
-        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
+        public MeasurementDTO InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
             return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }

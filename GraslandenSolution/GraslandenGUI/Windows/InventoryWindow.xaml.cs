@@ -50,9 +50,13 @@ namespace GraslandenGUI.Windows
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)
-        { 
-            PlotWindow pw = new PlotWindow(_manager, (Plot)((DataGrid)_selectedTabItem.Content).SelectedItem, CurrentInventory.Id);
-            pw.Show();
+        {
+            Plot? selectedPlot = (Plot)((DataGrid)_selectedTabItem.Content).SelectedItem;
+            if (selectedPlot != null)
+            {
+                PlotWindow pw = new PlotWindow(_manager, selectedPlot, CurrentInventory.Id);
+                pw.Show();
+            }
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
