@@ -46,6 +46,7 @@ namespace GraslandenGUI.Windows
                 };
                 TabControlCampus.Items.Add(tabItem);
             }
+            FillCampusInfo(campuses[0]);
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)
