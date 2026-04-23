@@ -57,5 +57,10 @@ namespace GraslandenBL.Managers
         {
             return _repository.InsertInventoriedPlot(inventoryID, code, managementType, plotType);
         }
+
+        public Dictionary<string, Dictionary<string, MessageType>> GetAllMessages()
+        {
+            return _repository.GetAllMessages();
+        }
     }
 }
