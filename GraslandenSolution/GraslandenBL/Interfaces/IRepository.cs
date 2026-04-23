@@ -10,7 +10,7 @@ namespace GraslandenBL.Interfaces
 
         public List<Species> GetAllSpecies();
 
-        public HashSet<string> GetAllCampuses();
+        public List<CampusDTO> GetAllCampusesDTO(int inventoryID);
 
         public List<InventoryDTO> GetInventoryDTOs();
         public int ImportEmptyInventory(InventoryDTO inventoryDTO);
@@ -23,5 +23,7 @@ namespace GraslandenBL.Interfaces
         public CampusDTO GetCampusDTO(int inventoryID,string campus);
 
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
+
+        public void DeleteMeasurement(int measurementDTO_id);
     }
 }

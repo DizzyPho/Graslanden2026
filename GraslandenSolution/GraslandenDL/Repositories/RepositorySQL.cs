@@ -18,29 +18,102 @@ namespace GraslandenDL.Repositories
             _connectionString = connectionString;
         }
 
-        public HashSet<string> GetAllCampuses()
+        public List<CampusDTO> GetAllCampusesDTO(int inventoryID)
         {
-            HashSet<string> campuses = new HashSet<string>();
-            string queryCampus = "SELECT DISTINCT campus FROM grass_plot";
+            //public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes)
+            List<string> campusesList = new List<string>();
+            List<CampusDTO> campusDTOs = new List<CampusDTO>();
+
+            //Get all campuses  
+            string queryGetAllCampuses = "SELECT DISTINCT gp.campus FROM inventoried_plot ip " +
+                "JOIN grass_plot gp ON ip.plot_code = gp.code " +
+                //in inventory
+                "WHERE ip.inventory_id = @inventoryID";
+
+            //Join grass_plot, inventoried_plot
+            const string queryGetPlots = "SELECT i.plot_code, gp.area_sq_meter, gp.campus, mt.type, i.plot_type FROM inventoried_plot i " +
+                "JOIN grass_plot gp ON i.plot_code = gp.code " +
+                "JOIN management_type mt on mt.id = i.management_type " +
+                "WHERE i.inventory_id = @inventoryID AND gp.campus = @campus";
+            const string queryPlotTypeValues = "select plot_type, count(plot_type) as count, sum(g.area_sq_meter) as area_sum from inventoried_plot i " +
+                "join grass_plot g on i.plot_code = g.code group by plot_type,inventory_id,campus " +
+                "having campus = @campus and inventory_id = @inventoryID";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdCampus = new SqlCommand(queryCampus, con))
+            using (SqlCommand cmdGetAllCampuses = con.CreateCommand())
+            using (SqlCommand cmdGetAllPlots = con.CreateCommand())
+            using (SqlCommand cmdPlotTypeValues = con.CreateCommand())
             {
-
+                //Parameters
+                cmdGetAllCampuses.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdGetAllPlots.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdGetAllPlots.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
+                cmdPlotTypeValues.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdPlotTypeValues.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
                 //Open connection
                 con.Open();
-
-                using (SqlDataReader reader = cmdCampus.ExecuteReader())
+                cmdGetAllCampuses.CommandText = queryGetAllCampuses;
+                cmdGetAllPlots.CommandText = queryGetPlots;
+                cmdPlotTypeValues.CommandText = queryPlotTypeValues;
+                //Get all campuses
+                using (SqlDataReader reader = cmdGetAllCampuses.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        campuses.Add(reader.GetString("campus"));
+                        campusesList.Add(reader.GetString(0));
                     }
-                    return campuses;
+                }
+                //Now you have all campuses
+                //then
+                //For each campus make the list of plots and the plotvalue dict
+                foreach (string campus in campusesList)
+                {
+                    cmdGetAllPlots.Parameters["@campus"].Value = campus;
+                    cmdPlotTypeValues.Parameters["@campus"].Value = campus;
+                    Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
+                    List<Plot> plots = new List<Plot>();
+                    using (SqlDataReader reader = cmdGetAllPlots.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
+                            string code = reader.GetString(reader.GetOrdinal("plot_code"));
+                            double areaSqMeter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
+                            string campusValue = reader.GetString(reader.GetOrdinal("campus"));
+                            string managementType = reader.GetString(reader.GetOrdinal("type"));
+                            ManagementType managementTypeEnum = managementType switch
+                            {
+                                "Netheidsboord" => ManagementType.Netheidsboord,
+                                "Schapenweide" => ManagementType.Schapenweide,
+                                "Intensief" => ManagementType.Intensief,
+                                "Extensief" => ManagementType.Extensief,
+                                _ => throw new Exception("Invalid management type")
+                            };
+
+                            string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
+                            Plot plot = new Plot(code, areaSqMeter, campusValue, managementTypeEnum, plotTypeCode);
+                            plots.Add(plot);
+                        }
+                    }
+
+                    using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader()) 
+                    {
+                        while (reader.Read())
+                        {
+                            string plotType = reader.GetString(0);
+                            int count = reader.GetInt32(1);
+                            double areaSum = reader.GetDouble(2);
+                            plotTypes.Add(plotType, new PlotValue(count, areaSum));
+                        }
+                    }
+
+                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes, campus);
+                    campusDTOs.Add(campusDTO);
                 }
             }
-        }
 
+            return campusDTOs;
+        }
 
         public List<Species> GetAllSpecies()
         {
@@ -124,7 +197,6 @@ namespace GraslandenDL.Repositories
 
             }
         }
-
 
         public int ImportInventory(Inventory inventory)
         {
@@ -310,7 +382,6 @@ namespace GraslandenDL.Repositories
             }
         }
 
-
         public List<InventoryDTO> GetInventoryDTOs()
         {
             const string query = "SELECT id, date, name FROM inventory";
@@ -403,7 +474,7 @@ namespace GraslandenDL.Repositories
         {
             List<MeasurementDTO> measurementDTOList = new List<MeasurementDTO>();
 
-            string queryMeasurement = "SELECT m.coverage, m.species_id, s.name, s.rating, s.moisture, s.ph, s.nitrogen, " +
+            string queryMeasurement = "SELECT m.id, m.coverage, m.species_id, s.name, s.rating, s.moisture, s.ph, s.nitrogen, " +
                 "s.nectar_production, s.biodiversity_relevance FROM measurement m " +
                 "JOIN inventoried_plot ip ON m.inventoried_plot_id = ip.id " +
                 "JOIN species s on s.id = m.species_id " +
@@ -433,10 +504,11 @@ namespace GraslandenDL.Repositories
                     int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
                     int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
                     string coverage = reader.GetString(reader.GetOrdinal("coverage"));
+                    int measurementId = reader.GetInt32(reader.GetOrdinal("id"));
 
                     Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
                     //public MeasurementDTO(int speciesid, string coverage)
-                    MeasurementDTO measurementDTO = new MeasurementDTO(species, coverage);
+                    MeasurementDTO measurementDTO = new MeasurementDTO(measurementId,species, coverage);
                     measurementDTOList.Add(measurementDTO);
                 }
                 return measurementDTOList;
@@ -601,7 +673,7 @@ namespace GraslandenDL.Repositories
                     }
                 }
 
-                CampusDTO campusDTO = new CampusDTO(plots, plotTypes);
+                CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
                 return campusDTO;
             }
         }
@@ -655,6 +727,32 @@ namespace GraslandenDL.Repositories
                 _ => throw new Exception("Invalid management type")
             };
             return managementTypeEnum;
+        }
+
+        public void DeleteMeasurement(int measurementDTO_id)
+        {
+            string deleetMeasurementQuery = "DELETE FROM measurement WHERE id = @measurementDTO_id";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand deleteMeasurementCommand = con.CreateCommand())
+            {
+                deleteMeasurementCommand.CommandText = deleetMeasurementQuery;
+                deleteMeasurementCommand.Parameters.AddWithValue("@measurementDTO_id", measurementDTO_id);
+
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+
+                try
+                {
+                    deleteMeasurementCommand.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
         }
     }
 }

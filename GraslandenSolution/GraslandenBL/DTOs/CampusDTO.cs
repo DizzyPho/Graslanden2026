@@ -4,6 +4,7 @@ namespace GraslandenBL.DTOs
 {
     public class CampusDTO
     {
+        public string Name { get; set; }
         public List<Plot> Plots { get; set; }
 
         public Dictionary<string, PlotValue> PlotTypes { get; set; }
@@ -14,8 +15,9 @@ namespace GraslandenBL.DTOs
             PlotTypes = new Dictionary<string, PlotValue>();
         }
 
-        public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes)
+        public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes, string name)
         {
+            Name = name;
             Plots = plots;
             PlotTypes = plotTypes;
         }
