@@ -22,9 +22,9 @@ namespace GraslandenBL.Managers
             return _repository.DeleteInventory(inventoryId);
         }
 
-        public List<CampusDTO> GetAllCampusesDTO()
+        public List<CampusDTO> GetAllCampusesDTO(int inventoryID)
         {
-            return _repository.GetAllCampusesDTO();
+            return _repository.GetAllCampusesDTO(inventoryID);
         }
 
         public List<InventoryDTO> GetInventoryDTOs()
