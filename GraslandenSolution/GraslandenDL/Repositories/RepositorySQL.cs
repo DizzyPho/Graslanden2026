@@ -730,5 +730,31 @@ namespace GraslandenDL.Repositories
             };
             return managementTypeEnum;
         }
+
+        public void DeleteMeasurement(int measurementDTO_id)
+        {
+            string deleetMeasurementQuery = "DELETE FROM measurement WHERE id = @measurementDTO_id";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand deleteMeasurementCommand = con.CreateCommand())
+            {
+                deleteMeasurementCommand.CommandText = deleetMeasurementQuery;
+                deleteMeasurementCommand.Parameters.AddWithValue("@measurementDTO_id", measurementDTO_id);
+
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+
+                try
+                {
+                    deleteMeasurementCommand.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
     }
 }
