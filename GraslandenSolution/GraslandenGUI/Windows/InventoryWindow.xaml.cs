@@ -158,7 +158,7 @@ namespace GraslandenGUI.Windows
 
             AddPlotWindow apw = new AddPlotWindow();
             apw.ShowDialog();
-            if( CampusInfo.SelectMany(c => c.Value.Plots).Any(p => p.Code == apw.Code))
+            if( PlotLists.SelectMany(c => c.Value).Any(p => p.Code == apw.Code))
             {
                 MessageBox.Show("Dit grasland is al geïnventariseerd.");
                 return;
