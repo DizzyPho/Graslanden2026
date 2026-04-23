@@ -89,5 +89,11 @@ namespace GraslandenGUI.Windows
             GridInfo.Children.Add(phText);
             GridInfo.Children.Add(nitrogenText);
         }
+
+        private void NewMeasurement_Click(object sender, RoutedEventArgs e)
+        {
+            NewMeasurementWindow nmw = new NewMeasurementWindow();
+            nmw.ShowDialog();
+        }
     }
 }
