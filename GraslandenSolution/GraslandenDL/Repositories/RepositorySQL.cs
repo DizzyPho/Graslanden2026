@@ -691,5 +691,47 @@ namespace GraslandenDL.Repositories
                 deleteMeasurementCommand.ExecuteNonQuery();
             }
         }
+
+        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type)
+        {
+            //get management type id
+            string queryGetManagementTypeID = "SELECT id FROM management_type WHERE type = @management_type";
+            //insert inventoried plot with given management type id
+            string queryInsertInventoriedPlot = "INSERT INTO inventoried_plot(inventory_id, plot_code, management_type, plot_type) VALUES(@inventoryID, @code, @management_type_id, @plot_type)";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdInsertInventoriedPlot = con.CreateCommand())
+            using (SqlCommand cmdCheckManagementType = con.CreateCommand())
+            {
+                cmdCheckManagementType.CommandText = queryGetManagementTypeID;
+                cmdInsertInventoriedPlot.CommandText = queryInsertInventoriedPlot;
+
+                cmdCheckManagementType.Parameters.AddWithValue("@management_type", managementType.ToString());
+
+                cmdInsertInventoriedPlot.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdInsertInventoriedPlot.Parameters.AddWithValue("@code", code);
+                cmdInsertInventoriedPlot.Parameters.AddWithValue("@plot_type", plot_Type);
+                //open connection and transaction
+                con.Open();
+                SqlTransaction transaction = con.BeginTransaction();
+                cmdCheckManagementType.Transaction = transaction;
+                cmdInsertInventoriedPlot.Transaction = transaction;
+                try
+                {
+                    //get the id of management type
+                    int managementType_id = (int)cmdCheckManagementType.ExecuteScalar();
+                    cmdInsertInventoriedPlot.Parameters.AddWithValue("@management_type_id", managementType_id);
+                    cmdInsertInventoriedPlot.ExecuteNonQuery();
+                    transaction.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    return false;
+                    throw;
+                }
+            }
+        }
     }
 }

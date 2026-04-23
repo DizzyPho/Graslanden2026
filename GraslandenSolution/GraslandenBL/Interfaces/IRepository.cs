@@ -1,6 +1,7 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
+using System.Numerics;
 
 namespace GraslandenBL.Interfaces
 {
@@ -23,5 +24,7 @@ namespace GraslandenBL.Interfaces
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
 
         public void DeleteMeasurement(int measurementDTO_id);
+
+        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
     }
 }

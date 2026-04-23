@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using GraslandenBL.Enums;
 
 namespace GraslandenValidation
 {
     public static class MeasurementValidation
     {
-        public static bool Validate(string coverage, out List<string> errors)
+        public static bool Validate(string coverage, out Dictionary<string, MessageType> errors)
         {
-            errors = new List<string>();
-            if (String.IsNullOrWhiteSpace(coverage)) errors.Add("Bedekkingsklasse mag niet leeg zijn.");
+            errors = new Dictionary<string, MessageType>();
+            if (String.IsNullOrWhiteSpace(coverage)) errors.Add("Bedekkingsklasse mag niet leeg zijn.", MessageType.Error);
 
-            return errors.Count == 0;
+            return errors.Where(e => e.Value == MessageType.Error).Count() == 0;
         }
     }
 }
