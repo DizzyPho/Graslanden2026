@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
-        Title="Grasland Info" Height="500" Width="400">
+        Title="Grasland Info" Height="500" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
@@ -14,11 +14,42 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Text="Grasland ___" Grid.Row="0" HorizontalAlignment="Center" Margin="10"></TextBlock>
-        <Grid Grid.Row="1" Margin="10">
+        <TextBlock Text="" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Name="TextBlockTitle"></TextBlock>
+        <Grid Grid.Row="1" Margin="10" Name="GridInfo">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Aantal soorten" Grid.Row="0" Grid.Column="0" Margin="10 2"></TextBlock>
+            <TextBlock Text="Gem. Vochtigheid" Grid.Row="1" Grid.Column="0" Margin="10 2"></TextBlock>
+            <TextBlock Text="Gem. Zuurtegraad" Grid.Row="2" Grid.Column="0" Margin="10 2"></TextBlock>
+            <TextBlock Text="Gem. Stikstofrijkdom" Grid.Row="0" Grid.Column="2" Margin="10 2"></TextBlock>
+            <TextBlock Text="Gem. Nectarwaarde" Grid.Row="1" Grid.Column="2" Margin="10 2"></TextBlock>
+            <TextBlock Text="Gem. Biodiversiteitswaarde" Grid.Row="2" Grid.Column="2" Margin="10 2"></TextBlock>
         </Grid>
         <TextBlock Grid.Row="2" Text="Metingen" Padding="10 0"></TextBlock>
-        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements"></DataGrid>
+        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Soort" Binding="{Binding Species.Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Bedekkingsklasse" Binding="{Binding Coverage}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Vocht" Binding="{Binding Species.Moisture}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Zuurtegraad" Binding="{Binding Species.Ph}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Stikstofrijkdom" Binding="{Binding Species.Nitrogen}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Nectarwaarde" Binding="{Binding Species.Nectarvalue}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Biodiversiteitswaarde" Binding="{Binding Species.Biodiversity}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Beoordeling" Binding="{Binding Species.Rating}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
         <Button Grid.Row="4" Content="Terug" Margin="10" Click="ButtonBack"></Button>
     </Grid>
 </Window>

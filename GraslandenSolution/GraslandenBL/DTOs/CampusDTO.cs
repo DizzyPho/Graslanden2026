@@ -23,13 +23,13 @@ namespace GraslandenBL.DTOs
 
     public record struct PlotValue
     {
-        public PlotValue(int speciesCount, double totalAreaSqMeters)
+        public PlotValue(int count, double totalAreaSqMeters)
         {
-            SpeciesCount = speciesCount;
+            Count = count;
             TotalAreaSqMeters = totalAreaSqMeters;
         }
 
-        public int SpeciesCount { get; set; }
+        public int Count { get; set; }
 
         public double TotalAreaSqMeters { get; set; }
     }

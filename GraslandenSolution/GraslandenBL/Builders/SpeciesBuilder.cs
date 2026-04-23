@@ -1,6 +1,5 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.Enums;
-using GraslandenBL.Results;
 
 namespace GraslandenBL.Builders
 {
@@ -19,97 +18,79 @@ namespace GraslandenBL.Builders
 
         public SpeciesBuilder AddMoisture(string moistureString)
         {
-            int? moisture = null;
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(moistureString)) _species.Moisture = int.Parse(moistureString);
-                if (moisture < 0) _errors.Add($"{_species.Name} | Foute waarde voor vochtigheid '{moisture}'. Moet een positief getal zijn.", MessageType.Error);
+                if (_species.Moisture < 0) _errors.Add($"{_species.Name} | Fout vochtgehalte: '{_species.Moisture}' moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Vochtgehalte: '{moistureString}' moet een getal zijn.", MessageType.Error);
+                _errors.Add($"{_species.Name} | Fout vochtgehalte: '{moistureString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
 
         public SpeciesBuilder AddPh(string phString)
         {
-            int? ph = null;
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(phString)) _species.Ph = int.Parse(phString);
-                if (ph < 0) _errors.Add($"{_species.Name} | Foute waarde voor zuurtegraad '{ph}'. Moet een positief getal zijn.", MessageType.Error);
+                if (_species.Ph < 0) _errors.Add($"{_species.Name} | Foute zuurtegraad: '{_species.Ph}' moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Zuurtegraad: '{phString}' moet een getal zijn.", MessageType.Error);
+                _errors.Add($"{_species.Name} | Foute zuurtegraad: '{phString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
 
         public SpeciesBuilder AddNitrogen(string nitrogenString)
         {
-            int? nitrogen = null;
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(nitrogenString)) _species.Nitrogen = int.Parse(nitrogenString);
-                if (nitrogen < 0) _errors.Add($"{_species.Name} | Foute stikstofwaarde '{nitrogen}'. Moet een positief getal zijn.", MessageType.Error);
+                if (_species.Nitrogen < 0) _errors.Add($"{_species.Name} | Fout stikstofgehalte: '{_species.Nitrogen}' moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Stikstofgehalte: '{nitrogenString}' moet een getal zijn.", MessageType.Error);
+                _errors.Add($"{_species.Name} | Fout stikstofgehalte: '{nitrogenString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
 
         public SpeciesBuilder AddNectarValue(string nectarValueString)
         {
-            int? nectarValue = null;
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(nectarValueString)) _species.Nectarvalue = int.Parse(nectarValueString);
-                if (nectarValue < 0) _errors.Add($"{_species.Name} | Foute nectarwaarde '{nectarValue}'. Moet een positief getal zijn.", MessageType.Error);
+                if (_species.Nectarvalue < 0) _errors.Add($"{_species.Name} | Foute nectarwaarde: '{_species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Nectarwaarde: '{nectarValueString}' moet een getal zijn.", MessageType.Error);
+                _errors.Add($"{_species.Name} | Foute nectarwaarde: '{nectarValueString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
 
         public SpeciesBuilder AddBiodiversity(string biodiversityString)
         {
-            int? biodiversity = null;
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(biodiversityString)) _species.Biodiversity = int.Parse(biodiversityString);
-                if (biodiversity < 0) _errors.Add($"{_species.Name} | Foute biodiversiteitswaarde '{biodiversity}'. Moet een positief getal zijn.", MessageType.Error);
+                if (_species.Biodiversity < 0) _errors.Add($"{_species.Name} | Foute biodiversiteit: '{_species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
             }
             catch
             {
-                _errors.Add($"{_species.Name} | Biodiversiteit: '{biodiversityString}' moet een getal zijn.", MessageType.Error);
+                _errors.Add($"{_species.Name} | Foute biodiversiteit: '{biodiversityString}' moet een getal zijn.", MessageType.Error);
             }
             return this;
         }
 
         public SpeciesBuilder AddRating(string ratingString)
         {
-            Rating? rating = null;
             try
             {
-                _species.Rating = ratingString.Trim() switch
-                {
-                    "+++" => Rating.Sleutel,
-                    "++" => Rating.Begeleidend,
-                    "+" => Rating.Algemeen,
-                    "0" => Rating.Ruderaal,
-                    "-" => Rating.Invasief
-                };
+                _species.Rating = Species.ParseRating(ratingString.Trim()); 
             }
             catch
             {
