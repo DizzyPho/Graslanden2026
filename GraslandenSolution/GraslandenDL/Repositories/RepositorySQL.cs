@@ -373,10 +373,10 @@ namespace GraslandenDL.Repositories
                     transaction.Commit();
                     return inventoryId;
                 }
-                catch
+                catch (Exception ex)
                 {
                     transaction.Rollback();
-                    throw new Exception();
+                    throw ex;
                 }
             }
         }
