@@ -141,7 +141,7 @@ namespace GraslandenDL.Repositories
             string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage)" +
                                     "OUTPUT Inserted.id " +
                                       "VALUES (@inventoried_plot_id,@species_id,@coverage)";
-            string insertMessage = "INSERT INTO message (object_id, object_type, inventory_id, description, messageType) " +
+            string insertMessage = "INSERT INTO message (object_id, object_type, inventory_id, description, message_type) " +
                                     "VALUES (@objectId, @objectType, @inventoryId, @description, @messageType)";
 
             Dictionary<Species, int> speciesList = new();
@@ -604,7 +604,7 @@ namespace GraslandenDL.Repositories
 
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages)
         {
-            string queryInsertMessage = "INSERT INTO message(inventory_id, description, messageType) VALUES(@inventory_id, @description, @messageType)";
+            string queryInsertMessage = "INSERT INTO message(inventory_id, description, message_type) VALUES(@inventory_id, @description, @messageType)";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdInsertMessages = con.CreateCommand())

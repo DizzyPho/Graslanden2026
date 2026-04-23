@@ -183,8 +183,8 @@ CREATE TABLE message (
 	object_type nvarchar(50),
 	inventory_id int not null,
 	description nvarchar(500) not null,
-	isSolved bit DEFAULT 0 not null,
-	messageType nvarchar(50) not null,
+	is_solved bit DEFAULT 0 not null,
+	message_type nvarchar(50) not null,
 	CONSTRAINT pk_message PRIMARY KEY (id)
 )
 GO
