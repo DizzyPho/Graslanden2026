@@ -34,8 +34,8 @@ namespace GraslandenGUI.TabItems
         {
             TextBlock txtRemark = new TextBlock { Text  = "Meldingen", Margin = new Thickness(10), HorizontalAlignment = HorizontalAlignment.Center };
             TextBlock txtError = new TextBlock { Text  = "Fouten", Margin = new Thickness(10), HorizontalAlignment = HorizontalAlignment.Center };
-            Grid.SetColumn(txtError, 0);
-            Grid.SetColumn(txtRemark, 1);
+            Grid.SetColumn(txtError, 1);
+            Grid.SetColumn(txtRemark, 0);
             Grid.SetRow(txtRemark, 0);
             Grid.SetRow(txtError, 0);
             grid.Children.Add(txtRemark);
