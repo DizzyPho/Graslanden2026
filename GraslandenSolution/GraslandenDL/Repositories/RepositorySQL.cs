@@ -663,18 +663,7 @@ namespace GraslandenDL.Repositories
             }
         }
 
-        private static ManagementType StringToManagementType(string s)
-        {
-            ManagementType managementTypeEnum = s switch
-            {
-                "Netheidsboord" => ManagementType.Netheidsboord,
-                "Schapenweide" => ManagementType.Schapenweide,
-                "Intensief" => ManagementType.Intensief,
-                "Extensief" => ManagementType.Extensief,
-                _ => throw new Exception("Invalid management type")
-            };
-            return managementTypeEnum;
-        }
+       
 
         public void DeleteMeasurement(int measurementDTO_id)
         {
