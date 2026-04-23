@@ -455,7 +455,7 @@ namespace GraslandenDL.Repositories
                     int inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
                     //int? speciesId = (int?)cmdSpecies.ExecuteScalar();
 
-                    Species foundSpecies = new Species();
+                    Species foundSpecies = null;
                     using (SqlDataReader reader = cmdSpecies.ExecuteReader())
                     {
                         while (reader.Read())
