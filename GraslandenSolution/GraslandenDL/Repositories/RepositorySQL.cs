@@ -185,15 +185,7 @@ namespace GraslandenDL.Repositories
                              biodiversity,
 
                              //Sleutel, Begeleidend, Algemeen, Ruderaal, Invasief
-                             rating switch
-                             {
-                                 "Sleutel" => Rating.Sleutel,
-                                 "Begeleidend" => Rating.Begeleidend,
-                                 "Algemeen" => Rating.Algemeen,
-                                 "Ruderaal" => Rating.Ruderaal,
-                                 "Invasief" => Rating.Invasief,
-                                 _ => null
-                             }
+                             Species.ParseRating(rating)
                              );
                             species.Add(s);
                         }
