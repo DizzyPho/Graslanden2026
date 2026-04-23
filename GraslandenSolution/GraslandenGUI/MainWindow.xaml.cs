@@ -65,6 +65,7 @@ namespace GraslandenGUI
                     niw.ShowDialog();
                     InventoryDTO newInventory = null;
                     ProgressBarWindow progressBarWindow = new ProgressBarWindow("Inventarisatie importeren...");
+                    bool uploadFailed = false;
                     progressBarWindow.Loaded += (_, args) =>
                     {
                         BackgroundWorker worker = new BackgroundWorker();
@@ -80,7 +81,7 @@ namespace GraslandenGUI
                             }
                             else
                             {
-                                MessageBox.Show("Er liep iets mis. Was dit het juiste bestand?", "Import gefaald", MessageBoxButton.OK, MessageBoxImage.Error);
+                                uploadFailed = true;
                             }
                         };
                         worker.RunWorkerCompleted += (s, workerArgs) =>
@@ -94,6 +95,10 @@ namespace GraslandenGUI
                     {
                         Inventories.Add(newInventory);
                         MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else if(uploadFailed)
+                    {
+                        MessageBox.Show("Er liep iets mis. Was dit het juiste bestand?", "Import gefaald", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
