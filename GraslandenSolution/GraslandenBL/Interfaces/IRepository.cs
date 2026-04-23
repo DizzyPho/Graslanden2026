@@ -23,5 +23,7 @@ namespace GraslandenBL.Interfaces
         public CampusDTO GetCampusDTO(int inventoryID,string campus);
 
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
+
+        public void DeleteMeasurement(int measurementDTO_id);
     }
 }
