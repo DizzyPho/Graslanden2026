@@ -109,7 +109,7 @@ namespace GraslandenDL.Repositories
                         }
                     }
 
-                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes);
+                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
                     campusDTOs.Add(campusDTO);
                 }
             }
@@ -676,7 +676,7 @@ namespace GraslandenDL.Repositories
                     }
                 }
 
-                CampusDTO campusDTO = new CampusDTO(plots, plotTypes);
+                CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
                 return campusDTO;
             }
         }
