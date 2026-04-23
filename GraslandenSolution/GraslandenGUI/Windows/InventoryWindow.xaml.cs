@@ -158,7 +158,7 @@ namespace GraslandenGUI.Windows
 
             AddPlotWindow apw = new AddPlotWindow();
             apw.ShowDialog();
-            if( CampusInfo.SelectMany(c => c.Value.Plots).Any(p => p.Code == apw.Code))
+            if( PlotLists.SelectMany(c => c.Value).Any(p => p.Code == apw.Code))
             {
                 MessageBox.Show("Dit grasland is al geïnventariseerd.");
                 return;
@@ -167,6 +167,11 @@ namespace GraslandenGUI.Windows
             if(!String.IsNullOrWhiteSpace(apw.Code) && !String.IsNullOrWhiteSpace(apw.PlotType))
             {
                 Plot plot = _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+                if (plot == null)
+                {
+                    MessageBox.Show("Dit grasland bestaan niet, gebruik de code van een bestaand grasland.");
+                    return;
+                }
                 PlotLists[plot.Campus].Add(plot);
             }
         }

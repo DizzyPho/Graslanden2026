@@ -9,6 +9,7 @@ using GraslandenBL.Interfaces;
 using GraslandenUtil.Factories;
 using Microsoft.Win32;
 using GraslandenGUI.Windows;
+using System.ComponentModel;
 
 namespace GraslandenGUI
 {
@@ -62,25 +63,40 @@ namespace GraslandenGUI
                 {
                     NewInventoryWindow niw = new NewInventoryWindow();
                     niw.ShowDialog();
-                    // ProgressBarWindow progressBarWindow = new ProgressBarWindow();
-                    // progressBarWindow.ShowDialog();
-                    if(niw.Inventory == null)
+                    InventoryDTO newInventory = null;
+                    ProgressBarWindow progressBarWindow = new ProgressBarWindow("Inventarisatie importeren...");
+                    progressBarWindow.Loaded += (_, args) =>
                     {
-                        return;
-                    }
-                    if(_importManager.ReadFile(fileName))
+                        BackgroundWorker worker = new BackgroundWorker();
+                        worker.DoWork += (_, args) =>
+                        {
+                            if (niw.Inventory == null)
+                            {
+                                return;
+                            }
+                            if (_importManager.ReadFile(fileName))
+                            {
+                                newInventory = _importManager.ImportData(fileName, niw.Inventory);
+                            }
+                            else
+                            {
+                                MessageBox.Show("Er liep iets mis. Was dit het juiste bestand?", "Import gefaald", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        };
+                        worker.RunWorkerCompleted += (s, workerArgs) =>
+                        {
+                             progressBarWindow.Close();
+                        };
+                        worker.RunWorkerAsync();
+                    };
+                    progressBarWindow.ShowDialog();
+                    if (newInventory != null)
                     {
-                        InventoryDTO newInventory = _importManager.ImportData(fileName, niw.Inventory);
-                        if(newInventory != null) Inventories.Add(newInventory);
+                        Inventories.Add(newInventory);
                         MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
-                    else
-                    {
-                        MessageBox.Show("Er liep iets mis. Was dit het juiste bestand?", "Import gefaald", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    // progressBarWindow.Close();
                 }
-            }      
+            }
         }
 
         private void AddNew_Click(object sender, RoutedEventArgs e)

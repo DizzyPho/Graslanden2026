@@ -36,7 +36,7 @@ namespace GraslandenGUI.Windows
 
         private void ButtonAdd_Click(object sender, RoutedEventArgs e)
         {
-            Code = TextBoxCode.Text;
+            Code = TextBoxCode.Text.ToUpper();
             ManagementType = Plot.StringToManagementType(ComboBoxManagementType.Text);
             PlotType = TextBoxPlotType.Text;
             Close();
