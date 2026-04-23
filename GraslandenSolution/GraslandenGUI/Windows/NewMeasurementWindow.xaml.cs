@@ -25,7 +25,7 @@ namespace GraslandenGUI.Windows
         private Manager _manager;
         private string _plotCode;
         private int _inventoryId;
-        public MeasurementDTO NewMeasurement { get; init; }
+        public MeasurementDTO NewMeasurement { get; private set; }
 
         public NewMeasurementWindow(Manager manager, string plotCode, int inventoryId)
         {
@@ -41,6 +41,7 @@ namespace GraslandenGUI.Windows
             MeasurementDTO measurement = _manager.InsertMeasurement(plotCode: _plotCode, species: TextBoxSpecies.Text, coverage: TextBoxCoverage.Text, inventoryId: _inventoryId);
             if(measurement != null)
             {
+                NewMeasurement = measurement;
                 Close();
             }
             else
