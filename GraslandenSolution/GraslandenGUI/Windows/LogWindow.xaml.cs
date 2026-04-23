@@ -1,5 +1,9 @@
-﻿using System;
+﻿using GraslandenBL.Enums;
+using GraslandenBL.Managers;
+using GraslandenGUI.TabItems;
+using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,8 +21,15 @@ namespace GraslandenGUI.Windows
     /// </summary>
     public partial class LogWindow : Window
     {
-        public LogWindow()
+        private Manager _manager;
+        public LogWindow(Manager manager)
         {
+            _manager = manager;
+            _manager.GetAllMessages();
+            foreach (KeyValuePair<String, Dictionary<String, MessageType>> inventoryMessages in _manager.GetAllMessages())
+            {
+                TabControlErrors.Items.Add(new TabItemInventoryMessages(inventoryMessages.Key, inventoryMessages.Value));
+            }
             InitializeComponent();
         }
     }
