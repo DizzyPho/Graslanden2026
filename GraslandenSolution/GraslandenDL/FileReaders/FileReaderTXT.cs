@@ -122,7 +122,6 @@ namespace GraslandenDL.FileReaders
                                         // Plot codes
                                         if (currentLineWithinCampus == 0)
                                         {
-
                                             string campusCode = "";
                                             foreach (char character in currentCell)
                                             {
@@ -230,6 +229,8 @@ namespace GraslandenDL.FileReaders
                         {
                             for (int i = 0; i < lineSections.Length; i++)
                             {
+                                if (lineSections[i] == "Potentilla indica")
+                                    Console.WriteLine();
                                 // Column == column of a plant name (=> there are 5 cells in between)
                                 if ((i - 1) % 6 == 0)
                                 {
@@ -244,11 +245,11 @@ namespace GraslandenDL.FileReaders
                                             // Make object through builder
                                             // Builder always returns list of error messages in case of missing/wrong values
                                             SpeciesBuilder speciesBuilder = new SpeciesBuilder(name: lineSections[i], fileName: "INV");
+                                            Species species;
 
                                             // Names in Tyler database include extra info we don't want at the end
                                             List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(lineSections[i]))
                                                                                                  .ToList();
-
                                             // Check if a match was found
                                             if (tylerNameResults.Count > 0)
                                             {
@@ -277,82 +278,95 @@ namespace GraslandenDL.FileReaders
                                                 speciesBuilder.AddBiodiversity(biodiversityString: tylerSpecies.Biodiversity.ToString());
                                                 speciesBuilder.AddRating(ratingString: lineSections[i + 5]);
 
-                                                Species species = speciesBuilder.Build();
-
-                                                // Is the data valid? If false, return error messages
-                                                if (MeasurementValidation.Validate(coverage: lineSections[i + 1], out Dictionary<string, MessageType> measurementMessages))
-                                                {
-                                                    Measurement newMeasurement = new Measurement(species: species,
-                                                                                                 coverage: lineSections[i + 1],
-                                                                                                 plot: currentPlot);
-
-                                                    // Check for spelling mistakes
-                                                    foreach (string speciesName in allSpeciesNames)
-                                                    {
-                                                        // Amount of differing characters + 1
-                                                        int distance = Levenshtein.Distance(value1: newMeasurement.Species.Name.Trim(),
-                                                                                            value2: speciesName.Trim());
-
-                                                        // 1 == equal, 3 == 2 character difference
-                                                        if (distance < 3 && distance > 1)
-                                                        {
-                                                            // Remarks need to be unique
-                                                            if (!messages.ContainsKey(key: $"{speciesName.Trim()} | {newMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
-                                                            {
-                                                                messages.TryAdd(key: $"{newMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", value: MessageType.Remark);
-                                                            }
-                                                        }
-                                                    }
-
-                                                    foreach (KeyValuePair<string, MessageType> remark in measurementMessages)
-                                                    {
-                                                        newMeasurement.Errors.Add(key: $"INV{currentLine} | {remark.Key}",
-                                                                                  value: remark.Value);
-                                                    }
-
-                                                    results.Add(newMeasurement);
-                                                    allSpeciesNames.Add(species.Name);
-                                                }
-                                                else
-                                                {
-                                                    foreach (KeyValuePair<string, MessageType> error in measurementMessages)
-                                                    {
-                                                        messages.Add(key: $"INV{currentLine} | {error.Key}",
-                                                                     value: error.Value);
-                                                    }
-                                                }
-
-                                                // Add and increment species count of plot
-                                                if (!speciesPerPlot.ContainsKey(currentPlot.Code))
-                                                {
-                                                    speciesPerPlot.Add(key: currentPlot.Code,
-                                                                       value: 1);
-                                                }
-                                                else speciesPerPlot[currentPlot.Code]++;
+                                                species = speciesBuilder.Build();
                                             }
                                             else
                                             {
+                                                speciesBuilder.AddMoisture(moistureString: lineSections[i + 2]);
+                                                speciesBuilder.AddPh(phString: lineSections[i + 3]);
+                                                speciesBuilder.AddNitrogen(nitrogenString: lineSections[i + 4]);
+                                                speciesBuilder.AddRating(ratingString: lineSections[i + 5]);
+
+                                                species = speciesBuilder.Build();
+
                                                 // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
                                                 if (!unfoundNames.ContainsKey(key: lineSections[i]))
                                                 {
                                                     unfoundNames.Add(key: lineSections[i],
-                                                                     value: 1);
+                                                                        value: 1);
                                                 }
                                                 else unfoundNames[lineSections[i]]++;
                                             }
-                                        }
 
-                                        // Every line with general data info at bottom of a plot's species list
-                                        else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
-                                        {
-                                            // Find plot code and add plot type
-                                            if (plots.TryGetValue(key: firstLineCurrentCampus[i],
-                                                                  out Plot plot))
+                                            // Is the data valid? If false, return error messages
+                                            if (MeasurementValidation.Validate(coverage: lineSections[i + 1],
+                                                                                out Dictionary<string, MessageType> measurementMessages))
                                             {
-                                                if (speciesPerPlot[plot.Code] == currentLineWithinCampus - 15)
+                                                Measurement newMeasurement = new Measurement(species: species,
+                                                                                                coverage: lineSections[i + 1],
+                                                                                                plot: currentPlot);
+
+                                                // Check for spelling mistakes
+                                                foreach (string speciesName in allSpeciesNames)
                                                 {
-                                                    plot.PlotType = lineSections[i + 2];
+                                                    // Amount of differing characters + 1
+                                                    int distance = Levenshtein.Distance(value1: newMeasurement.Species.Name.Trim(),
+                                                                                        value2: speciesName.Trim());
+
+                                                    // 1 == equal, 3 == 2 character difference
+                                                    if (distance < 3 && distance > 1)
+                                                    {
+                                                        // Remarks need to be unique
+                                                        if (!messages.ContainsKey(key: $"{speciesName.Trim()} | {newMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                                                        {
+                                                            messages.TryAdd(key: $"{newMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", value: MessageType.Remark);
+                                                        }
+                                                    }
                                                 }
+
+                                                foreach (KeyValuePair<string, MessageType> remark in measurementMessages)
+                                                {
+                                                    newMeasurement.Errors.Add(key: $"INV{currentLine} | {remark.Key}",
+                                                                                value: remark.Value);
+                                                }
+
+                                                results.Add(newMeasurement);
+                                                allSpeciesNames.Add(species.Name);
+
+                                            }
+                                            else
+                                            {
+                                                foreach (KeyValuePair<string, MessageType> error in measurementMessages)
+                                                {
+                                                    messages.Add(key: $"INV{currentLine} | {error.Key}",
+                                                                    value: error.Value);
+                                                }
+                                            }
+
+                                            // Add and increment species count of plot
+                                            if (currentPlot != null)
+                                            {
+                                                if (!speciesPerPlot.ContainsKey(currentPlot.Code))
+                                                {
+                                                    speciesPerPlot.Add(key: currentPlot.Code,
+                                                                        value: 1);
+                                                }
+                                                else speciesPerPlot[currentPlot.Code]++;
+                                            }
+
+                                        }
+                                    }
+
+                                    // Every line with general data info at bottom of a plot's species list
+                                    else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
+                                    {
+                                        // Find plot code and add plot type
+                                        if (plots.TryGetValue(key: firstLineCurrentCampus[i],
+                                                                out Plot plot))
+                                        {
+                                            if (speciesPerPlot[plot.Code] == currentLineWithinCampus - 15)
+                                            {
+                                                plot.PlotType = lineSections[i + 2];
                                             }
                                         }
                                     }
@@ -360,30 +374,30 @@ namespace GraslandenDL.FileReaders
                             }
                         }
                         currentLineWithinCampus++;
-                        currentLine++;
                     }
+                    currentLine++;
                 }
+            }
             #endregion
 
-                #region General remarks
-                // General remarks for species that weren't found in Tyler database & how many times they appear
-                foreach (KeyValuePair<string, int> name in unfoundNames)
-                {
-                    if (name.Value > 1)
-                        messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} metingen.", MessageType.Remark);
-                    else
-                        messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
-                }
-                #endregion
-
-                if (results.Count > 0)
-                {
-                    return results;
-                }
+            #region General remarks
+            // General remarks for species that weren't found in Tyler database & how many times they appear
+            foreach (KeyValuePair<string, int> name in unfoundNames)
+            {
+                if (name.Value > 1)
+                    messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} metingen.", MessageType.Remark);
                 else
-                {
-                    throw new Exception("Er werd geen enkel plot gevonden. Was dit het juiste bestand?");
-                }
+                    messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
+            }
+            #endregion
+
+            if (results.Count > 0)
+            {
+                return results;
+            }
+            else
+            {
+                throw new Exception("Er werd geen enkel plot gevonden. Was dit het juiste bestand?");
             }
         }
     }
