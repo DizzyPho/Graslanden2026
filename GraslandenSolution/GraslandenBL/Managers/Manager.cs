@@ -51,5 +51,10 @@ namespace GraslandenBL.Managers
         {
             return _repository.GetMeasurementsDTOForPlot(currentInventoryId, currentPlot.Code);
         }
+
+        public void DeleteMeasurement(int measurementId)
+        {
+            _repository.DeleteMeasurement(measurementId);
+        }
     }
 }
