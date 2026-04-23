@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
-        Title="Inventaris" Height="450" Width="800">
+        Title="Inventaris" Height="600" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
