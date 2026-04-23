@@ -33,6 +33,7 @@ namespace GraslandenGUI.Windows
             List<MeasurementDTO> measurements = manager.GetSpeciesOfPlot(currentPlot, currentInventoryId);
             Measurements = new ObservableCollection<MeasurementDTO>(measurements);
             ShowPlotInfo(measurements);
+            TextBlockTitle.Text = $"Grasland {currentPlot.Code}";
             DataGridMeasurements.ItemsSource = Measurements;
         }
 
@@ -74,6 +75,19 @@ namespace GraslandenGUI.Windows
             GridInfo.Children.Add(txtNectar);
             GridInfo.Children.Add(txtBiodiversity);
             GridInfo.Children.Add(txtCount);
+
+            TextBlock moistureText = new TextBlock { Text = Plot.CalculateMoistureString(avgMoisture), Margin = new Thickness(10, 15, 10, 2) };
+            TextBlock phText = new TextBlock { Text = Plot.CalculatePhString(avgPh), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock nitrogenText = new TextBlock { Text = Plot.CalculateNitrogenString(avgNitrogen), Margin = new Thickness(10, 2, 10, 2) };
+            Grid.SetColumn(moistureText, 0);
+            Grid.SetColumn(phText, 0);
+            Grid.SetColumn(nitrogenText, 0);
+            Grid.SetRow(moistureText, 3);
+            Grid.SetRow(phText, 4);
+            Grid.SetRow(nitrogenText, 5);
+            GridInfo.Children.Add(moistureText);
+            GridInfo.Children.Add(phText);
+            GridInfo.Children.Add(nitrogenText);
         }
     }
 }

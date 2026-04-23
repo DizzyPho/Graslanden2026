@@ -36,5 +36,61 @@ namespace GraslandenBL.Domain
         {
             return HashCode.Combine(Code);
         }
+
+        public static string CalculateMoistureString(double? avgMoisture)
+        {
+            string moistureString = avgMoisture switch
+            {
+                <= 1 => "Extreem droog",
+                < 3 => "Tussen extreem droog en droog",
+                3 => "Droog",
+                < 5 => "Tussen droog en fris",
+                5 => "Fris",
+                < 7 => "Tussen fris en bijna altijd vochtig maar niet nat",
+                7 => "Bijna altijd vochtig maar niet nat",
+                < 9 => "Tussen bijna altijd vochtig en nat",
+                < 10 => "Nat",
+                < 11 => "Ondiep water",
+                >= 11 => "Ondergedoken",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            return moistureString;
+        }
+
+        public static string CalculatePhString(double? avgPh)
+        {
+            string phString = avgPh switch
+            {
+                <= 1 => "Sterk zuur",
+                < 3 => "Tussen sterk zuur en zuur",
+                3 => "Zuur",
+                < 5 => "Tussen zuur en matig zuur",
+                5 => "Matig zuur",
+                < 7 => "Tussen matig zuur en zwak basisch",
+                7 => "Zwak basisch",
+                < 9 => "Tussen zwak basisch en basisch",
+                >= 9 => "Basisch",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            return phString;
+        }
+
+        public static string CalculateNitrogenString(double? avgNitrogen)
+        {
+            string nitrogenString = avgNitrogen switch
+            {
+                <= 1 => "Zeer stikstofarm",
+                < 3 => "Tussen zeer stikstofarm en stikstofarm",
+                  3 => "Stikstofarm",
+                < 5 => "Tussen stikstofarm en matig stikstofrijk",
+                  5 => "Matig stikstofrijk",
+                < 7 => "Tussen matig stikstofrijk en vrij uitgesproken stikstofrijk",
+                  7 => "Vrij uitgesproken stikstofrijk",
+                < 9 => "Tussen vrij en zeer uitgesproken stikstofrijk",
+                >= 9 => "Zeer uitgesproken stikstofrijk",
+
+            }; 
+            return nitrogenString;
+        }
     }
 }

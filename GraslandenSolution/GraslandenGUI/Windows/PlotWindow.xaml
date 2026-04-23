@@ -14,9 +14,12 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Text="Grasland ___" Grid.Row="0" HorizontalAlignment="Center" Margin="10"></TextBlock>
+        <TextBlock Text="" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Name="TextBlockTitle"></TextBlock>
         <Grid Grid.Row="1" Margin="10" Name="GridInfo">
             <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
                 <RowDefinition Height="auto"></RowDefinition>
                 <RowDefinition Height="auto"></RowDefinition>
                 <RowDefinition Height="auto"></RowDefinition>
