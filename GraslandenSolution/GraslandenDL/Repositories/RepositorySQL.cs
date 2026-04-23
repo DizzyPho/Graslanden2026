@@ -96,7 +96,7 @@ namespace GraslandenDL.Repositories
                         }
                     }
 
-                    using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader()) 
+                    using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -184,7 +184,6 @@ namespace GraslandenDL.Repositories
                              );
                             species.Add(s);
                         }
-
                         return species;
                     }
                 }
@@ -316,7 +315,7 @@ namespace GraslandenDL.Repositories
 
                             speciesId = (int?)cmdInsertSpecies.ExecuteScalar();
                         }
-                        
+
                         foreach (KeyValuePair<string, MessageType> message in species.Errors)
                         {
                             cmdMessage.Parameters["@objectId"].Value = (int)speciesId;
@@ -361,7 +360,7 @@ namespace GraslandenDL.Repositories
                         cmdMeasurement.Parameters["@species_id"].Value = speciesList[measurement.Species];
                         cmdMeasurement.Parameters["@coverage"].Value = measurement.Coverage;
                         int measurementId = (int)cmdMeasurement.ExecuteScalar();
-                        
+
                         foreach (KeyValuePair<string, MessageType> message in measurement.Errors)
                         {
                             cmdMessage.Parameters["@objectId"].Value = measurementId;
@@ -394,7 +393,6 @@ namespace GraslandenDL.Repositories
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-
                     while (reader.Read())
                     {
                         inventories.Add(new InventoryDTO(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2)));
@@ -419,11 +417,11 @@ namespace GraslandenDL.Repositories
                 return (int)cmd.ExecuteScalar();
             }
         }
-        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
+        public MeasurementDTO InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
             const string queryInventoriedPlot = "select id from inventoried_plot where inventory_id = @inventory_id and plot_code = @plot_code";
-            const string querySpecies = "select id from species where name = @name";
-            const string queryMeasurement = "insert into measurement (inventoried_plot_id, species_id, coverage) VALUES (@inventoried_plot_id,@species_id,@coverage)";
+            const string querySpecies = "select * from species where name = @name";
+            const string queryMeasurement = "insert into measurement (inventoried_plot_id, species_id, coverage) OUTPUT Inserted.Id VALUES (@inventoried_plot_id,@species_id,@coverage)";
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             using (SqlCommand cmdInventoriedPlot = conn.CreateCommand())
@@ -447,27 +445,54 @@ namespace GraslandenDL.Repositories
                 try
                 {
                     int inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
-                    int? speciesId = (int?)cmdSpecies.ExecuteScalar();
+                    //int? speciesId = (int?)cmdSpecies.ExecuteScalar();
 
-                    if (speciesId != null)
+                    Species foundSpecies = new Species();
+                    using (SqlDataReader reader = cmdSpecies.ExecuteReader())
                     {
-                        cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
-                        cmdMeasurement.Parameters.AddWithValue("@species_id", speciesId);
-                        cmdMeasurement.Parameters.AddWithValue("@coverage", coverage);
-                        cmdMeasurement.ExecuteNonQuery();
-                        transaction.Commit();
-                        return true;
+                        while (reader.Read())
+                        {
+                            int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
+                            int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
+                            foundSpecies = new Species(reader.GetInt32(reader.GetOrdinal("id")),
+                                reader.GetString(reader.GetOrdinal("name")),
+                                reader.GetInt32(reader.GetOrdinal("moisture")),
+                                reader.GetInt32(reader.GetOrdinal("ph")),
+                                reader.GetInt32(reader.GetOrdinal("nitrogen")),
+                                nectarValue,
+                                biodiversity,
+                                Species.ParseRating(reader.GetString(reader.GetOrdinal("rating"))));
+                        }
                     }
 
-                    return false;
+                    try
+                    {
+                        if (foundSpecies != null)
+                        {
+                            cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
+                        cmdMeasurement.Parameters.AddWithValue("@species_id", foundSpecies.Id);
+                        cmdMeasurement.Parameters.AddWithValue("@coverage", coverage);
+                        int measurementId = (int)cmdMeasurement.ExecuteScalar();
+
+                        transaction.Commit();
+                        return new MeasurementDTO(measurementId, foundSpecies, coverage);
+                        }
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        return null;
+                    }
+                    
+
+                    //return false;
                 }
                 catch (Exception ex)
                 {
-                    {
-                        transaction.Rollback();
-                        throw ex;
-                    }
+                    transaction.Rollback();
+                    throw ex;
                 }
+                return null;
             }
         }
         public List<MeasurementDTO> GetMeasurementsDTOForPlot(int inventoryID, string code)
@@ -490,26 +515,29 @@ namespace GraslandenDL.Repositories
 
                 //Open conection 
                 con.Open();
-                SqlDataReader reader = cmdMeasurementDTO.ExecuteReader();
-                //read!!
-                while (reader.Read())
-                {
-                    int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
-                    string speciesName = reader.GetString(reader.GetOrdinal("name"));
-                    string ratingString = reader.GetString(reader.GetOrdinal("rating"));
-                    Rating rating = Species.ParseRating(ratingString);
-                    int moisture = reader.GetInt32(reader.GetOrdinal("moisture"));
-                    int ph = reader.GetInt32(reader.GetOrdinal("ph"));
-                    int nitrogen = reader.GetInt32(reader.GetOrdinal("nitrogen"));
-                    int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
-                    int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
-                    string coverage = reader.GetString(reader.GetOrdinal("coverage"));
-                    int measurementId = reader.GetInt32(reader.GetOrdinal("id"));
 
-                    Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
-                    //public MeasurementDTO(int speciesid, string coverage)
-                    MeasurementDTO measurementDTO = new MeasurementDTO(measurementId,species, coverage);
-                    measurementDTOList.Add(measurementDTO);
+                //read!!
+                using (SqlDataReader reader = cmdMeasurementDTO.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
+                        string speciesName = reader.GetString(reader.GetOrdinal("name"));
+                        string ratingString = reader.GetString(reader.GetOrdinal("rating"));
+                        Rating rating = Species.ParseRating(ratingString);
+                        int moisture = reader.GetInt32(reader.GetOrdinal("moisture"));
+                        int ph = reader.GetInt32(reader.GetOrdinal("ph"));
+                        int nitrogen = reader.GetInt32(reader.GetOrdinal("nitrogen"));
+                        int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
+                        int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
+                        string coverage = reader.GetString(reader.GetOrdinal("coverage"));
+                        int measurementId = reader.GetInt32(reader.GetOrdinal("id"));
+
+                        Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
+                        //public MeasurementDTO(int speciesid, string coverage)
+                        MeasurementDTO measurementDTO = new MeasurementDTO(measurementId, species, coverage);
+                        measurementDTOList.Add(measurementDTO);
+                    }
                 }
                 return measurementDTOList;
             }
@@ -565,12 +593,13 @@ namespace GraslandenDL.Repositories
                                     try
                                     {
                                         // Get all inventoried_plot_ids of inventory
-                                        SqlDataReader reader = inventoriedPlotSelectCommand.ExecuteReader();
-                                        while (reader.Read())
+                                        using (SqlDataReader reader = inventoriedPlotSelectCommand.ExecuteReader())
                                         {
-                                            inventoriedPlotIds.Add(reader.GetInt32(reader.GetOrdinal("id")));
+                                            while (reader.Read())
+                                            {
+                                                inventoriedPlotIds.Add(reader.GetInt32(reader.GetOrdinal("id")));
+                                            }
                                         }
-                                        reader.Close();
 
                                         foreach (int id in inventoriedPlotIds)
                                         {
@@ -673,7 +702,7 @@ namespace GraslandenDL.Repositories
                     }
                 }
 
-                CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
+                CampusDTO campusDTO = new CampusDTO(plots, plotTypes, campus);
                 return campusDTO;
             }
         }
@@ -698,7 +727,7 @@ namespace GraslandenDL.Repositories
 
                 try
                 {   //For each key (description) value(messagetype) add them
-                    foreach (KeyValuePair<string,MessageType> messageType in messages)
+                    foreach (KeyValuePair<string, MessageType> messageType in messages)
                     {
                         cmdInsertMessages.Parameters["@inventory_id"].Value = inventoryID;
                         cmdInsertMessages.Parameters["@description"].Value = messageType.Key;
@@ -753,6 +782,15 @@ namespace GraslandenDL.Repositories
                     throw;
                 }
             }
+        }
+
+        public Dictionary<string, List<MessageDTO>> GetAllMessages()
+        {
+            string query = "SELECT i.name, m.description, m.message_type FROM message m " +
+                "JOIN inventory i ON m.inventory_id = i.id " +
+                "WHERE i.name = 'erftgyh'";
+
+            throw new NotImplementedException();
         }
     }
 }
