@@ -29,7 +29,7 @@ namespace GraslandenGUI.Windows
             _manager.GetAllMessages();
             foreach (KeyValuePair<String, Dictionary<String, MessageType>> inventoryMessages in _manager.GetAllMessages())
             {
-                TabControlErrors.Items.Add(new TabItemInventoryMessages(inventoryMessages.Key, inventoryMessages.Value));
+                TabControlErrors.Items.Add(new TabItemInventoryMessages(inventoryMessages.Key, inventoryMessages.Value, this));
             }
         }
     }
