@@ -37,12 +37,12 @@ namespace GraslandenDL.FileReaders
 
                     // Make object through builder
                     // Builder always returns list of error messages in case of missing/wrong values
-                    SpeciesBuilder speciesBuilder = new SpeciesBuilder(name: lineSections[0])
-                                                    .AddMoisture(moistureString: lineSections[15])
-                                                    .AddPh(phString: lineSections[16])
-                                                    .AddNitrogen(nitrogenString: lineSections[17])
-                                                    .AddNectarValue(nectarValueString: lineSections[9])
-                                                    .AddBiodiversity(biodiversityString: lineSections[8]);
+                    SpeciesBuilder speciesBuilder = new SpeciesBuilder(name: lineSections[0]);
+                    speciesBuilder.AddMoisture(moistureString: lineSections[15]);
+                    speciesBuilder.AddPh(phString: lineSections[16]);
+                    speciesBuilder.AddNitrogen(nitrogenString: lineSections[17]);
+                    speciesBuilder.AddNectarValue(nectarValueString: lineSections[9]);
+                    speciesBuilder.AddBiodiversity(biodiversityString: lineSections[8]);
                     Species species = speciesBuilder.Build();
 
                     // Object is only null if name is empty/null
@@ -144,7 +144,7 @@ namespace GraslandenDL.FileReaders
                                                             && campusCode.Length <= currentCampus.Length
                                                             && Levenshtein.Distance(campusCode, currentCampus.Substring(startIndex: 0, length: campusCode.Length).ToUpper()) < 3)
                                                 {
-                                                    messages.Add($"{currentCampus} {currentCell} | Ongeldige plotcode", MessageType.Error);
+                                                    messages.TryAdd($"{currentCampus} {currentCell} | Ongeldige plotcode", MessageType.Error);
                                                 }
                                             }
                                         }
@@ -164,6 +164,7 @@ namespace GraslandenDL.FileReaders
                                 }
                                 if (plotNames.Count == 0) wasPlotFound = false;
                             }
+
                             // Combine data once every list has been filled
                             else if (currentLineWithinCampus == 3 && wasPlotFound == true)
                             {
@@ -231,196 +232,383 @@ namespace GraslandenDL.FileReaders
                                         // Retrieve plot from plot code in same column
                                         if (plots.TryGetValue(firstLineCurrentCampus[i], out Plot currentPlot))
                                         {
+
                                             // Make object through builder
                                             // Builder always returns list of error messages in case of missing/wrong values
-                                            SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i])
-                                                .AddMoisture(lineSections[i + 2])
-                                                .AddPh(lineSections[i + 3])
-                                                .AddNitrogen(lineSections[i + 4])
-                                                .AddRating(lineSections[i + 5]);
+                                            SpeciesBuilder speciesBuilder = new SpeciesBuilder(lineSections[i]);
 
-                                            Species species = speciesBuilder.Build();
+                                            // Names in Tyler database include extra info we don't want at the end
+                                            List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(lineSections[i])).ToList();
 
-                                            // Is the data valid? If false, return error messages
-                                            if (MeasurementValidation.Validate(lineSections[i + 1], out Dictionary<string, MessageType> measurementMessages))
+                                            // Check if a match was found
+                                            if (tylerNameResults.Count > 0)
                                             {
-                                                Measurement newMeasurement = new Measurement(species, lineSections[i + 1], currentPlot);
+                                                // There can only be 1 match
+                                                string tylerSpeciesName = tylerNameResults.First();
 
-                                                foreach (KeyValuePair<string, MessageType> remark in measurementMessages)
+                                                Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
+
+                                                // Replace empty values with inventory values
+                                                if (!speciesBuilder.AddMoisture(tylerSpecies.Moisture.ToString()))
                                                 {
-                                                    newMeasurement.Errors.Add($"INV{currentLine} | {remark.Key}", remark.Value);
+                                                    speciesBuilder.AddMoisture(lineSections[i + 2]);
                                                 }
 
-                                                results.Add(newMeasurement);
-                                                allSpeciesNames.Add(species.Name);
+                                                if (!speciesBuilder.AddPh(tylerSpecies.Ph.ToString()))
+                                                {
+                                                    speciesBuilder.AddPh(lineSections[i + 3]);
+                                                }
+
+                                                if (!speciesBuilder.AddNitrogen(tylerSpecies.Nitrogen.ToString()))
+                                                {
+                                                    speciesBuilder.AddNitrogen(lineSections[i + 4]);
+                                                }
+
+                                                speciesBuilder.AddRating(lineSections[i + 5]);
+
+                                                //speciesBuilder.AddMoisture(lineSections[i + 2]);
+                                                //.AddPh(lineSections[i + 3])
+                                                //.AddNitrogen(lineSections[i + 4])
+                                                //.AddRating(lineSections[i + 5]);
+
+                                                Species species = speciesBuilder.Build();
+
+                                                // Overwrite errors list to include plot code of species
+                                                Dictionary<string, MessageType> messagesWithPlotCode = new Dictionary<string, MessageType>();
+                                                foreach (KeyValuePair<string, MessageType> message in species.Errors)
+                                                {
+                                                    messagesWithPlotCode.Add($"{currentPlot.Code} | {message.Key}", message.Value);
+                                                }
+                                                species.Errors = messagesWithPlotCode;
+
+                                                // Is the data valid? If false, return error messages
+                                                if (MeasurementValidation.Validate(lineSections[i + 1], out Dictionary<string, MessageType> measurementMessages))
+                                                {
+                                                    Measurement newMeasurement = new Measurement(species, lineSections[i + 1], currentPlot);
+
+                                                    // Check for spelling mistakes
+                                                    foreach (string speciesName in allSpeciesNames)
+                                                    {
+                                                        // Amount of differing characters + 1
+                                                        int distance = Levenshtein.Distance(newMeasurement.Species.Name.Trim(), speciesName.Trim());
+
+                                                        // 1 == equal, 3 == 2 character difference
+                                                        if (distance < 3 && distance > 1)
+                                                        {
+                                                            // Remarks need to be unique
+                                                            if (!messages.ContainsKey($"{speciesName.Trim()} | {newMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                                                            {
+                                                                messages.TryAdd($"{newMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    foreach (KeyValuePair<string, MessageType> remark in measurementMessages)
+                                                    {
+                                                        newMeasurement.Errors.Add($"INV{currentLine} | {remark.Key}", remark.Value);
+                                                    }
+
+                                                    results.Add(newMeasurement);
+                                                    allSpeciesNames.Add(species.Name);
+                                                }
+                                                else
+                                                {
+                                                    foreach (KeyValuePair<string, MessageType> error in measurementMessages)
+                                                    {
+                                                        messages.Add($"INV{currentLine} | {error.Key}", error.Value);
+                                                    }
+                                                }
+
+                                                // Add and increment species count of plot
+                                                if (!speciesPerPlot.ContainsKey(currentPlot.Code))
+                                                {
+                                                    speciesPerPlot.Add(currentPlot.Code, 1);
+                                                }
+                                                else speciesPerPlot[currentPlot.Code]++;
                                             }
                                             else
                                             {
-                                                foreach (KeyValuePair<string, MessageType> error in measurementMessages)
+                                                // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
+                                                if (!unfoundNames.ContainsKey(lineSections[i]))
                                                 {
-                                                    messages.Add($"INV{currentLine} | {error.Key}", error.Value);
+                                                    unfoundNames.Add(lineSections[i], 1);
                                                 }
+                                                else unfoundNames[lineSections[i]]++;
                                             }
-
-                                            // Add and increment species count of plot
-                                            if (!speciesPerPlot.ContainsKey(currentPlot.Code))
-                                            {
-                                                speciesPerPlot.Add(currentPlot.Code, 1);
-                                            }
-                                            else speciesPerPlot[currentPlot.Code]++;
                                         }
-                                    }
 
-                                    // Every line with general data info at bottom of a plot's species list
-                                    else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
-                                    {
-                                        // Find plot code and add plot type
-                                        if (plots.TryGetValue(firstLineCurrentCampus[i], out Plot currentPlot))
+                                        // Every line with general data info at bottom of a plot's species list
+                                        else if (lineSections.Count() > i + 2 && lineSections[i + 2].Trim() != "")
                                         {
-                                            if (speciesPerPlot[currentPlot.Code] == currentLineWithinCampus - 15)
+                                            // Find plot code and add plot type
+                                            if (plots.TryGetValue(firstLineCurrentCampus[i], out Plot plot))
                                             {
-                                                currentPlot.PlotType = lineSections[i + 2];
+                                                if (speciesPerPlot[plot.Code] == currentLineWithinCampus - 15)
+                                                {
+                                                    plot.PlotType = lineSections[i + 2];
+                                                }
                                             }
                                         }
                                     }
                                 }
+
+                                //#region SpeciesMatching
+                                //foreach (Measurement inventoryMeasurement in results)
+                                //{
+                                // Check for spelling mistakes
+                                //foreach (string speciesName in allSpeciesNames)
+                                //{
+                                //    // Amount of differing characters + 1
+                                //    int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
+
+                                //    // 1 == equal, 3 == 2 character difference
+                                //    if (distance < 3 && distance > 1)
+                                //    {
+                                //        // Remarks need to be unique
+                                //        if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                                //        {
+                                //            messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
+                                //        }
+                                //    }
+                                //}
+
+                                // Names in Tyler database include extra info we don't want at the end
+                                //List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
+
+                                // Check if a match was found
+                                //if (tylerNameResults.Count > 0)
+                                //{
+                                //    // There can only be 1 match
+                                //    string tylerSpeciesName = tylerNameResults.First();
+
+                                //    Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
+
+                                //    // Replace empty values with inventory values
+                                //    if (tylerSpecies.Moisture != null)
+                                //    {
+                                //        inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
+                                //    }
+                                //    else
+                                //    {
+                                //        if (inventoryMeasurement.Species.Moisture != null)
+                                //        {
+                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                                //        }
+                                //        else
+                                //        {
+                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in beide tabellen.", MessageType.Error);
+                                //        }
+                                //    }
+
+                                //        if (tylerSpecies.Ph != null)
+                                //        {
+                                //            inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
+                                //        }
+                                //        else
+                                //        {
+                                //            if (inventoryMeasurement.Species.Ph != null)
+                                //            {
+                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                                //            }
+                                //            else
+                                //            {
+                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in beide tabellen.", MessageType.Error);
+                                //            }
+                                //        }
+
+                                //        if (tylerSpecies.Nitrogen != null)
+                                //        {
+                                //            inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
+                                //        }
+                                //        else
+                                //        {
+                                //            if (inventoryMeasurement.Species.Nitrogen != null)
+                                //            {
+                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                                //            }
+                                //            else
+                                //            {
+                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in beide tabellen.", MessageType.Error);
+                                //            }
+                                //        }
+
+                                //        // These aren't included in inventory file
+                                //        if (tylerSpecies.Nectarvalue != null)
+                                //        {
+                                //            inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
+
+                                //            if (tylerSpecies.Nectarvalue < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute nectarwaarde: '{inventoryMeasurement.Species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
+                                //        }
+                                //        else
+                                //        {
+                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Nectarwaarde niet gevonden in Tylerdatabank.", MessageType.Remark);
+                                //        }
+                                //        if (tylerSpecies.Biodiversity != null)
+                                //        {
+                                //            inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
+
+                                //            if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
+                                //        }
+                                //        else
+                                //        {
+                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Biodiversiteit niet gevonden in Tylerdatabank.", MessageType.Remark);
+                                //        }
+                                //    }
+                                //    else
+                                //    {
+                                //        // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
+                                //        if (!unfoundNames.ContainsKey(inventoryMeasurement.Species.Name))
+                                //        {
+                                //            unfoundNames.Add(inventoryMeasurement.Species.Name, 1);
+                                //        }
+                                //        else unfoundNames[inventoryMeasurement.Species.Name]++;
+                                //    }
+                                ////}
+                                //#endregion
+
                             }
                         }
                         currentLineWithinCampus++;
+                        currentLine++;
                     }
-                    currentLine++;
                 }
-            }
             #endregion
 
-            #region SpeciesMatching
-            foreach (Measurement inventoryMeasurement in results)
-            {
-                // Check for spelling mistakes
-                foreach (string speciesName in allSpeciesNames)
-                {
-                    // Amount of differing characters + 1
-                    int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
+                //#region SpeciesMatching
+                //foreach (Measurement inventoryMeasurement in results)
+                //{
+                //    // Check for spelling mistakes
+                //    foreach (string speciesName in allSpeciesNames)
+                //    {
+                //        // Amount of differing characters + 1
+                //        int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
 
-                    // 1 == equal, 3 == 2 character difference
-                    if (distance < 3 && distance > 1)
-                    {
-                        // Remarks need to be unique
-                        if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
-                        {
-                            messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
-                        }
-                    }
+                //        // 1 == equal, 3 == 2 character difference
+                //        if (distance < 3 && distance > 1)
+                //        {
+                //            // Remarks need to be unique
+                //            if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                //            {
+                //                messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
+                //            }
+                //        }
+                //    }
+
+                //    // Names in Tyler database include extra info we don't want at the end
+                //    List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
+
+                //    // Check if a match was found
+                //    if (tylerNameResults.Count > 0)
+                //    {
+                //        // There can only be 1 match
+                //        string tylerSpeciesName = tylerNameResults.First();
+
+                //        Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
+
+                //        // Replace empty values with inventory values
+                //        if (tylerSpecies.Moisture != null)
+                //        {
+                //            inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
+                //        }
+                //        else
+                //        {
+                //            if (inventoryMeasurement.Species.Moisture != null)
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                //            }
+                //            else
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in beide tabellen.", MessageType.Error);
+                //            }
+                //        }
+
+                //        if (tylerSpecies.Ph != null)
+                //        {
+                //            inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
+                //        }
+                //        else
+                //        {
+                //            if (inventoryMeasurement.Species.Ph != null)
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                //            }
+                //            else
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in beide tabellen.", MessageType.Error);
+                //            }
+                //        }
+
+                //        if (tylerSpecies.Nitrogen != null)
+                //        {
+                //            inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
+                //        }
+                //        else
+                //        {
+                //            if (inventoryMeasurement.Species.Nitrogen != null)
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
+                //            }
+                //            else
+                //            {
+                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in beide tabellen.", MessageType.Error);
+                //            }
+                //        }
+
+                //        // These aren't included in inventory file
+                //        if (tylerSpecies.Nectarvalue != null)
+                //        {
+                //            inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
+
+                //            if (tylerSpecies.Nectarvalue < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute nectarwaarde: '{inventoryMeasurement.Species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
+                //        }
+                //        else
+                //        {
+                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Nectarwaarde niet gevonden in Tylerdatabank.", MessageType.Remark);
+                //        }
+                //        if (tylerSpecies.Biodiversity != null)
+                //        {
+                //            inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
+
+                //            if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
+                //        }
+                //        else
+                //        {
+                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Biodiversiteit niet gevonden in Tylerdatabank.", MessageType.Remark);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
+                //        if (!unfoundNames.ContainsKey(inventoryMeasurement.Species.Name))
+                //        {
+                //            unfoundNames.Add(inventoryMeasurement.Species.Name, 1);
+                //        }
+                //        else unfoundNames[inventoryMeasurement.Species.Name]++;
+                //    }
+                //}
+                //#endregion
+
+                #region General remarks
+                // General remarks for species that weren't found in Tyler database & how many times they appear
+                foreach (KeyValuePair<string, int> name in unfoundNames)
+                {
+                    if (name.Value > 1)
+                        messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} metingen.", MessageType.Remark);
+                    else
+                        messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
                 }
+                #endregion
 
-                // Names in Tyler database include extra info we don't want at the end
-                List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
 
-                // Check if a match was found
-                if (tylerNameResults.Count > 0)
+                if (results.Count > 0)
                 {
-                    // There can only be 1 match
-                    string tylerSpeciesName = tylerNameResults.First();
-
-                    Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
-
-                    // Replace empty values with inventory values
-                    if (tylerSpecies.Moisture != null)
-                    {
-                        inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
-                    }
-                    else
-                    {
-                        if (inventoryMeasurement.Species.Moisture != null)
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                        }
-                        else
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                        }
-                    }
-
-                    if (tylerSpecies.Ph != null)
-                    {
-                        inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
-                    }
-                    else
-                    {
-                        if (inventoryMeasurement.Species.Ph != null)
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                        }
-                        else
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in beide tabellen.", MessageType.Error);
-                        }
-                    }
-
-                    if (tylerSpecies.Nitrogen != null)
-                    {
-                        inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
-                    }
-                    else
-                    {
-                        if (inventoryMeasurement.Species.Nitrogen != null)
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                        }
-                        else
-                        {
-                            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                        }
-                    }
-
-                    // These aren't included in inventory file
-                    if (tylerSpecies.Nectarvalue != null)
-                    {
-                        inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
-
-                        if (tylerSpecies.Nectarvalue < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute nectarwaarde: '{inventoryMeasurement.Species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
-                    }
-                    else
-                    {
-                        inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Nectarwaarde niet gevonden.", MessageType.Remark);
-                    }
-                    if (tylerSpecies.Biodiversity != null)
-                    {
-                        inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
-
-                        if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
-                    }
-                    else
-                    {
-                        inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Biodiversiteit niet gevonden.", MessageType.Remark);
-                    }
+                    return results;
                 }
                 else
                 {
-                    // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
-                    if (!unfoundNames.ContainsKey(inventoryMeasurement.Species.Name))
-                    {
-                        unfoundNames.Add(inventoryMeasurement.Species.Name, 1);
-                    }
-                    else unfoundNames[inventoryMeasurement.Species.Name]++;
+                    throw new Exception("Er werd geen enkel plot gevonden. Was dit het juiste bestand?");
                 }
             }
-            #endregion
-
-            #region General remarks
-            // General remarks for species that weren't found in Tyler database & how many times they appear
-            foreach (KeyValuePair<string, int> name in unfoundNames)
-            {
-                if (name.Value > 1)
-                    messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} metingen.", MessageType.Remark);
-                else
-                    messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
-            }
-            #endregion
-
-            if (results.Count > 0)
-                return results;
-            else throw new Exception("Er werd geen enkel plot gevonden. Was dit het juiste bestand?");
         }
     }
 }
