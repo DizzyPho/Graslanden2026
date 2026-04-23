@@ -6,6 +6,11 @@
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
         Title="Error log" Height="800" Width="600">
+    <Window.Resources>
+        <Style TargetType="ListBoxItem" x:Key="ListBoxItemStyle">
+            <Setter Property="Height" Value="30" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
