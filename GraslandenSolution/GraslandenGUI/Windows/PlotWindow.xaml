@@ -49,6 +49,11 @@
                 <DataGridTextColumn Header="Biodiversiteitswaarde" Binding="{Binding Species.Biodiversity}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Beoordeling" Binding="{Binding Species.Rating}"></DataGridTextColumn>
             </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Verwijderen" Click="DeleteMeasurement_Click"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
         </DataGrid>
         <Button Grid.Row="4" Content="Terug" Margin="10" Click="ButtonBack" HorizontalAlignment="Left" Padding="50 2"></Button>
         <Button Grid.Row="4" Content="Nieuwe Meting" Margin="10" Click="NewMeasurement_Click" HorizontalAlignment="Right" Padding="50 2"></Button>

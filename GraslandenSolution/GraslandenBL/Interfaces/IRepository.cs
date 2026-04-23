@@ -21,8 +21,6 @@ namespace GraslandenBL.Interfaces
         public void InsertSpecies(Species species);
         public bool DeleteInventory(int inventoryId);
 
-        public CampusDTO GetCampusDTO(int inventoryID,string campus);
-
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
 
         public void DeleteMeasurement(int measurementDTO_id);

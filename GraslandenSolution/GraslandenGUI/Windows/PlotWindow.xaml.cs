@@ -95,5 +95,16 @@ namespace GraslandenGUI.Windows
             NewMeasurementWindow nmw = new NewMeasurementWindow();
             nmw.ShowDialog();
         }
+
+        private void DeleteMeasurement_Click(object sender, RoutedEventArgs e)
+        {
+            if(DataGridMeasurements.SelectedItem == null)
+            {
+                return;
+            }
+            MeasurementDTO selectedMeasurement = (MeasurementDTO)DataGridMeasurements.SelectedItem;
+            _manager.DeleteMeasurement(selectedMeasurement.Id);
+            Measurements.Remove(selectedMeasurement);
+        }
     }
 }

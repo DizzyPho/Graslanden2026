@@ -42,14 +42,14 @@ namespace GraslandenBL.Managers
             return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }
 
-        public CampusDTO GetCampus(int inventoryId, string campus)
-        {
-            return _repository.GetCampusDTO(inventoryId, campus);
-        }
-
         public List<MeasurementDTO> GetSpeciesOfPlot(Plot currentPlot, int currentInventoryId)
         {
             return _repository.GetMeasurementsDTOForPlot(currentInventoryId, currentPlot.Code);
+        }
+
+        public void DeleteMeasurement(int measurementId)
+        {
+            _repository.DeleteMeasurement(measurementId);
         }
     }
 }
