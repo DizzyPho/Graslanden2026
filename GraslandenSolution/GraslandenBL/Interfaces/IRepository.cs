@@ -10,7 +10,7 @@ namespace GraslandenBL.Interfaces
 
         public List<Species> GetAllSpecies();
 
-        public HashSet<string> GetAllCampuses();
+        public List<CampusDTO> GetAllCampusesDTO();
 
         public List<InventoryDTO> GetInventoryDTOs();
         public int ImportEmptyInventory(InventoryDTO inventoryDTO);
