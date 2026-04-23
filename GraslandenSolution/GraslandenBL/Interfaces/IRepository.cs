@@ -27,6 +27,6 @@ namespace GraslandenBL.Interfaces
 
         public void DeleteMeasurement(int measurementDTO_id);
 
-        public bool CheckIfPlotExsists(string code);
+        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type)
     }
 }
