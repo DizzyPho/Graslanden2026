@@ -96,7 +96,7 @@ namespace GraslandenGUI.Windows
         {
             NewMeasurementWindow nmw = new NewMeasurementWindow(_manager, CurrentPlotCode, CurrentInventoryId);
             nmw.ShowDialog();
-            Measurements.Add(nmw.NewMeasurement);
+            if (nmw.NewMeasurement != null) { Measurements.Add(nmw.NewMeasurement); }
         }
 
         private void DeleteMeasurement_Click(object sender, RoutedEventArgs e)

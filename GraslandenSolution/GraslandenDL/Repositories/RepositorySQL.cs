@@ -749,38 +749,86 @@ namespace GraslandenDL.Repositories
                 cmdGetPlot.Transaction = transaction;
                 try
                 {
+                    Plot plot = null;
+                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, Dictionary<string, MessageType> errors = null)
+                    using (SqlDataReader reader = cmdGetPlot.ExecuteReader())
+                    {
+                        
+                        while (reader.Read())
+                        {
+                            string campus = reader.GetString(0);
+                            double area_sq_meterOrdinal = reader.GetDouble(1);
+                            plot = new Plot(code, area_sq_meterOrdinal, campus, managementType, plot_Type);
+                        }
+                        if (plot == null) return plot;
+                    }
+
                     //get the id of management type
                     int managementType_id = (int)cmdCheckManagementType.ExecuteScalar();
                     cmdInsertInventoriedPlot.Parameters.AddWithValue("@management_type_id", managementType_id);
                     cmdInsertInventoriedPlot.ExecuteNonQuery();
-
-                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, Dictionary<string, MessageType> errors = null)
-                    using (SqlDataReader reader = cmdGetPlot.ExecuteReader())
-                    {
-                        string campus = reader.GetString(0);
-                        double area_sq_meterOrdinal = reader.GetDouble(1);
-                        Plot plot = new Plot(code, area_sq_meterOrdinal, campus, managementType, plot_Type);
-
-                        transaction.Commit();
-                        return plot;
-                    }
+                    transaction.Commit();
+                    return plot;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     transaction.Rollback();
-                    return null;
-                    throw;
+                    throw ex;
                 }
             }
         }
 
-        public Dictionary<string, List<MessageDTO>> GetAllMessages()
+        public Dictionary<string, Dictionary<string, MessageType>> GetAllMessages()
         {
-            string query = "SELECT i.name, m.description, m.message_type FROM message m " +
-                "JOIN inventory i ON m.inventory_id = i.id " +
-                "WHERE i.name = 'erftgyh'";
+            Dictionary<string, Dictionary<string, MessageType>> allMessagesSorted = new Dictionary<string, Dictionary<string, MessageType>>();
 
-            throw new NotImplementedException();
+
+            string queryGetAllMessages = "SELECT i.name, m.inventory_id, m.description, m.message_type FROM message m " +
+            "LEFT OUTER JOIN inventory i ON m.inventory_id = i.id";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdGetMessagesDTO = con.CreateCommand())
+            {
+                //Open conection 
+                con.Open();
+                using (SqlDataReader reader = cmdGetMessagesDTO.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string inventory_name;
+                        int inventory_id = reader.GetInt32(1);
+                        if (inventory_id != null)
+                        {
+                            inventory_name = reader.GetString(0);
+                        }
+                        else
+                        {
+                            inventory_name = "Algemeen";
+                        }
+
+                        string description = reader.GetString(2);
+                        string messageTypeString = reader.GetString(3);
+                        MessageType messagetype = messagetype = messageTypeString switch
+                        {
+                            "Error" => MessageType.Error,
+                            "Remark" => MessageType.Remark,
+                            _ => throw new ArgumentException(),
+                        };
+
+                        Dictionary<string, MessageType> messageDesc = new Dictionary<string, MessageType>();
+                        if (allMessagesSorted.ContainsKey(inventory_name))
+                        {
+                            allMessagesSorted[inventory_name].Add(description,messagetype);
+                        }
+                        else
+                        {
+                            messageDesc.Add(description, messagetype);
+                            allMessagesSorted.Add(inventory_name,messageDesc);
+                        }
+                    }
+                    return allMessagesSorted;
+                }
+            }
         }
     }
 }
