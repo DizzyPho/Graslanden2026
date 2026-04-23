@@ -745,27 +745,31 @@ namespace GraslandenDL.Repositories
                 cmdGetPlot.Transaction = transaction;
                 try
                 {
+                    Plot plot = null;
+                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, Dictionary<string, MessageType> errors = null)
+                    using (SqlDataReader reader = cmdGetPlot.ExecuteReader())
+                    {
+                        
+                        while (reader.Read())
+                        {
+                            string campus = reader.GetString(0);
+                            double area_sq_meterOrdinal = reader.GetDouble(1);
+                            plot = new Plot(code, area_sq_meterOrdinal, campus, managementType, plot_Type);
+                        }
+                        if (plot == null) return plot;
+                    }
+
                     //get the id of management type
                     int managementType_id = (int)cmdCheckManagementType.ExecuteScalar();
                     cmdInsertInventoriedPlot.Parameters.AddWithValue("@management_type_id", managementType_id);
                     cmdInsertInventoriedPlot.ExecuteNonQuery();
-
-                    //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType, Dictionary<string, MessageType> errors = null)
-                    using (SqlDataReader reader = cmdGetPlot.ExecuteReader())
-                    {
-                        string campus = reader.GetString(0);
-                        double area_sq_meterOrdinal = reader.GetDouble(1);
-                        Plot plot = new Plot(code, area_sq_meterOrdinal, campus, managementType, plot_Type);
-
-                        transaction.Commit();
-                        return plot;
-                    }
+                    transaction.Commit();
+                    return plot;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     transaction.Rollback();
-                    return null;
-                    throw;
+                    throw ex;
                 }
             }
         }
