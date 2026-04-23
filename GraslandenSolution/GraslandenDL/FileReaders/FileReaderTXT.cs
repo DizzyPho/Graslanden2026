@@ -110,16 +110,14 @@ namespace GraslandenDL.FileReaders
                         // These rows contain general plot info
                         if (lineSections[0].Trim() != string.Empty)
                         {
-                            // Only the first three lines are relevant
-                            if (currentLineWithinCampus <= 2)
+                            // Plot codes
+                            if (currentLineWithinCampus == 0)
                             {
                                 for (int i = 1; i < lineSections.Length; i++)
                                 {
                                     string currentCell = lineSections[i];
-
                                     if (currentCell.Trim() != string.Empty)
                                     {
-                                        // Plot codes
                                         if (currentLineWithinCampus == 0)
                                         {
                                             string campusCode = "";
@@ -149,30 +147,44 @@ namespace GraslandenDL.FileReaders
                                                 }
                                             }
                                         }
-
-                                        // Areas (throw away data past plot info table)
-                                        else if (currentLineWithinCampus == 1
-                                                 && plotAreas.Count < plotNames.Count)
-                                        {
-                                            plotAreas.Add(currentCell);
-                                        }
-
-                                        // Management types (throw away data past plot info table)
-                                        else if (currentLineWithinCampus == 2
-                                                 && plotManagementTypes.Count < plotNames.Count)
-                                        {
-                                            plotManagementTypes.Add(currentCell);
-                                        }
                                     }
                                 }
-                                if (plotNames.Count == 0)
+                            }
+
+                            // Areas (throw away data past plot info table)
+                            else if (currentLineWithinCampus == 1 && plotAreas.Count < plotNames.Count)
+                            {
+                                for (int i = 1; i < lineSections.Length; i++)
                                 {
-                                    wasPlotFound = false;
+                                    string currentCell = lineSections[i];
+                                    if (currentCell.Trim() != string.Empty)
+                                    {
+                                        //if(plotAreas.Count < plotNames.Count)
+                                        //{
+                                            plotAreas.Add(currentCell);
+                                        //}
+                                    }
+                                }
+                            }
+
+                            // Management types (throw away data past plot info table)
+                            else if (currentLineWithinCampus == 2 && plotManagementTypes.Count < plotNames.Count)
+                            {
+                                for (int i = 1; i < lineSections.Length; i++)
+                                {
+                                    string currentCell = lineSections[i];
+                                    if (currentCell.Trim() != string.Empty)
+                                    {
+                                        //if (plotManagementTypes.Count < plotNames.Count)
+                                        //{
+                                            plotManagementTypes.Add(currentCell);
+                                        //}
+                                    }
                                 }
                             }
 
                             // Combine data once every list has been filled
-                            else if (currentLineWithinCampus == 3 && wasPlotFound == true)
+                            else if (currentLineWithinCampus == 3 && plotNames.Count > 0)
                             {
                                 for (int i = 0; i < plotNames.Count; i++)
                                 {
@@ -225,7 +237,7 @@ namespace GraslandenDL.FileReaders
                         }
 
                         // Every line past the plot info table
-                        else if (wasPlotFound == true)
+                        else if (plots.Count > 0)
                         {
                             for (int i = 0; i < lineSections.Length; i++)
                             {
