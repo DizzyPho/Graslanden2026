@@ -293,8 +293,6 @@ namespace GraslandenDL.Repositories
                 {
                     int inventoryId = (int)cmdInventory.ExecuteScalar();
 
-                    cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
-
                     using (SqlDataReader reader = cmdManagementType.ExecuteReader())
                     {
                         while (reader.Read())
@@ -326,6 +324,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(species);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = DBNull.Value;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                         speciesList.Add(species, (int)speciesId);
@@ -354,6 +354,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(plot);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                     }
@@ -371,6 +373,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(measurement);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                     }
