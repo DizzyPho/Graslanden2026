@@ -145,5 +145,10 @@ namespace GraslandenGUI.Windows
             }
 
         }
+
+        private void AddPlot_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
