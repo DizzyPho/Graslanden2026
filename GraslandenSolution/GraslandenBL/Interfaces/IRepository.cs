@@ -29,7 +29,7 @@ namespace GraslandenBL.Interfaces
 
         public void DeleteMeasurement(int measurementDTO_id);
 
-        public Dictionary<string, List<MessageDTO>> GetAllMessages();
+        public Dictionary<string, Dictionary<string, MessageType>> GetAllMessages();
 
         public Plot InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
     }

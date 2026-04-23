@@ -293,8 +293,6 @@ namespace GraslandenDL.Repositories
                 {
                     int inventoryId = (int)cmdInventory.ExecuteScalar();
 
-                    cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
-
                     using (SqlDataReader reader = cmdManagementType.ExecuteReader())
                     {
                         while (reader.Read())
@@ -326,6 +324,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(species);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = DBNull.Value;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                         speciesList.Add(species, (int)speciesId);
@@ -354,6 +354,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(plot);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                     }
@@ -371,6 +373,8 @@ namespace GraslandenDL.Repositories
                             cmdMessage.Parameters["@objectType"].Value = nameof(measurement);
                             cmdMessage.Parameters["@description"].Value = message.Key;
                             cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+
                             cmdMessage.ExecuteNonQuery();
                         }
                     }
@@ -774,13 +778,57 @@ namespace GraslandenDL.Repositories
             }
         }
 
-        public Dictionary<string, List<MessageDTO>> GetAllMessages()
+        public Dictionary<string, Dictionary<string, MessageType>> GetAllMessages()
         {
-            string query = "SELECT i.name, m.description, m.message_type FROM message m " +
-                "JOIN inventory i ON m.inventory_id = i.id " +
-                "WHERE i.name = 'erftgyh'";
+            Dictionary<string, Dictionary<string, MessageType>> allMessagesSorted = new Dictionary<string, Dictionary<string, MessageType>>();
 
-            throw new NotImplementedException();
+
+            string queryGetAllMessages = "SELECT i.name, m.inventory_id, m.description, m.message_type FROM message m " +
+            "LEFT OUTER JOIN inventory i ON m.inventory_id = i.id";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdGetMessagesDTO = con.CreateCommand())
+            {
+                //Open conection 
+                con.Open();
+                using (SqlDataReader reader = cmdGetMessagesDTO.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string inventory_name;
+                        int inventory_id = reader.GetInt32(1);
+                        if (inventory_id != null)
+                        {
+                            inventory_name = reader.GetString(0);
+                        }
+                        else
+                        {
+                            inventory_name = "Algemeen";
+                        }
+
+                        string description = reader.GetString(2);
+                        string messageTypeString = reader.GetString(3);
+                        MessageType messagetype = messagetype = messageTypeString switch
+                        {
+                            "Error" => MessageType.Error,
+                            "Remark" => MessageType.Remark,
+                            _ => throw new ArgumentException(),
+                        };
+
+                        Dictionary<string, MessageType> messageDesc = new Dictionary<string, MessageType>();
+                        if (allMessagesSorted.ContainsKey(inventory_name))
+                        {
+                            allMessagesSorted[inventory_name].Add(description,messagetype);
+                        }
+                        else
+                        {
+                            messageDesc.Add(description, messagetype);
+                            allMessagesSorted.Add(inventory_name,messageDesc);
+                        }
+                    }
+                    return allMessagesSorted;
+                }
+            }
         }
     }
 }
