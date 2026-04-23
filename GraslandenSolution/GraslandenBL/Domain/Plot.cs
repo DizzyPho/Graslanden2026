@@ -52,7 +52,7 @@ namespace GraslandenBL.Domain
                 < 10 => "Nat",
                 < 11 => "Ondiep water",
                 >= 11 => "Ondergedoken",
-                _ => throw new ArgumentOutOfRangeException()
+                _ => ""
             };
             return moistureString;
         }
@@ -70,7 +70,7 @@ namespace GraslandenBL.Domain
                 7 => "Zwak basisch",
                 < 9 => "Tussen zwak basisch en basisch",
                 >= 9 => "Basisch",
-                _ => throw new ArgumentOutOfRangeException()
+                _ => ""
             };
             return phString;
         }
@@ -88,9 +88,22 @@ namespace GraslandenBL.Domain
                   7 => "Vrij uitgesproken stikstofrijk",
                 < 9 => "Tussen vrij en zeer uitgesproken stikstofrijk",
                 >= 9 => "Zeer uitgesproken stikstofrijk",
-
+                _ => ""
             }; 
             return nitrogenString;
+        }
+
+        public static ManagementType StringToManagementType(string s)
+        {
+            ManagementType managementTypeEnum = s switch
+            {
+                "Netheidsboord" => ManagementType.Netheidsboord,
+                "Schapenweide" => ManagementType.Schapenweide,
+                "Intensief" => ManagementType.Intensief,
+                "Extensief" => ManagementType.Extensief,
+                _ => throw new Exception("Invalid management type")
+            };
+            return managementTypeEnum;
         }
     }
 }

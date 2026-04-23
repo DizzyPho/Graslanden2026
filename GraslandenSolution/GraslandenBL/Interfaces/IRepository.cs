@@ -14,17 +14,23 @@ namespace GraslandenBL.Interfaces
         public List<CampusDTO> GetAllCampusesDTO(int inventoryID);
 
         public List<InventoryDTO> GetInventoryDTOs();
+
         public int ImportEmptyInventory(InventoryDTO inventoryDTO);
 
-        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId);
+        public MeasurementDTO InsertMeasurement(string plotCode, string species, string coverage, int inventoryId);
+
         public List<MeasurementDTO> GetMeasurementsDTOForPlot(int inventoryID, string code);
+
         public void InsertSpecies(Species species);
+
         public bool DeleteInventory(int inventoryId);
 
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages);
 
         public void DeleteMeasurement(int measurementDTO_id);
 
-        public Plot InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
+        public Dictionary<string, List<MessageDTO>> GetAllMessages();
+
+        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
     }
 }

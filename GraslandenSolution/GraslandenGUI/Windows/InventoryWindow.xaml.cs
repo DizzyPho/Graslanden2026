@@ -50,9 +50,13 @@ namespace GraslandenGUI.Windows
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)
-        { 
-            PlotWindow pw = new PlotWindow(_manager, (Plot)((DataGrid)_selectedTabItem.Content).SelectedItem, CurrentInventory.Id);
-            pw.Show();
+        {
+            Plot? selectedPlot = (Plot)((DataGrid)_selectedTabItem.Content).SelectedItem;
+            if (selectedPlot != null)
+            {
+                PlotWindow pw = new PlotWindow(_manager, selectedPlot, CurrentInventory.Id);
+                pw.Show();
+            }
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
@@ -144,6 +148,23 @@ namespace GraslandenGUI.Windows
                 GridCampusInfoManagementTypes.Children.Add(txtAreaTitle);
             }
 
+        }
+
+        private void AddPlot_Click(object sender, RoutedEventArgs e)
+        {
+
+            AddPlotWindow apw = new AddPlotWindow();
+            apw.ShowDialog();
+            if( CampusInfo.SelectMany(c => c.Value.Plots).Any(p => p.Code == apw.Code))
+            {
+                MessageBox.Show("Dit grasland is al geïnventariseerd.");
+                return;
+            }
+
+            if(!String.IsNullOrWhiteSpace(apw.Code) && !String.IsNullOrWhiteSpace(apw.PlotType))
+            {
+                _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+            }
         }
     }
 }

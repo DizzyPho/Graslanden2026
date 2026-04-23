@@ -9,6 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
@@ -18,7 +19,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Text="" Grid.ColumnSpan="2" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Name="TextBlockTitle"></TextBlock>
-        <Grid Grid.Row="1" Margin="10" Grid.Column="1"  Name="GridCampusInfoPlotTypes">
+        <Grid Grid.Row="2" Margin="10" Grid.Column="1"  Name="GridCampusInfoPlotTypes">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -28,7 +29,7 @@
                 <RowDefinition Height="auto"></RowDefinition>
             </Grid.RowDefinitions>
         </Grid>
-        <Grid Grid.Row="2" Margin="10" Grid.Column="1"  Name="GridCampusInfoManagementTypes">
+        <Grid Grid.Row="3" Margin="10" Grid.Column="1"  Name="GridCampusInfoManagementTypes">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -38,9 +39,10 @@
                 <RowDefinition Height="auto"></RowDefinition>
             </Grid.RowDefinitions>
         </Grid>
-        <TabControl Grid.Row="1" Margin="10" Grid.RowSpan="2" Name="TabControlCampus" Grid.Column="0" SelectionChanged="TabControl_SelectionChanged">
+        <TabControl Grid.Row="2" Margin="10" Grid.RowSpan="2" Name="TabControlCampus" Grid.Column="0" SelectionChanged="TabControl_SelectionChanged" IsEnabled="False">
         </TabControl>
-        <Button Grid.Row="3" Grid.Column="0" Content="Terug" Margin="10" Click="ButtonBack"></Button>
-        <Button Grid.Row="3" Grid.Column="1" Content="Bekijk Grasland" Margin="10" Click="ButtonInspectPlot"></Button>
+        <Button Grid.Column="0" Grid.Row="1" Content="Grasland toevoegen" Margin="10" Padding="10 2" HorizontalAlignment="Left" Click="AddPlot_Click"></Button>
+        <Button Grid.Row="4" Grid.Column="0" Content="Terug" Margin="10" Click="ButtonBack"></Button>
+        <Button Grid.Row="4" Grid.Column="1" Content="Bekijk Grasland" Margin="10" Click="ButtonInspectPlot"></Button>
     </Grid>
 </Window>

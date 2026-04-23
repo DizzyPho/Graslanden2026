@@ -1,5 +1,6 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace GraslandenBL.Managers
             return _repository.ImportEmptyInventory(inventoryDTO);
         }
         // returns false if speciesName not found
-        public bool InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
+        public MeasurementDTO InsertMeasurement(string plotCode, string species, string coverage, int inventoryId)
         {
             return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }
@@ -50,6 +51,11 @@ namespace GraslandenBL.Managers
         public void DeleteMeasurement(int measurementId)
         {
             _repository.DeleteMeasurement(measurementId);
+        }
+
+        public void AddPlotToInventory(int inventoryID, string code, ManagementType managementType, string plotType)
+        {
+            _repository.InsertInventoriedPlot(inventoryID, code, managementType, plotType);
         }
     }
 }
