@@ -754,5 +754,21 @@ namespace GraslandenDL.Repositories
                 }
             }
         }
+
+        public bool CheckIfPlotExsists(string code)
+        {
+            string queryCheckPlot = "SELECT * FROM grass_plot WHERE code = @code";
+
+            using (SqlConnection con = new SqlConnection(_connectionString))
+            using (SqlCommand cmdCheckPlot = con.CreateCommand())
+            {
+                cmdCheckPlot.CommandText = queryCheckPlot;
+                con.Open();
+                using (SqlDataReader reader = cmdCheckPlot.ExecuteReader())
+                {
+                    return reader.HasRows;
+                }
+            }
+        }
     }
 }
