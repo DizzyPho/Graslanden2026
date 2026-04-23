@@ -90,7 +90,7 @@ namespace GraslandenDL.Repositories
                             double areaSqMeter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
                             string campusValue = reader.GetString(reader.GetOrdinal("campus"));
                             string managementType = reader.GetString(reader.GetOrdinal("type"));
-                            ManagementType managementTypeEnum = StringToManagementType(managementType);
+                            ManagementType managementTypeEnum = Plot.StringToManagementType(managementType);
 
                             string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
                             Plot plot = new Plot(code, areaSqMeter, campusValue, managementTypeEnum, plotTypeCode);
@@ -113,7 +113,7 @@ namespace GraslandenDL.Repositories
                     {
                         while (reader.Read())
                         {
-                            ManagementType managementType = StringToManagementType(reader.GetString(0));
+                            ManagementType managementType = Plot.StringToManagementType(reader.GetString(0));
                             int count = reader.GetInt32(1);
                             double areaSum = reader.GetDouble(2);
                             managementTypes.Add(managementType, new ManagementTypeValue(count, areaSum));
