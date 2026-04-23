@@ -167,6 +167,11 @@ namespace GraslandenGUI.Windows
             if(!String.IsNullOrWhiteSpace(apw.Code) && !String.IsNullOrWhiteSpace(apw.PlotType))
             {
                 Plot plot = _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+                if (plot == null)
+                {
+                    MessageBox.Show("Dit grasland bestaan niet, gebruik de code van een bestaand grasland.");
+                    return;
+                }
                 PlotLists[plot.Campus].Add(plot);
             }
         }
