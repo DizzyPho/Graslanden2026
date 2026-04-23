@@ -90,14 +90,7 @@ namespace GraslandenDL.Repositories
                             double areaSqMeter = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
                             string campusValue = reader.GetString(reader.GetOrdinal("campus"));
                             string managementType = reader.GetString(reader.GetOrdinal("type"));
-                            ManagementType managementTypeEnum = managementType switch
-                            {
-                                "Netheidsboord" => ManagementType.Netheidsboord,
-                                "Schapenweide" => ManagementType.Schapenweide,
-                                "Intensief" => ManagementType.Intensief,
-                                "Extensief" => ManagementType.Extensief,
-                                _ => throw new Exception("Invalid management type")
-                            };
+                            ManagementType managementTypeEnum = StringToManagementType(managementType);
 
                             string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
                             Plot plot = new Plot(code, areaSqMeter, campusValue, managementTypeEnum, plotTypeCode);
