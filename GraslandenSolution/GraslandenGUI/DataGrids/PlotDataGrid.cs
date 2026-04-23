@@ -1,6 +1,7 @@
 ﻿using GraslandenBL.Domain;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,13 +11,13 @@ namespace GraslandenGUI.DataGrids
 {
     public class PlotDataGrid : DataGrid
     {
-        public PlotDataGrid(List<Plot> itemsSource)
+        public PlotDataGrid(ObservableCollection<Plot> itemsSource)
         {
             AutoGenerateColumns = false;
-            Columns.Add(new DataGridTextColumn { Header = "Code", Binding = new Binding("Code") });
-            Columns.Add(new DataGridTextColumn { Header = "Oppervlakte (m²)", Binding = new Binding("AreaSqMeters") });
-            Columns.Add(new DataGridTextColumn { Header = "Beheertype", Binding = new Binding("ManagementType") });
-            Columns.Add(new DataGridTextColumn { Header = "Graslandtype", Binding = new Binding("PlotType") });
+            Columns.Add(new DataGridTextColumn { Header = "Code", Binding = new Binding("Code"), IsReadOnly=true });
+            Columns.Add(new DataGridTextColumn { Header = "Oppervlakte (m²)", Binding = new Binding("AreaSqMeters"), IsReadOnly = true });
+            Columns.Add(new DataGridTextColumn { Header = "Beheertype", Binding = new Binding("ManagementType"), IsReadOnly = true });
+            Columns.Add(new DataGridTextColumn { Header = "Graslandtype", Binding = new Binding("PlotType"), IsReadOnly = true });
             ItemsSource = itemsSource;
         }
     }

@@ -181,7 +181,7 @@ CREATE TABLE message (
 	id int identity(1,1),
 	object_id int,
 	object_type nvarchar(50),
-	inventory_id int not null,
+	inventory_id int,
 	description nvarchar(500) not null,
 	is_solved bit DEFAULT 0 not null,
 	message_type nvarchar(50) not null,

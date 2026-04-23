@@ -53,9 +53,9 @@ namespace GraslandenBL.Managers
             _repository.DeleteMeasurement(measurementId);
         }
 
-        public void AddPlotToInventory(int inventoryID, string code, ManagementType managementType, string plotType)
+        public Plot AddPlotToInventory(int inventoryID, string code, ManagementType managementType, string plotType)
         {
-            _repository.InsertInventoriedPlot(inventoryID, code, managementType, plotType);
+            return _repository.InsertInventoriedPlot(inventoryID, code, managementType, plotType);
         }
     }
 }
