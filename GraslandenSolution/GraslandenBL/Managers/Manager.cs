@@ -21,9 +21,9 @@ namespace GraslandenBL.Managers
             return _repository.DeleteInventory(inventoryId);
         }
 
-        public HashSet<String> GetAllCampuses()
+        public List<CampusDTO> GetAllCampusesDTO()
         {
-            return _repository.GetAllCampuses();
+            return _repository.GetAllCampusesDTO();
         }
 
         public List<InventoryDTO> GetInventoryDTOs()
