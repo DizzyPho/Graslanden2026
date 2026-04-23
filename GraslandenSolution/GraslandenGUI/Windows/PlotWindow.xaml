@@ -38,7 +38,7 @@
             <TextBlock Text="Gem. Biodiversiteitswaarde" Grid.Row="2" Grid.Column="2" Margin="10 2"></TextBlock>
         </Grid>
         <TextBlock Grid.Row="2" Text="Metingen" Padding="10 0"></TextBlock>
-        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements" AutoGenerateColumns="False">
+        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements" AutoGenerateColumns="False" IsEnabled="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Soort" Binding="{Binding Species.Name}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Bedekkingsklasse" Binding="{Binding Coverage}"></DataGridTextColumn>

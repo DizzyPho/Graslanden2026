@@ -653,40 +653,6 @@ namespace GraslandenDL.Repositories
             }
         }
 
-                //Open connection
-                con.Open();
-                cmdCampusDTO.CommandText = queryGetPlots;
-                cmdPlotTypeValues.CommandText = queryPlotTypeValues;
-                using (SqlDataReader reader = cmdCampusDTO.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
-                        string code = reader.GetString(reader.GetOrdinal("plot_code"));
-                        double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-                        string campusValue = reader.GetString(reader.GetOrdinal("campus"));
-                        string managementType = reader.GetString(reader.GetOrdinal("type"));
-                        ManagementType managementTypeEnum = StringToManagementType(managementType);
-
-                        string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
-                        Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
-                        plots.Add(plot);
-                    }
-                }
-                Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
-                using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        plotTypes.Add(reader.GetString(0), new PlotValue(reader.GetInt32(1), reader.GetDouble(2)));
-                    }
-                }
-
-                CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
-                return campusDTO;
-            }
-        }
-
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages)
         {
             string queryInsertMessage = "INSERT INTO message(inventory_id, description, message_type) VALUES(@inventory_id, @description, @messageType)";
