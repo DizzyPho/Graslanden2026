@@ -24,13 +24,13 @@ namespace GraslandenGUI.Windows
         private Manager _manager;
         public LogWindow(Manager manager)
         {
+            InitializeComponent();
             _manager = manager;
             _manager.GetAllMessages();
             foreach (KeyValuePair<String, Dictionary<String, MessageType>> inventoryMessages in _manager.GetAllMessages())
             {
                 TabControlErrors.Items.Add(new TabItemInventoryMessages(inventoryMessages.Key, inventoryMessages.Value));
             }
-            InitializeComponent();
         }
     }
 }

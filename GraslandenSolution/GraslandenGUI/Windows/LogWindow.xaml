@@ -12,6 +12,6 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Foutmeldingen"></TextBlock>
-        <TabControl x:Name="TabControlErrors" Margin="10" Grid.Row="1"></TabControl>
+        <TabControl Name="TabControlErrors" Margin="10" Grid.Row="1"></TabControl>
     </Grid>
 </Window>
