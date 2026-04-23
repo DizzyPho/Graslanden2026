@@ -26,6 +26,7 @@ namespace GraslandenGUI.Windows
         {
             InitializeComponent();
             ComboBoxManagementType.ItemsSource = new List<String> { "Intensief", "Extensief", "Schapenweide", "Netheidsboord" };
+            ComboBoxManagementType.SelectedIndex = 0;
         }
 
         private void ButtonBack_Click(object sender, RoutedEventArgs e)
