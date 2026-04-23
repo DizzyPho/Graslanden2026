@@ -473,22 +473,19 @@ namespace GraslandenDL.Repositories
                         }
                     }
 
-                    try
+
+                    if (foundSpecies != null)
                     {
-                        if (foundSpecies != null)
-                        {
-                            cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
+                        cmdMeasurement.Parameters.AddWithValue("@inventoried_plot_id", inventoriedPlotId);
                         cmdMeasurement.Parameters.AddWithValue("@species_id", foundSpecies.Id);
                         cmdMeasurement.Parameters.AddWithValue("@coverage", coverage);
                         int measurementId = (int)cmdMeasurement.ExecuteScalar();
 
                         transaction.Commit();
                         return new MeasurementDTO(measurementId, foundSpecies, coverage);
-                        }
                     }
-                    catch
+                    else
                     {
-                        transaction.Rollback();
                         return null;
                     }
                     
@@ -500,7 +497,6 @@ namespace GraslandenDL.Repositories
                     transaction.Rollback();
                     throw ex;
                 }
-                return null;
             }
         }
         public List<MeasurementDTO> GetMeasurementsDTOForPlot(int inventoryID, string code)
