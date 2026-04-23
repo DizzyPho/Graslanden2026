@@ -28,21 +28,24 @@ namespace GraslandenGUI.Windows
         Manager _manager;
         TabItem _selectedTabItem;
         private Dictionary<String, CampusDTO> CampusInfo { get; set; }
+        private Dictionary<String, ObservableCollection<Plot>> PlotLists;
         private InventoryDTO CurrentInventory { get; init; }
         public InventoryWindow(InventoryDTO inventoryDTO, Manager manager)
         {
             InitializeComponent();
             CurrentInventory = inventoryDTO;
             CampusInfo = new Dictionary<String, CampusDTO>();
+            PlotLists = new Dictionary<string, ObservableCollection<Plot>>();
             TextBlockTitle.Text = $"Inventarisatie '{inventoryDTO.ToString()}'";
             _manager = manager;
             List<CampusDTO> campuses = _manager.GetAllCampusesDTO(inventoryDTO.Id);
             foreach (CampusDTO campus in campuses)
             {
+                PlotLists[campus.Name] = new ObservableCollection<Plot>(campus.Plots);
                 CampusInfo[campus.Name] = campus;
                 TabItem tabItem = new TabItem
                 {
-                   Header = campus.Name, Name = campus.Name, Content = new PlotDataGrid(campus.Plots)
+                   Header = campus.Name, Name = campus.Name, Content = new PlotDataGrid(PlotLists[campus.Name])
                 };
                 TabControlCampus.Items.Add(tabItem);
             }
@@ -163,7 +166,8 @@ namespace GraslandenGUI.Windows
 
             if(!String.IsNullOrWhiteSpace(apw.Code) && !String.IsNullOrWhiteSpace(apw.PlotType))
             {
-                _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+                Plot plot = _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+                PlotLists[plot.Campus].Add(plot);
             }
         }
     }
