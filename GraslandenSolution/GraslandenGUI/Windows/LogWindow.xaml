@@ -5,13 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
-        Title="Error log" Height="800" Width="600">
+        Title="Error log" Height="800" Width="1500">
+    <Window.Resources>
+        <Style TargetType="ListBoxItem" x:Key="ListBoxItemStyle">
+            <Setter Property="Height" Value="30" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Center" Text="Foutmeldingen"></TextBlock>
-        <TabControl x:Name="TabControlErrors" Margin="10" Grid.Row="1"></TabControl>
+        <TabControl Name="TabControlErrors" Margin="10" Grid.Row="1"></TabControl>
     </Grid>
 </Window>

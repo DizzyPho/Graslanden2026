@@ -140,5 +140,11 @@ namespace GraslandenGUI
                 MessageBox.Show("Er is iets foutgelopen, probeer opnieuw a.u.b.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void ShowLog_Click(object sender, RoutedEventArgs e)
+        {
+            LogWindow lw = new LogWindow(_manager);
+            lw.ShowDialog();
+        }
     }
 }

@@ -790,13 +790,14 @@ namespace GraslandenDL.Repositories
             using (SqlCommand cmdGetMessagesDTO = con.CreateCommand())
             {
                 //Open conection 
+                cmdGetMessagesDTO.CommandText = queryGetAllMessages;
                 con.Open();
                 using (SqlDataReader reader = cmdGetMessagesDTO.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         string inventory_name;
-                        int inventory_id = reader.GetInt32(1);
+                        int? inventory_id = reader.IsDBNull(1) ? null : reader.GetInt32(1);
                         if (inventory_id != null)
                         {
                             inventory_name = reader.GetString(0);
