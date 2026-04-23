@@ -2,18 +2,15 @@
 {
     public class MessageDTO
     {
-        public int? ObjectId { get; set; }
-
-        public int InventoryId { get; set; }
+        public string InventoryName { get; set; }
 
         public string Description { get; set; }
 
         public string MessageType { get; set; }
 
-        public MessageDTO(int? objectId,  int inventoryId, string description, string messageType)
+        public MessageDTO(string inventoryName, string description, string messageType)
         {
-            ObjectId = objectId;
-            InventoryId = inventoryId;
+            InventoryName = inventoryName;
             Description = description;
             MessageType = messageType;
         }
