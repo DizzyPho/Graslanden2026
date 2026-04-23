@@ -30,13 +30,50 @@ namespace GraslandenGUI.Windows
             CurrentInventoryId = currentInventoryId;
             _manager = manager;
             InitializeComponent();
-            Measurements = new ObservableCollection<MeasurementDTO>(_manager.GetSpeciesOfPlot(currentPlot, currentInventoryId));
+            List<MeasurementDTO> measurements = manager.GetSpeciesOfPlot(currentPlot, currentInventoryId);
+            Measurements = new ObservableCollection<MeasurementDTO>(measurements);
+            ShowPlotInfo(measurements);
             DataGridMeasurements.ItemsSource = Measurements;
         }
 
         private void ButtonBack(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void ShowPlotInfo(List<MeasurementDTO> measurements)
+        {
+            int count = measurements.Count;
+            double? avgMoisture = measurements.Average(m => m.Species.Moisture);
+            double? avgPh = measurements.Average(m => m.Species.Ph);
+            double? avgNitrogen = measurements.Average(m => m.Species.Nitrogen);
+            double? avgNectar = measurements.Average(m => m.Species.Nectarvalue);
+            double? avgBiodiversity = measurements.Average(m => m.Species.Biodiversity);
+
+            TextBlock txtCount = new TextBlock { Text = count.ToString(), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock txtMoisture = new TextBlock { Text = string.Format("{0:0.0}", avgMoisture), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock txtPh = new TextBlock { Text = string.Format("{0:0.0}", avgPh), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock txtNitrogen = new TextBlock { Text = string.Format("{0:0.0}", avgNitrogen), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock txtNectar = new TextBlock { Text = string.Format("{0:0.0}", avgNectar), Margin = new Thickness(10, 2, 10, 2) };
+            TextBlock txtBiodiversity = new TextBlock { Text = string.Format("{0:0.0}", avgBiodiversity), Margin = new Thickness(10, 2, 10, 2) };
+            Grid.SetColumn(txtCount, 1);
+            Grid.SetColumn(txtMoisture, 1);
+            Grid.SetColumn(txtPh, 1);
+            Grid.SetColumn(txtNitrogen, 3);
+            Grid.SetColumn(txtNectar, 3);
+            Grid.SetColumn(txtBiodiversity, 3);
+            Grid.SetRow(txtCount, 0);
+            Grid.SetRow(txtMoisture, 1);
+            Grid.SetRow(txtPh, 2);
+            Grid.SetRow(txtNitrogen, 0);
+            Grid.SetRow(txtNectar, 1);
+            Grid.SetRow(txtBiodiversity, 2);
+            GridInfo.Children.Add(txtMoisture);
+            GridInfo.Children.Add(txtPh);
+            GridInfo.Children.Add(txtNitrogen);
+            GridInfo.Children.Add(txtNectar);
+            GridInfo.Children.Add(txtBiodiversity);
+            GridInfo.Children.Add(txtCount);
         }
     }
 }
