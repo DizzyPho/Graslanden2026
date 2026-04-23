@@ -266,20 +266,7 @@ namespace GraslandenDL.FileReaders
 
                                                 speciesBuilder.AddRating(lineSections[i + 5]);
 
-                                                //speciesBuilder.AddMoisture(lineSections[i + 2]);
-                                                //.AddPh(lineSections[i + 3])
-                                                //.AddNitrogen(lineSections[i + 4])
-                                                //.AddRating(lineSections[i + 5]);
-
                                                 Species species = speciesBuilder.Build();
-
-                                                // Overwrite errors list to include plot code of species
-                                                Dictionary<string, MessageType> messagesWithPlotCode = new Dictionary<string, MessageType>();
-                                                foreach (KeyValuePair<string, MessageType> message in species.Errors)
-                                                {
-                                                    messagesWithPlotCode.Add($"{currentPlot.Code} | {message.Key}", message.Value);
-                                                }
-                                                species.Errors = messagesWithPlotCode;
 
                                                 // Is the data valid? If false, return error messages
                                                 if (MeasurementValidation.Validate(lineSections[i + 1], out Dictionary<string, MessageType> measurementMessages))
@@ -351,121 +338,6 @@ namespace GraslandenDL.FileReaders
                                         }
                                     }
                                 }
-
-                                //#region SpeciesMatching
-                                //foreach (Measurement inventoryMeasurement in results)
-                                //{
-                                // Check for spelling mistakes
-                                //foreach (string speciesName in allSpeciesNames)
-                                //{
-                                //    // Amount of differing characters + 1
-                                //    int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
-
-                                //    // 1 == equal, 3 == 2 character difference
-                                //    if (distance < 3 && distance > 1)
-                                //    {
-                                //        // Remarks need to be unique
-                                //        if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
-                                //        {
-                                //            messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
-                                //        }
-                                //    }
-                                //}
-
-                                // Names in Tyler database include extra info we don't want at the end
-                                //List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
-
-                                // Check if a match was found
-                                //if (tylerNameResults.Count > 0)
-                                //{
-                                //    // There can only be 1 match
-                                //    string tylerSpeciesName = tylerNameResults.First();
-
-                                //    Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
-
-                                //    // Replace empty values with inventory values
-                                //    if (tylerSpecies.Moisture != null)
-                                //    {
-                                //        inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
-                                //    }
-                                //    else
-                                //    {
-                                //        if (inventoryMeasurement.Species.Moisture != null)
-                                //        {
-                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                                //        }
-                                //        else
-                                //        {
-                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                                //        }
-                                //    }
-
-                                //        if (tylerSpecies.Ph != null)
-                                //        {
-                                //            inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
-                                //        }
-                                //        else
-                                //        {
-                                //            if (inventoryMeasurement.Species.Ph != null)
-                                //            {
-                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                                //            }
-                                //            else
-                                //            {
-                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in beide tabellen.", MessageType.Error);
-                                //            }
-                                //        }
-
-                                //        if (tylerSpecies.Nitrogen != null)
-                                //        {
-                                //            inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
-                                //        }
-                                //        else
-                                //        {
-                                //            if (inventoryMeasurement.Species.Nitrogen != null)
-                                //            {
-                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                                //            }
-                                //            else
-                                //            {
-                                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                                //            }
-                                //        }
-
-                                //        // These aren't included in inventory file
-                                //        if (tylerSpecies.Nectarvalue != null)
-                                //        {
-                                //            inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
-
-                                //            if (tylerSpecies.Nectarvalue < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute nectarwaarde: '{inventoryMeasurement.Species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
-                                //        }
-                                //        else
-                                //        {
-                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Nectarwaarde niet gevonden in Tylerdatabank.", MessageType.Remark);
-                                //        }
-                                //        if (tylerSpecies.Biodiversity != null)
-                                //        {
-                                //            inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
-
-                                //            if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
-                                //        }
-                                //        else
-                                //        {
-                                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Biodiversiteit niet gevonden in Tylerdatabank.", MessageType.Remark);
-                                //        }
-                                //    }
-                                //    else
-                                //    {
-                                //        // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
-                                //        if (!unfoundNames.ContainsKey(inventoryMeasurement.Species.Name))
-                                //        {
-                                //            unfoundNames.Add(inventoryMeasurement.Species.Name, 1);
-                                //        }
-                                //        else unfoundNames[inventoryMeasurement.Species.Name]++;
-                                //    }
-                                ////}
-                                //#endregion
-
                             }
                         }
                         currentLineWithinCampus++;
@@ -473,120 +345,6 @@ namespace GraslandenDL.FileReaders
                     }
                 }
             #endregion
-
-                //#region SpeciesMatching
-                //foreach (Measurement inventoryMeasurement in results)
-                //{
-                //    // Check for spelling mistakes
-                //    foreach (string speciesName in allSpeciesNames)
-                //    {
-                //        // Amount of differing characters + 1
-                //        int distance = Levenshtein.Distance(inventoryMeasurement.Species.Name.Trim(), speciesName.Trim());
-
-                //        // 1 == equal, 3 == 2 character difference
-                //        if (distance < 3 && distance > 1)
-                //        {
-                //            // Remarks need to be unique
-                //            if (!messages.ContainsKey($"{speciesName.Trim()} | {inventoryMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
-                //            {
-                //                messages.TryAdd($"{inventoryMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", MessageType.Remark);
-                //            }
-                //        }
-                //    }
-
-                //    // Names in Tyler database include extra info we don't want at the end
-                //    List<string> tylerNameResults = tylerSpeciesList.Keys.Where(s => s.StartsWith(inventoryMeasurement.Species.Name)).ToList();
-
-                //    // Check if a match was found
-                //    if (tylerNameResults.Count > 0)
-                //    {
-                //        // There can only be 1 match
-                //        string tylerSpeciesName = tylerNameResults.First();
-
-                //        Species tylerSpecies = tylerSpeciesList[tylerSpeciesName];
-
-                //        // Replace empty values with inventory values
-                //        if (tylerSpecies.Moisture != null)
-                //        {
-                //            inventoryMeasurement.Species.Moisture = tylerSpecies.Moisture;
-                //        }
-                //        else
-                //        {
-                //            if (inventoryMeasurement.Species.Moisture != null)
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                //            }
-                //            else
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Vochtgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                //            }
-                //        }
-
-                //        if (tylerSpecies.Ph != null)
-                //        {
-                //            inventoryMeasurement.Species.Ph = tylerSpecies.Ph;
-                //        }
-                //        else
-                //        {
-                //            if (inventoryMeasurement.Species.Ph != null)
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                //            }
-                //            else
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Zuurtegraad ontbreekt in beide tabellen.", MessageType.Error);
-                //            }
-                //        }
-
-                //        if (tylerSpecies.Nitrogen != null)
-                //        {
-                //            inventoryMeasurement.Species.Nitrogen = tylerSpecies.Nitrogen;
-                //        }
-                //        else
-                //        {
-                //            if (inventoryMeasurement.Species.Nitrogen != null)
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in Tylerdatabank; inventarisatiewaarde werd gebruikt.", MessageType.Remark);
-                //            }
-                //            else
-                //            {
-                //                inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Stikstofgehalte ontbreekt in beide tabellen.", MessageType.Error);
-                //            }
-                //        }
-
-                //        // These aren't included in inventory file
-                //        if (tylerSpecies.Nectarvalue != null)
-                //        {
-                //            inventoryMeasurement.Species.Nectarvalue = tylerSpecies.Nectarvalue;
-
-                //            if (tylerSpecies.Nectarvalue < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute nectarwaarde: '{inventoryMeasurement.Species.Nectarvalue}' moet een positief getal zijn.", MessageType.Error);
-                //        }
-                //        else
-                //        {
-                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Nectarwaarde niet gevonden in Tylerdatabank.", MessageType.Remark);
-                //        }
-                //        if (tylerSpecies.Biodiversity != null)
-                //        {
-                //            inventoryMeasurement.Species.Biodiversity = tylerSpecies.Biodiversity;
-
-                //            if (tylerSpecies.Biodiversity < 0) inventoryMeasurement.Species.Errors.Add($"{inventoryMeasurement.Species.Name} | Foute biodiversiteit: '{inventoryMeasurement.Species.Biodiversity}' moet een positief getal zijn.", MessageType.Error);
-                //        }
-                //        else
-                //        {
-                //            inventoryMeasurement.Errors.Add($"{tylerSpeciesName} | Biodiversiteit niet gevonden in Tylerdatabank.", MessageType.Remark);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        // If the species was not found in the Tyler database, we use the inventory values and add it to the unfound names counter
-                //        if (!unfoundNames.ContainsKey(inventoryMeasurement.Species.Name))
-                //        {
-                //            unfoundNames.Add(inventoryMeasurement.Species.Name, 1);
-                //        }
-                //        else unfoundNames[inventoryMeasurement.Species.Name]++;
-                //    }
-                //}
-                //#endregion
 
                 #region General remarks
                 // General remarks for species that weren't found in Tyler database & how many times they appear
@@ -598,7 +356,6 @@ namespace GraslandenDL.FileReaders
                         messages.Add($"{name.Key} werd niet gevonden in de Tylerdatabank. Inventarisatiewaarden werden gebruikt voor {name.Value} meting.", MessageType.Remark);
                 }
                 #endregion
-
 
                 if (results.Count > 0)
                 {
