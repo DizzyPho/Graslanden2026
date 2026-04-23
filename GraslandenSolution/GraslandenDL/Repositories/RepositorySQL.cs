@@ -109,14 +109,13 @@ namespace GraslandenDL.Repositories
                         }
                     }
 
-                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
+                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes, campus);
                     campusDTOs.Add(campusDTO);
                 }
             }
 
             return campusDTOs;
         }
-
 
         public List<Species> GetAllSpecies()
         {
@@ -385,7 +384,6 @@ namespace GraslandenDL.Repositories
             }
         }
 
-
         public List<InventoryDTO> GetInventoryDTOs()
         {
             const string query = "SELECT id, date, name FROM inventory";
@@ -478,7 +476,7 @@ namespace GraslandenDL.Repositories
         {
             List<MeasurementDTO> measurementDTOList = new List<MeasurementDTO>();
 
-            string queryMeasurement = "SELECT m.coverage, m.species_id, s.name, s.rating, s.moisture, s.ph, s.nitrogen, " +
+            string queryMeasurement = "SELECT m.id, m.coverage, m.species_id, s.name, s.rating, s.moisture, s.ph, s.nitrogen, " +
                 "s.nectar_production, s.biodiversity_relevance FROM measurement m " +
                 "JOIN inventoried_plot ip ON m.inventoried_plot_id = ip.id " +
                 "JOIN species s on s.id = m.species_id " +
@@ -508,10 +506,11 @@ namespace GraslandenDL.Repositories
                     int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
                     int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
                     string coverage = reader.GetString(reader.GetOrdinal("coverage"));
+                    int measurementId = reader.GetInt32(reader.GetOrdinal("id"));
 
                     Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
                     //public MeasurementDTO(int speciesid, string coverage)
-                    MeasurementDTO measurementDTO = new MeasurementDTO(species, coverage);
+                    MeasurementDTO measurementDTO = new MeasurementDTO(measurementId,species, coverage);
                     measurementDTOList.Add(measurementDTO);
                 }
                 return measurementDTOList;
