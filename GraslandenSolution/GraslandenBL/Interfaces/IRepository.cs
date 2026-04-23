@@ -31,6 +31,6 @@ namespace GraslandenBL.Interfaces
 
         public Dictionary<string, List<MessageDTO>> GetAllMessages();
 
-        public bool InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
+        public Plot InsertInventoriedPlot(int inventoryID, string code, ManagementType managementType, string plot_Type);
     }
 }
