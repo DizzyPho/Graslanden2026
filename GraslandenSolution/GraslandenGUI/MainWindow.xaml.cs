@@ -68,9 +68,17 @@ namespace GraslandenGUI
                     {
                         return;
                     }
-                    Inventories.Add(_importManager.ImportData(fileName, niw.Inventory));
+                    if(_importManager.ReadFile(fileName))
+                    {
+                        InventoryDTO newInventory = _importManager.ImportData(fileName, niw.Inventory);
+                        if(newInventory != null) Inventories.Add(newInventory);
+                        MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Er liep iets mis. Was dit het juiste bestand?", "Import gefaald", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                     // progressBarWindow.Close();
-                    MessageBox.Show("Inventarisatie geïmporteerd!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }      
         }
