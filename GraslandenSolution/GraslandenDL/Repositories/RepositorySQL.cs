@@ -740,18 +740,8 @@ namespace GraslandenDL.Repositories
                 deleteMeasurementCommand.Parameters.AddWithValue("@measurementDTO_id", measurementDTO_id);
 
                 con.Open();
-                SqlTransaction transaction = con.BeginTransaction();
 
-                try
-                {
-                    deleteMeasurementCommand.ExecuteNonQuery();
-                    transaction.Commit();
-                }
-                catch (Exception)
-                {
-                    transaction.Rollback();
-                    throw;
-                }
+                deleteMeasurementCommand.ExecuteNonQuery();
             }
         }
     }
