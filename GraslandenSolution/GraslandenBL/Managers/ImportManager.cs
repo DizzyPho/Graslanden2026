@@ -28,9 +28,9 @@ namespace GraslandenBL.Managers
                 _messages = incomingMessages;
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                return false;
             }
         }
 
