@@ -403,8 +403,10 @@ namespace GraslandenDL.Repositories
         {
             List<MeasurementDTO> measurementDTOList = new List<MeasurementDTO>();
 
-            string queryMeasurement = "SELECT m.coverage, m.species_id FROM measurement m " +
+            string queryMeasurement = "SELECT m.coverage, m.species_id, s.name, s.rating, s.moisture, s.ph, s.nitrogen, " +
+                "s.nectar_production, s.biodiversity_relevance FROM measurement m " +
                 "JOIN inventoried_plot ip ON m.inventoried_plot_id = ip.id " +
+                "JOIN species s on s.id = m.species_id " +
                 //Select only those where inventory_id = @inventoryID AND plot_code = @code
                 "WHERE ip.inventory_id = @inventoryID AND ip.plot_code =@code";
 
@@ -422,10 +424,19 @@ namespace GraslandenDL.Repositories
                 while (reader.Read())
                 {
                     int speciesId = reader.GetInt32(reader.GetOrdinal("species_id"));
+                    string speciesName = reader.GetString(reader.GetOrdinal("name"));
+                    string ratingString = reader.GetString(reader.GetOrdinal("rating"));
+                    Rating rating = Species.ParseRating(ratingString);
+                    int moisture = reader.GetInt32(reader.GetOrdinal("moisture"));
+                    int ph = reader.GetInt32(reader.GetOrdinal("ph"));
+                    int nitrogen = reader.GetInt32(reader.GetOrdinal("nitrogen"));
+                    int? nectarValue = reader.IsDBNull(reader.GetOrdinal("nectar_production")) ? null : reader.GetInt32(reader.GetOrdinal("nectar_production"));
+                    int? biodiversity = reader.IsDBNull(reader.GetOrdinal("biodiversity_relevance")) ? null : reader.GetInt32(reader.GetOrdinal("biodiversity_relevance"));
                     string coverage = reader.GetString(reader.GetOrdinal("coverage"));
 
+                    Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
                     //public MeasurementDTO(int speciesid, string coverage)
-                    MeasurementDTO measurementDTO = new MeasurementDTO(speciesId, coverage);
+                    MeasurementDTO measurementDTO = new MeasurementDTO(species, coverage);
                     measurementDTOList.Add(measurementDTO);
                 }
                 return measurementDTOList;
@@ -440,7 +451,7 @@ namespace GraslandenDL.Repositories
             string inventoriedPlotDeleteQuery = "DELETE FROM inventoried_plot WHERE inventory_id = @inventoryId";
             string inventoryQuery = "DELETE FROM inventory WHERE id = @inventoryId";
             string messageQuery = "DELETE FROM message WHERE inventory_id = @inventoryId";
-            
+
             List<int> inventoriedPlotIds = new List<int>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -504,7 +515,7 @@ namespace GraslandenDL.Repositories
                                         return true;
                                     }
 
-                                    catch (Exception ex)
+                                    catch
                                     {
                                         transaction.Rollback();
                                         return false;
@@ -574,14 +585,7 @@ namespace GraslandenDL.Repositories
                         double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
                         string campusValue = reader.GetString(reader.GetOrdinal("campus"));
                         string managementType = reader.GetString(reader.GetOrdinal("type"));
-                        ManagementType managementTypeEnum = managementType switch
-                        {
-                            "Netheidsboord" => ManagementType.Netheidsboord,
-                            "Schapenweide" => ManagementType.Schapenweide,
-                            "Intensief" => ManagementType.Intensief,
-                            "Extensief" => ManagementType.Extensief,
-                            _ => throw new Exception("Invalid management type")
-                        };
+                        ManagementType managementTypeEnum = StringToManagementType(managementType);
 
                         string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
                         Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
@@ -638,6 +642,19 @@ namespace GraslandenDL.Repositories
                     throw;
                 }
             }
+        }
+
+        private static ManagementType StringToManagementType(string s)
+        {
+            ManagementType managementTypeEnum = s switch
+            {
+                "Netheidsboord" => ManagementType.Netheidsboord,
+                "Schapenweide" => ManagementType.Schapenweide,
+                "Intensief" => ManagementType.Intensief,
+                "Extensief" => ManagementType.Extensief,
+                _ => throw new Exception("Invalid management type")
+            };
+            return managementTypeEnum;
         }
     }
 }

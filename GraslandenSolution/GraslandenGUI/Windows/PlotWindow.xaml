@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
-        Title="Grasland Info" Height="500" Width="400">
+        Title="Grasland Info" Height="500" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
@@ -18,7 +18,18 @@
         <Grid Grid.Row="1" Margin="10">
         </Grid>
         <TextBlock Grid.Row="2" Text="Metingen" Padding="10 0"></TextBlock>
-        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements"></DataGrid>
+        <DataGrid Grid.Row="3" Margin="10" Name="DataGridMeasurements" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Soort" Binding="{Binding Species.Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Bedekkingsklasse" Binding="{Binding Coverage}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Vocht" Binding="{Binding Species.Moisture}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Zuurtegraad" Binding="{Binding Species.Ph}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Stikstofrijkdom" Binding="{Binding Species.Nitrogen}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Nectarwaarde" Binding="{Binding Species.Nectarvalue}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Biodiversiteitswaarde" Binding="{Binding Species.Biodiversity}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Beoordeling" Binding="{Binding Species.Rating}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
         <Button Grid.Row="4" Content="Terug" Margin="10" Click="ButtonBack"></Button>
     </Grid>
 </Window>

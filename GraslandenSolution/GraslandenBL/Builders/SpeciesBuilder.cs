@@ -90,14 +90,7 @@ namespace GraslandenBL.Builders
         {
             try
             {
-                _species.Rating = ratingString.Trim() switch
-                {
-                    "+++" => Rating.Sleutel,
-                    "++" => Rating.Begeleidend,
-                    "+" => Rating.Algemeen,
-                    "0" => Rating.Ruderaal,
-                    "-" => Rating.Invasief
-                };
+                _species.Rating = Species.ParseRating(ratingString.Trim()); 
             }
             catch
             {

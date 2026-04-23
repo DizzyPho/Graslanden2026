@@ -1,5 +1,6 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Managers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,11 +21,16 @@ namespace GraslandenGUI.Windows
     /// </summary>
     public partial class PlotWindow : Window
     {
+
         private ObservableCollection<MeasurementDTO> Measurements { get; init; }
-        public PlotWindow()
+        private int CurrentInventoryId { get; init; }
+        Manager _manager;
+        public PlotWindow(Manager manager, Plot currentPlot, int currentInventoryId)
         {
+            CurrentInventoryId = currentInventoryId;
+            _manager = manager;
             InitializeComponent();
-            Measurements = new ObservableCollection<MeasurementDTO>();
+            Measurements = new ObservableCollection<MeasurementDTO>(_manager.GetSpeciesOfPlot(currentPlot, currentInventoryId));
             DataGridMeasurements.ItemsSource = Measurements;
         }
 

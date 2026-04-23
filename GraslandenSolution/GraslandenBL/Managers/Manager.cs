@@ -1,4 +1,5 @@
-﻿using GraslandenBL.DTOs;
+﻿using GraslandenBL.Domain;
+using GraslandenBL.DTOs;
 using GraslandenBL.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,11 @@ namespace GraslandenBL.Managers
         public CampusDTO GetCampus(int inventoryId, string campus)
         {
             return _repository.GetCampusDTO(inventoryId, campus);
+        }
+
+        public List<MeasurementDTO> GetSpeciesOfPlot(Plot currentPlot, int currentInventoryId)
+        {
+            return _repository.GetMeasurementsDTOForPlot(currentInventoryId, currentPlot.Code);
         }
     }
 }
