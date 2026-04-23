@@ -85,7 +85,7 @@ namespace GraslandenGUI.Windows
             GridCampusInfo.Children.Add(txtCountTitle);
             GridCampusInfo.Children.Add(txtAreaTitle);
             int currentRow = 1;
-            foreach(KeyValuePair<string, PlotValue> kvp in campusDTO.PlotTypes)
+            foreach(KeyValuePair<string, PlotTypeValue> kvp in campusDTO.PlotTypes)
             {
                 GridCampusInfo.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 TextBlock txtType = new TextBlock { Text = kvp.Key, Margin = new Thickness(10,0,10,0) };

@@ -70,7 +70,7 @@ namespace GraslandenDL.Repositories
                 {
                     cmdGetAllPlots.Parameters["@campus"].Value = campus;
                     cmdPlotTypeValues.Parameters["@campus"].Value = campus;
-                    Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
+                    Dictionary<string, PlotTypeValue> plotTypes = new Dictionary<string, PlotTypeValue>();
                     List<Plot> plots = new List<Plot>();
                     using (SqlDataReader reader = cmdGetAllPlots.ExecuteReader())
                     {
@@ -103,7 +103,7 @@ namespace GraslandenDL.Repositories
                             string plotType = reader.GetString(0);
                             int count = reader.GetInt32(1);
                             double areaSum = reader.GetDouble(2);
-                            plotTypes.Add(plotType, new PlotValue(count, areaSum));
+                            plotTypes.Add(plotType, new PlotTypeValue(count, areaSum));
                         }
                     }
 
@@ -664,12 +664,12 @@ namespace GraslandenDL.Repositories
                         plots.Add(plot);
                     }
                 }
-                Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
+                Dictionary<string, PlotTypeValue> plotTypes = new Dictionary<string, PlotTypeValue>();
                 using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        plotTypes.Add(reader.GetString(0), new PlotValue(reader.GetInt32(1), reader.GetDouble(2)));
+                        plotTypes.Add(reader.GetString(0), new PlotTypeValue(reader.GetInt32(1), reader.GetDouble(2)));
                     }
                 }
 
