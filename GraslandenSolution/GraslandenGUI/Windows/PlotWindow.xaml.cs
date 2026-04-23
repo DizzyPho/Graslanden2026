@@ -24,9 +24,11 @@ namespace GraslandenGUI.Windows
 
         private ObservableCollection<MeasurementDTO> Measurements { get; init; }
         private int CurrentInventoryId { get; init; }
+        private string CurrentPlotCode { get; init; }
         Manager _manager;
         public PlotWindow(Manager manager, Plot currentPlot, int currentInventoryId)
         {
+            CurrentPlotCode = currentPlot.Code;
             CurrentInventoryId = currentInventoryId;
             _manager = manager;
             InitializeComponent();
@@ -92,8 +94,9 @@ namespace GraslandenGUI.Windows
 
         private void NewMeasurement_Click(object sender, RoutedEventArgs e)
         {
-            NewMeasurementWindow nmw = new NewMeasurementWindow();
+            NewMeasurementWindow nmw = new NewMeasurementWindow(_manager, CurrentPlotCode, CurrentInventoryId);
             nmw.ShowDialog();
+            Measurements.Add(nmw.NewMeasurement);
         }
     }
 }
