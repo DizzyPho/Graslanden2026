@@ -36,17 +36,17 @@ namespace GraslandenGUI.Windows
             CampusInfo = new Dictionary<String, CampusDTO>();
             TextBlockTitle.Text = $"Inventarisatie '{inventoryDTO.ToString()}'";
             _manager = manager;
-            HashSet<String> campuses = _manager.GetAllCampuses();
-            foreach (String campus in campuses)
+            List<CampusDTO> campuses = _manager.GetAllCampusesDTO(inventoryDTO.Id);
+            foreach (CampusDTO campus in campuses)
             {
-                CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, campus);
-                CampusInfo[campus] = selectedCampus;
+                CampusInfo[campus.Name] = campus;
                 TabItem tabItem = new TabItem
                 {
-                    Header = campus, Name = campus, Content = new PlotDataGrid(selectedCampus.Plots)
+                   Header = campus.Name, Name = campus.Name, Content = new PlotDataGrid(campus.Plots)
                 };
                 TabControlCampus.Items.Add(tabItem);
             }
+            FillCampusInfo(campuses[0]);
         }
 
         private void ButtonInspectPlot(object sender, RoutedEventArgs e)

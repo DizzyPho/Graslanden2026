@@ -21,11 +21,8 @@ namespace GraslandenDL.Repositories
         public List<CampusDTO> GetAllCampusesDTO(int inventoryID)
         {
             //public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes)
-            List<Plot> plots = new List<Plot>();
-            Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
             List<string> campusesList = new List<string>();
             List<CampusDTO> campusDTOs = new List<CampusDTO>();
-
 
             //Get all campuses  
             string queryGetAllCampuses = "SELECT DISTINCT gp.campus FROM inventoried_plot ip " +
@@ -73,7 +70,8 @@ namespace GraslandenDL.Repositories
                 {
                     cmdGetAllPlots.Parameters["@campus"].Value = campus;
                     cmdPlotTypeValues.Parameters["@campus"].Value = campus;
-
+                    Dictionary<string, PlotValue> plotTypes = new Dictionary<string, PlotValue>();
+                    List<Plot> plots = new List<Plot>();
                     using (SqlDataReader reader = cmdGetAllPlots.ExecuteReader())
                     {
                         while (reader.Read())
