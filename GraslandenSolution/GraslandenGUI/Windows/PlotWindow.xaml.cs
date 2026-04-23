@@ -25,6 +25,15 @@ namespace GraslandenGUI.Windows
         private ObservableCollection<MeasurementDTO> Measurements { get; init; }
         private int CurrentInventoryId { get; init; }
         private string CurrentPlotCode { get; init; }
+        private TextBlock TextBlockCount { get; set; }
+        private TextBlock TextBlockMoisture { get; set; }
+        private TextBlock TextBlockPh { get; set; }
+        private TextBlock TextBlockNitrogen { get; set; }
+        private TextBlock TextBlockNectar { get; set; }
+        private TextBlock TextBlockBiodiversity { get; set; }
+        private TextBlock TextBlockMoistureComment { get; set; }
+        private TextBlock TextBlockPhComment{ get; set; }
+        private TextBlock TextBlockNitrogenComment { get; set; }
         Manager _manager;
         public PlotWindow(Manager manager, Plot currentPlot, int currentInventoryId)
         {
@@ -46,58 +55,82 @@ namespace GraslandenGUI.Windows
 
         private void ShowPlotInfo(List<MeasurementDTO> measurements)
         {
-            Thickness margin = new Thickness(10, 2, 10, 2);
-            int count = measurements.Count;
+            Thickness marginNumberBlocks = new Thickness(10, 2, 10, 2);
+            
+            TextBlockCount = new TextBlock { Margin = marginNumberBlocks };
+            TextBlockMoisture = new TextBlock { Margin = marginNumberBlocks };
+            TextBlockPh = new TextBlock { Margin = marginNumberBlocks };
+            TextBlockNitrogen = new TextBlock { Margin = marginNumberBlocks };
+            TextBlockNectar = new TextBlock { Margin = marginNumberBlocks };
+            TextBlockBiodiversity = new TextBlock { Margin = marginNumberBlocks };
+
+            Grid.SetColumn(TextBlockCount, 1);
+            Grid.SetColumn(TextBlockMoisture, 1);
+            Grid.SetColumn(TextBlockPh, 1);
+            Grid.SetColumn(TextBlockNitrogen, 3);
+            Grid.SetColumn(TextBlockNectar, 3);
+            Grid.SetColumn(TextBlockBiodiversity, 3);
+            Grid.SetRow(TextBlockCount, 0);
+            Grid.SetRow(TextBlockMoisture, 1);
+            Grid.SetRow(TextBlockPh, 2);
+            Grid.SetRow(TextBlockNitrogen, 0);
+            Grid.SetRow(TextBlockNectar, 1);
+            Grid.SetRow(TextBlockBiodiversity, 2);
+            GridInfo.Children.Add(TextBlockMoisture);
+            GridInfo.Children.Add(TextBlockPh);
+            GridInfo.Children.Add(TextBlockNitrogen);
+            GridInfo.Children.Add(TextBlockNectar);
+            GridInfo.Children.Add(TextBlockBiodiversity);
+            GridInfo.Children.Add(TextBlockCount);
+
+            Thickness marginCommentBlock = new Thickness(10, 15, 10, 2);
+            TextBlockMoistureComment = new TextBlock { Margin = marginCommentBlock };
+            TextBlockPhComment = new TextBlock { Margin = marginCommentBlock };
+            TextBlockNitrogenComment = new TextBlock { Margin = marginCommentBlock };
+            Grid.SetColumn(TextBlockMoistureComment, 0);
+            Grid.SetColumn(TextBlockPhComment, 0);
+            Grid.SetColumn(TextBlockNitrogenComment, 0);
+            Grid.SetRow(TextBlockMoistureComment, 3);
+            Grid.SetRow(TextBlockPhComment, 4);
+            Grid.SetRow(TextBlockNitrogenComment, 5);
+            GridInfo.Children.Add(TextBlockMoistureComment);
+            GridInfo.Children.Add(TextBlockPhComment);
+            GridInfo.Children.Add(TextBlockNitrogenComment);
+
+            RefreshPlotInfo(measurements);
+        }
+
+        private void RefreshPlotInfo(IEnumerable<MeasurementDTO> measurements)
+        {
+            int count = measurements.Count();
             double? avgMoisture = measurements.Average(m => m.Species.Moisture);
             double? avgPh = measurements.Average(m => m.Species.Ph);
             double? avgNitrogen = measurements.Average(m => m.Species.Nitrogen);
             double? avgNectar = measurements.Average(m => m.Species.Nectarvalue);
             double? avgBiodiversity = measurements.Average(m => m.Species.Biodiversity);
 
-            TextBlock txtCount = new TextBlock { Text = count.ToString(), Margin = margin, Name = "TextBlock" };
-            TextBlock txtMoisture = new TextBlock { Text = string.Format("{0:0.0}", avgMoisture), Margin = margin };
-            TextBlock txtPh = new TextBlock { Text = string.Format("{0:0.0}", avgPh), Margin = margin };
-            TextBlock txtNitrogen = new TextBlock { Text = string.Format("{0:0.0}", avgNitrogen), Margin = margin };
-            TextBlock txtNectar = new TextBlock { Text = string.Format("{0:0.0}", avgNectar), Margin = margin };
-            TextBlock txtBiodiversity = new TextBlock { Text = string.Format("{0:0.0}", avgBiodiversity), Margin = margin };
-            Grid.SetColumn(txtCount, 1);
-            Grid.SetColumn(txtMoisture, 1);
-            Grid.SetColumn(txtPh, 1);
-            Grid.SetColumn(txtNitrogen, 3);
-            Grid.SetColumn(txtNectar, 3);
-            Grid.SetColumn(txtBiodiversity, 3);
-            Grid.SetRow(txtCount, 0);
-            Grid.SetRow(txtMoisture, 1);
-            Grid.SetRow(txtPh, 2);
-            Grid.SetRow(txtNitrogen, 0);
-            Grid.SetRow(txtNectar, 1);
-            Grid.SetRow(txtBiodiversity, 2);
-            GridInfo.Children.Add(txtMoisture);
-            GridInfo.Children.Add(txtPh);
-            GridInfo.Children.Add(txtNitrogen);
-            GridInfo.Children.Add(txtNectar);
-            GridInfo.Children.Add(txtBiodiversity);
-            GridInfo.Children.Add(txtCount);
+            TextBlockCount.Text = count.ToString();
+            TextBlockMoisture.Text = string.Format("{0:0.0}", avgMoisture);
+            TextBlockPh.Text = string.Format("{0:0.0}", avgPh);
+            TextBlockNitrogen.Text = string.Format("{0:0.0}", avgNitrogen);
+            TextBlockNectar.Text = string.Format("{0:0.0}", avgNectar);
+            TextBlockBiodiversity.Text = string.Format("{0:0.0}", avgBiodiversity);
 
-            TextBlock moistureText = new TextBlock { Text = Plot.CalculateMoistureString(avgMoisture), Margin = new Thickness(10, 15, 10, 2) };
-            TextBlock phText = new TextBlock { Text = Plot.CalculatePhString(avgPh), Margin = new Thickness(10, 2, 10, 2) };
-            TextBlock nitrogenText = new TextBlock { Text = Plot.CalculateNitrogenString(avgNitrogen), Margin = new Thickness(10, 2, 10, 2) };
-            Grid.SetColumn(moistureText, 0);
-            Grid.SetColumn(phText, 0);
-            Grid.SetColumn(nitrogenText, 0);
-            Grid.SetRow(moistureText, 3);
-            Grid.SetRow(phText, 4);
-            Grid.SetRow(nitrogenText, 5);
-            GridInfo.Children.Add(moistureText);
-            GridInfo.Children.Add(phText);
-            GridInfo.Children.Add(nitrogenText);
+            TextBlockMoistureComment.Text = Plot.CalculateMoistureString(avgMoisture);
+            TextBlockPhComment.Text = Plot.CalculatePhString(avgPh);
+            TextBlockNitrogenComment.Text = Plot.CalculateNitrogenString(avgNitrogen);
+
         }
 
         private void NewMeasurement_Click(object sender, RoutedEventArgs e)
         {
             NewMeasurementWindow nmw = new NewMeasurementWindow(_manager, CurrentPlotCode, CurrentInventoryId);
             nmw.ShowDialog();
-            if (nmw.NewMeasurement != null) { Measurements.Add(nmw.NewMeasurement); }
+            if (nmw.NewMeasurement != null) 
+            { 
+                Measurements.Add(nmw.NewMeasurement);
+                RefreshPlotInfo(Measurements);
+            }
         }
 
         private void DeleteMeasurement_Click(object sender, RoutedEventArgs e)
@@ -109,6 +142,7 @@ namespace GraslandenGUI.Windows
             MeasurementDTO selectedMeasurement = (MeasurementDTO)DataGridMeasurements.SelectedItem;
             _manager.DeleteMeasurement(selectedMeasurement.Id);
             Measurements.Remove(selectedMeasurement);
+            RefreshPlotInfo(Measurements);
         }
     }
 }
