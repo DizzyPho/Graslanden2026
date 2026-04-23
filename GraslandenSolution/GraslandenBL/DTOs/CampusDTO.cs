@@ -25,6 +25,7 @@ namespace GraslandenBL.DTOs
             Name = name;
             Plots = plots;
             PlotTypes = plotTypes;
+            ManagementTypes = managementTypes;
         }
     }
 
