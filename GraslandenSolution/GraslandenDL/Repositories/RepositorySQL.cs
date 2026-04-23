@@ -38,11 +38,15 @@ namespace GraslandenDL.Repositories
             const string queryPlotTypeValues = "select plot_type, count(plot_type) as count, sum(g.area_sq_meter) as area_sum from inventoried_plot i " +
                 "join grass_plot g on i.plot_code = g.code group by plot_type,inventory_id,campus " +
                 "having campus = @campus and inventory_id = @inventoryID";
+            const string queryManagementTypeValues = "select mt.type, count(type), sum(g.area_sq_meter) from inventoried_plot ip " +
+                "join grass_plot g on ip.plot_code = g.code join management_type mt on mt.id = ip.management_type " +
+                "group by type,inventory_id,campus having campus = @campus and inventory_id = @inventoryID";
 
             using (SqlConnection con = new SqlConnection(_connectionString))
             using (SqlCommand cmdGetAllCampuses = con.CreateCommand())
             using (SqlCommand cmdGetAllPlots = con.CreateCommand())
             using (SqlCommand cmdPlotTypeValues = con.CreateCommand())
+            using (SqlCommand cmdManagementTypeValues = con.CreateCommand())
             {
                 //Parameters
                 cmdGetAllCampuses.Parameters.AddWithValue("@inventoryID", inventoryID);
@@ -50,11 +54,14 @@ namespace GraslandenDL.Repositories
                 cmdGetAllPlots.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
                 cmdPlotTypeValues.Parameters.AddWithValue("@inventoryID", inventoryID);
                 cmdPlotTypeValues.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
+                cmdManagementTypeValues.Parameters.AddWithValue("@inventoryID", inventoryID);
+                cmdManagementTypeValues.Parameters.Add(new SqlParameter("@campus", SqlDbType.NVarChar));
                 //Open connection
                 con.Open();
                 cmdGetAllCampuses.CommandText = queryGetAllCampuses;
                 cmdGetAllPlots.CommandText = queryGetPlots;
                 cmdPlotTypeValues.CommandText = queryPlotTypeValues;
+                cmdManagementTypeValues.CommandText = queryManagementTypeValues;
                 //Get all campuses
                 using (SqlDataReader reader = cmdGetAllCampuses.ExecuteReader())
                 {
@@ -70,7 +77,9 @@ namespace GraslandenDL.Repositories
                 {
                     cmdGetAllPlots.Parameters["@campus"].Value = campus;
                     cmdPlotTypeValues.Parameters["@campus"].Value = campus;
+                    cmdManagementTypeValues.Parameters["@campus"].Value = campus;
                     Dictionary<string, PlotTypeValue> plotTypes = new Dictionary<string, PlotTypeValue>();
+                    Dictionary<ManagementType, ManagementTypeValue> managementTypes = new Dictionary<ManagementType, ManagementTypeValue>();
                     List<Plot> plots = new List<Plot>();
                     using (SqlDataReader reader = cmdGetAllPlots.ExecuteReader())
                     {
@@ -107,7 +116,18 @@ namespace GraslandenDL.Repositories
                         }
                     }
 
-                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes, campus);
+                    using(SqlDataReader reader = cmdManagementTypeValues.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ManagementType managementType = StringToManagementType(reader.GetString(0));
+                            int count = reader.GetInt32(1);
+                            double areaSum = reader.GetDouble(2);
+                            managementTypes.Add(managementType, new ManagementTypeValue(count, areaSum));
+                        }
+                    }
+
+                    CampusDTO campusDTO = new CampusDTO(plots, plotTypes, managementTypes, campus);
                     campusDTOs.Add(campusDTO);
                 }
             }

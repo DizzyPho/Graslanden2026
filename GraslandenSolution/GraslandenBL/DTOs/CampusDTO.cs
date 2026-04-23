@@ -1,4 +1,5 @@
 ﻿using GraslandenBL.Domain;
+using GraslandenBL.Enums;
 
 namespace GraslandenBL.DTOs
 {
@@ -8,6 +9,7 @@ namespace GraslandenBL.DTOs
         public List<Plot> Plots { get; set; }
 
         public Dictionary<string, PlotTypeValue> PlotTypes { get; set; }
+        public Dictionary<ManagementType, ManagementTypeValue> ManagementTypes { get; set; }
 
         public CampusDTO()
         {
@@ -15,7 +17,10 @@ namespace GraslandenBL.DTOs
             PlotTypes = new Dictionary<string, PlotTypeValue>();
         }
 
-        public CampusDTO(List<Plot> plots, Dictionary<string, PlotTypeValue> plotTypes, string name)
+        public CampusDTO(List<Plot> plots, 
+                        Dictionary<string, PlotTypeValue> plotTypes,
+                        Dictionary<ManagementType, ManagementTypeValue> managementTypes,
+                        string name)
         {
             Name = name;
             Plots = plots;
@@ -33,6 +38,17 @@ namespace GraslandenBL.DTOs
 
         public int Count { get; set; }
 
+        public double TotalAreaSqMeters { get; set; }
+    }
+
+    public record struct ManagementTypeValue
+    {
+        public ManagementTypeValue(int count, double totalAreaSqMeters)
+        {
+            Count = count;
+            TotalAreaSqMeters = totalAreaSqMeters;
+        }
+        public int Count { get; set; }
         public double TotalAreaSqMeters { get; set; }
     }
 }
