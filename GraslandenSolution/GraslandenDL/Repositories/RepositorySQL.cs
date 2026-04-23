@@ -619,64 +619,6 @@ namespace GraslandenDL.Repositories
                 cmd.ExecuteNonQuery();
             }
         }
-        public CampusDTO GetCampusDTO(int inventoryID, string campus)
-        {
-            //public CampusDTO(List<Plot> plots, Dictionary<string, PlotValue> plotTypes
-            List<Plot> plots = new List<Plot>();
-
-            //Join grass_plot, inventoried_plot
-            const string queryGetPlots = "SELECT i.plot_code, gp.area_sq_meter, gp.campus, mt.type, i.plot_type FROM inventoried_plot i " +
-                "JOIN grass_plot gp ON i.plot_code = gp.code " +
-                "JOIN management_type mt on mt.id = i.management_type " +
-                "WHERE i.inventory_id = @inventoryID AND gp.campus = @campus";
-            const string queryPlotTypeValues = "select plot_type, count(plot_type) as count, sum(g.area_sq_meter) as area_sum from inventoried_plot i " +
-                "join grass_plot g on i.plot_code = g.code group by plot_type,inventory_id,campus " +
-                "having campus = @campus and inventory_id = @inventoryID";
-
-            using (SqlConnection con = new SqlConnection(_connectionString))
-            using (SqlCommand cmdCampusDTO = con.CreateCommand())
-            using (SqlCommand cmdPlotTypeValues = con.CreateCommand())
-            {
-                //Parameters
-                cmdCampusDTO.Parameters.AddWithValue("@inventoryID", inventoryID);
-                cmdCampusDTO.Parameters.AddWithValue("@campus", campus);
-
-                cmdPlotTypeValues.Parameters.AddWithValue("@inventoryID", inventoryID);
-                cmdPlotTypeValues.Parameters.AddWithValue("@campus", campus);
-
-                //Open connection
-                con.Open();
-                cmdCampusDTO.CommandText = queryGetPlots;
-                cmdPlotTypeValues.CommandText = queryPlotTypeValues;
-                using (SqlDataReader reader = cmdCampusDTO.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        //public Plot(string code, double areaSqMeters, string campus, ManagementType managementType, string plotType)
-                        string code = reader.GetString(reader.GetOrdinal("plot_code"));
-                        double areaSqMeterString = reader.GetDouble(reader.GetOrdinal("area_sq_meter"));
-                        string campusValue = reader.GetString(reader.GetOrdinal("campus"));
-                        string managementType = reader.GetString(reader.GetOrdinal("type"));
-                        ManagementType managementTypeEnum = StringToManagementType(managementType);
-
-                        string plotTypeCode = reader.GetString(reader.GetOrdinal("plot_type"));
-                        Plot plot = new Plot(code, areaSqMeterString, campusValue, managementTypeEnum, plotTypeCode);
-                        plots.Add(plot);
-                    }
-                }
-                Dictionary<string, PlotTypeValue> plotTypes = new Dictionary<string, PlotTypeValue>();
-                using (SqlDataReader reader = cmdPlotTypeValues.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        plotTypes.Add(reader.GetString(0), new PlotTypeValue(reader.GetInt32(1), reader.GetDouble(2)));
-                    }
-                }
-
-                CampusDTO campusDTO = new CampusDTO(plots, plotTypes,campus);
-                return campusDTO;
-            }
-        }
 
         public void InsertMessages(int inventoryID, Dictionary<string, MessageType> messages)
         {
