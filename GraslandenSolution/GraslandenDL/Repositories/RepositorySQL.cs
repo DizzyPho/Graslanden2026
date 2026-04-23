@@ -25,10 +25,9 @@ namespace GraslandenDL.Repositories
             List<CampusDTO> campusDTOs = new List<CampusDTO>();
 
             //Get all campuses  
+            //dont filter on inventoryID because we want all campuses even those WITHOUT plots in this inventory
             string queryGetAllCampuses = "SELECT DISTINCT gp.campus FROM inventoried_plot ip " +
-                "JOIN grass_plot gp ON ip.plot_code = gp.code " +
-                //in inventory
-                "WHERE ip.inventory_id = @inventoryID";
+                "JOIN grass_plot gp ON ip.plot_code = gp.code";
 
             //Join grass_plot, inventoried_plot
             const string queryGetPlots = "SELECT i.plot_code, gp.area_sq_meter, gp.campus, mt.type, i.plot_type FROM inventoried_plot i " +
