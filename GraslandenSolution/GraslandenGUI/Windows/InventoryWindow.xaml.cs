@@ -2,6 +2,7 @@
 using GraslandenBL.DTOs;
 using GraslandenBL.Enums;
 using GraslandenBL.Managers;
+using GraslandenGUI.DataGrids;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,10 +41,9 @@ namespace GraslandenGUI.Windows
             {
                 CampusDTO selectedCampus = _manager.GetCampus(CurrentInventory.Id, campus);
                 CampusInfo[campus] = selectedCampus;
-                DataGrid dataGridPlots = new DataGrid { ItemsSource = selectedCampus.Plots };
-                TabItem tabItem = new TabItem 
+                TabItem tabItem = new TabItem
                 {
-                    Header = campus, Name = campus, Content = dataGridPlots
+                    Header = campus, Name = campus, Content = new PlotDataGrid(selectedCampus.Plots)
                 };
                 TabControlCampus.Items.Add(tabItem);
             }
