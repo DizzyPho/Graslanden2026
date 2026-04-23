@@ -149,6 +149,18 @@ namespace GraslandenGUI.Windows
         private void AddPlot_Click(object sender, RoutedEventArgs e)
         {
 
+            AddPlotWindow apw = new AddPlotWindow();
+            apw.ShowDialog();
+            if((CampusInfo[_selectedTabItem.Name].Plots.Any(p => p.Code == apw.Code)))
+            {
+                MessageBox.Show("Dit grasland is al geïnventariseerd.");
+                return;
+            }
+
+            if(!String.IsNullOrWhiteSpace(apw.Code) && !String.IsNullOrWhiteSpace(apw.PlotType))
+            {
+                _manager.AddPlotToInventory(CurrentInventory.Id, apw.Code, apw.ManagementType, apw.PlotType);
+            }
         }
     }
 }
