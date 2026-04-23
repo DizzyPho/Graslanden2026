@@ -75,23 +75,12 @@ namespace GraslandenGUI.Windows
 
         private void FillCampusInfo(CampusDTO campusDTO)
         {
-            GridCampusInfo.Children.Clear();
-            TextBlock txtTypeTitle = new TextBlock { Text = "Graslandsoort", Margin = new Thickness(10, 0, 10, 0) };
-            TextBlock txtCountTitle = new TextBlock { Text = "Aantal Graslanden", Margin = new Thickness(10, 0, 10, 0) };
-            TextBlock txtAreaTitle = new TextBlock { Text = "Oppervlakte (m²)", Margin = new Thickness(10, 0, 10, 0) };
-            Grid.SetColumn(txtTypeTitle, 0);
-            Grid.SetRow(txtTypeTitle, 0);
-            Grid.SetColumn(txtCountTitle, 1);
-            Grid.SetRow(txtCountTitle, 0);
-            Grid.SetColumn(txtAreaTitle, 3);
-            Grid.SetRow(txtAreaTitle, 0);
-            GridCampusInfo.Children.Add(txtTypeTitle);
-            GridCampusInfo.Children.Add(txtCountTitle);
-            GridCampusInfo.Children.Add(txtAreaTitle);
+
+            FillTitles();
             int currentRow = 1;
-            foreach(KeyValuePair<string, PlotValue> kvp in campusDTO.PlotTypes)
+            foreach(KeyValuePair<string, PlotTypeValue> kvp in campusDTO.PlotTypes)
             {
-                GridCampusInfo.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                GridCampusInfoPlotTypes.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 TextBlock txtType = new TextBlock { Text = kvp.Key, Margin = new Thickness(10,0,10,0) };
                 Grid.SetColumn(txtType, 0);
                 Grid.SetRow(txtType, currentRow);
@@ -102,10 +91,68 @@ namespace GraslandenGUI.Windows
                 Grid.SetColumn(txtArea, 2);
                 Grid.SetRow(txtArea, currentRow);
                 currentRow++;
-                GridCampusInfo.Children.Add(txtType);
-                GridCampusInfo.Children.Add(txtCount);
-                GridCampusInfo.Children.Add(txtArea);
+                GridCampusInfoPlotTypes.Children.Add(txtType);
+                GridCampusInfoPlotTypes.Children.Add(txtCount);
+                GridCampusInfoPlotTypes.Children.Add(txtArea);
             }
+            currentRow = 1;
+            foreach(KeyValuePair<ManagementType, ManagementTypeValue> kvp in campusDTO.ManagementTypes)
+            {
+                GridCampusInfoManagementTypes.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                TextBlock txtType = new TextBlock { Text = kvp.Key.ToString(), Margin = new Thickness(10, 0, 10, 0) };
+                Grid.SetColumn(txtType, 0);
+                Grid.SetRow(txtType, currentRow);
+                TextBlock txtCount = new TextBlock { Text = kvp.Value.Count.ToString(), Margin = new Thickness(10, 0, 10, 0) };
+                Grid.SetColumn(txtCount, 1);
+                Grid.SetRow(txtCount, currentRow);
+                TextBlock txtArea = new TextBlock { Text = kvp.Value.TotalAreaSqMeters.ToString(), Margin = new Thickness(10, 0, 10, 0) };
+                Grid.SetColumn(txtArea, 2);
+                Grid.SetRow(txtArea, currentRow);
+                currentRow++;
+                GridCampusInfoManagementTypes.Children.Add(txtType);
+                GridCampusInfoManagementTypes.Children.Add(txtCount);
+                GridCampusInfoManagementTypes.Children.Add(txtArea);
+            }
+        }
+
+        private void FillTitles()
+        {
+            {
+                GridCampusInfoPlotTypes.Children.Clear();
+                TextBlock txtTypeTitle = new TextBlock { Text = "Graslandsoort", Margin = new Thickness(10, 0, 10, 0) };
+                TextBlock txtCountTitle = new TextBlock { Text = "Aantal Graslanden", Margin = new Thickness(10, 0, 10, 0) };
+                TextBlock txtAreaTitle = new TextBlock { Text = "Oppervlakte (m²)", Margin = new Thickness(10, 0, 10, 0) };
+                Grid.SetColumn(txtTypeTitle, 0);
+                Grid.SetRow(txtTypeTitle, 0);
+                Grid.SetColumn(txtCountTitle, 1);
+                Grid.SetRow(txtCountTitle, 0);
+                Grid.SetColumn(txtAreaTitle, 3);
+                Grid.SetRow(txtAreaTitle, 0);
+                GridCampusInfoPlotTypes.Children.Add(txtTypeTitle);
+                GridCampusInfoPlotTypes.Children.Add(txtCountTitle);
+                GridCampusInfoPlotTypes.Children.Add(txtAreaTitle);
+            }
+            {
+                GridCampusInfoManagementTypes.Children.Clear();
+                TextBlock txtTypeTitle = new TextBlock { Text = "Graslandsoort", Margin = new Thickness(10, 0, 10, 0) };
+                TextBlock txtCountTitle = new TextBlock { Text = "Aantal Graslanden", Margin = new Thickness(10, 0, 10, 0) };
+                TextBlock txtAreaTitle = new TextBlock { Text = "Oppervlakte (m²)", Margin = new Thickness(10, 0, 10, 0) };
+                Grid.SetColumn(txtTypeTitle, 0);
+                Grid.SetRow(txtTypeTitle, 0);
+                Grid.SetColumn(txtCountTitle, 1);
+                Grid.SetRow(txtCountTitle, 0);
+                Grid.SetColumn(txtAreaTitle, 3);
+                Grid.SetRow(txtAreaTitle, 0);
+                GridCampusInfoManagementTypes.Children.Add(txtTypeTitle);
+                GridCampusInfoManagementTypes.Children.Add(txtCountTitle);
+                GridCampusInfoManagementTypes.Children.Add(txtAreaTitle);
+            }
+
+        }
+
+        private void AddPlot_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

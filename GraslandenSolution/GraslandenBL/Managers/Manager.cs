@@ -1,5 +1,6 @@
 ﻿using GraslandenBL.Domain;
 using GraslandenBL.DTOs;
+using GraslandenBL.Enums;
 using GraslandenBL.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -42,14 +43,19 @@ namespace GraslandenBL.Managers
             return _repository.InsertMeasurement(plotCode, species, coverage, inventoryId);
         }
 
-        public CampusDTO GetCampus(int inventoryId, string campus)
-        {
-            return _repository.GetCampusDTO(inventoryId, campus);
-        }
-
         public List<MeasurementDTO> GetSpeciesOfPlot(Plot currentPlot, int currentInventoryId)
         {
             return _repository.GetMeasurementsDTOForPlot(currentInventoryId, currentPlot.Code);
+        }
+
+        public void DeleteMeasurement(int measurementId)
+        {
+            _repository.DeleteMeasurement(measurementId);
+        }
+
+        public void AddPlotToInventory(int inventoryID, string code, ManagementType managementType, string plotType)
+        {
+            _repository.InsertInventoriedPlot(inventoryID, code, managementType, plotType);
         }
     }
 }

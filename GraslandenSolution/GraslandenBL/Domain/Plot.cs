@@ -92,5 +92,18 @@ namespace GraslandenBL.Domain
             }; 
             return nitrogenString;
         }
+
+        public static ManagementType StringToManagementType(string s)
+        {
+            ManagementType managementTypeEnum = s switch
+            {
+                "Netheidsboord" => ManagementType.Netheidsboord,
+                "Schapenweide" => ManagementType.Schapenweide,
+                "Intensief" => ManagementType.Intensief,
+                "Extensief" => ManagementType.Extensief,
+                _ => throw new Exception("Invalid management type")
+            };
+            return managementTypeEnum;
+        }
     }
 }
