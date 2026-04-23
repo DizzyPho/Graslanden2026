@@ -797,7 +797,7 @@ namespace GraslandenDL.Repositories
                     while (reader.Read())
                     {
                         string inventory_name;
-                        int inventory_id = reader.GetInt32(1);
+                        int? inventory_id = reader.IsDBNull(1) ? null : reader.GetInt32(1);
                         if (inventory_id != null)
                         {
                             inventory_name = reader.GetString(0);
