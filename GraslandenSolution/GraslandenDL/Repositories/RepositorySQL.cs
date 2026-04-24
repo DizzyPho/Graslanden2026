@@ -203,7 +203,7 @@ namespace GraslandenDL.Repositories
 
         public int ImportInventory(Inventory inventory)
         {
-            string queryInventory = "INSERT INTO inventory(date,name) output INSERTED.ID VALUES(@date,@name)";
+            const string queryInventory = "INSERT INTO inventory(date,name) output INSERTED.ID VALUES(@date,@name)";
             const string querySpecies = "select id from species where name = @name";
             const string insertSpecies = "insert into species (name, rating, moisture, ph, nitrogen, nectar_production, biodiversity_relevance)" +
                                          "output inserted.id VALUES(@name, @rating, @moisture, @ph, @nitrogen, @nectar_production, @biodiversity)";
@@ -213,11 +213,12 @@ namespace GraslandenDL.Repositories
             const string queryInventoriedPlot = "INSERT INTO inventoried_plot (inventory_id,plot_code,management_type, plot_type) " +
                                                 "output inserted.id " +
                                                 "VALUES (@inventory_id, @plot_code, @management_type, @plot_type)";
-            string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage)" +
+            const string queryMeasurement = "INSERT INTO measurement (inventoried_plot_id, species_id, coverage)" +
                                     "OUTPUT Inserted.id " +
                                       "VALUES (@inventoried_plot_id,@species_id,@coverage)";
-            string insertMessage = "INSERT INTO message (object_id, object_type, inventory_id, description, message_type) " +
+            const string insertMessage = "INSERT INTO message (object_id, object_type, inventory_id, description, message_type) " +
                                     "VALUES (@objectId, @objectType, @inventoryId, @description, @messageType)";
+            const string queryMessage = "SELECT id FROM message WHERE inventory_id is null AND description = @description";
 
             Dictionary<Species, int> speciesList = new();
             Dictionary<string, int> inventoriedPlotIds = new();
@@ -232,7 +233,8 @@ namespace GraslandenDL.Repositories
             using (SqlCommand cmdManagementType = conn.CreateCommand())
             using (SqlCommand cmdInventoriedPlot = conn.CreateCommand())
             using (SqlCommand cmdMeasurement = conn.CreateCommand())
-            using (SqlCommand cmdMessage = conn.CreateCommand())
+            using (SqlCommand cmdMessageInsert = conn.CreateCommand())
+            using (SqlCommand cmdMessageQuery = conn.CreateCommand())
             {
                 cmdInventory.CommandText = queryInventory;
                 cmdInventory.Parameters.AddWithValue("@date", inventory.Date);
@@ -269,12 +271,15 @@ namespace GraslandenDL.Repositories
                 cmdMeasurement.Parameters.Add(new SqlParameter("@species_id", SqlDbType.Int));
                 cmdMeasurement.Parameters.Add(new SqlParameter("@coverage", SqlDbType.NVarChar));
 
-                cmdMessage.CommandText = insertMessage;
-                cmdMessage.Parameters.Add("@objectId", SqlDbType.Int);
-                cmdMessage.Parameters.Add("@objectType", SqlDbType.NVarChar);
-                cmdMessage.Parameters.Add("@inventoryId", SqlDbType.Int);
-                cmdMessage.Parameters.Add("@description", SqlDbType.NVarChar);
-                cmdMessage.Parameters.Add("@messageType", SqlDbType.NVarChar);
+                cmdMessageInsert.CommandText = insertMessage;
+                cmdMessageInsert.Parameters.Add("@objectId", SqlDbType.Int);
+                cmdMessageInsert.Parameters.Add("@objectType", SqlDbType.NVarChar);
+                cmdMessageInsert.Parameters.Add("@inventoryId", SqlDbType.Int);
+                cmdMessageInsert.Parameters.Add("@description", SqlDbType.NVarChar);
+                cmdMessageInsert.Parameters.Add("@messageType", SqlDbType.NVarChar);
+
+                cmdMessageQuery.CommandText = queryMessage;
+                cmdMessageQuery.Parameters.Add("@description", SqlDbType.NVarChar);
 
                 conn.Open();
                 SqlTransaction transaction = conn.BeginTransaction();
@@ -287,7 +292,8 @@ namespace GraslandenDL.Repositories
                 cmdManagementType.Transaction = transaction;
                 cmdInventoriedPlot.Transaction = transaction;
                 cmdMeasurement.Transaction = transaction;
-                cmdMessage.Transaction = transaction;
+                cmdMessageInsert.Transaction = transaction;
+                cmdMessageQuery.Transaction = transaction;
 
                 try
                 {
@@ -320,13 +326,15 @@ namespace GraslandenDL.Repositories
 
                         foreach (KeyValuePair<string, MessageType> message in species.Errors)
                         {
-                            cmdMessage.Parameters["@objectId"].Value = (int)speciesId;
-                            cmdMessage.Parameters["@objectType"].Value = nameof(species);
-                            cmdMessage.Parameters["@description"].Value = message.Key;
-                            cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
-                            cmdMessage.Parameters["@inventoryId"].Value = DBNull.Value;
+                            cmdMessageInsert.Parameters["@objectId"].Value = (int)speciesId;
+                            cmdMessageInsert.Parameters["@objectType"].Value = nameof(species);
+                            cmdMessageInsert.Parameters["@description"].Value = message.Key;
+                            cmdMessageInsert.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessageInsert.Parameters["@inventoryId"].Value = DBNull.Value;
 
-                            cmdMessage.ExecuteNonQuery();
+                            cmdMessageQuery.Parameters["@description"].Value = message.Key;
+                            if(cmdMessageQuery.ExecuteScalar() == null)
+                            cmdMessageInsert.ExecuteNonQuery();
                         }
                         speciesList.Add(species, (int)speciesId);
                     }
@@ -350,13 +358,13 @@ namespace GraslandenDL.Repositories
 
                         foreach (KeyValuePair<string, MessageType> message in plot.Errors)
                         {
-                            cmdMessage.Parameters["@objectId"].Value = inventoriedPlotId;
-                            cmdMessage.Parameters["@objectType"].Value = nameof(plot);
-                            cmdMessage.Parameters["@description"].Value = message.Key;
-                            cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
-                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+                            cmdMessageInsert.Parameters["@objectId"].Value = inventoriedPlotId;
+                            cmdMessageInsert.Parameters["@objectType"].Value = nameof(plot);
+                            cmdMessageInsert.Parameters["@description"].Value = message.Key;
+                            cmdMessageInsert.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessageInsert.Parameters["@inventoryId"].Value = inventoryId;
 
-                            cmdMessage.ExecuteNonQuery();
+                            cmdMessageInsert.ExecuteNonQuery();
                         }
                     }
 
@@ -369,13 +377,13 @@ namespace GraslandenDL.Repositories
 
                         foreach (KeyValuePair<string, MessageType> message in measurement.Errors)
                         {
-                            cmdMessage.Parameters["@objectId"].Value = measurementId;
-                            cmdMessage.Parameters["@objectType"].Value = nameof(measurement);
-                            cmdMessage.Parameters["@description"].Value = message.Key;
-                            cmdMessage.Parameters["@messageType"].Value = message.Value.ToString();
-                            cmdMessage.Parameters["@inventoryId"].Value = inventoryId;
+                            cmdMessageInsert.Parameters["@objectId"].Value = measurementId;
+                            cmdMessageInsert.Parameters["@objectType"].Value = nameof(measurement);
+                            cmdMessageInsert.Parameters["@description"].Value = message.Key;
+                            cmdMessageInsert.Parameters["@messageType"].Value = message.Value.ToString();
+                            cmdMessageInsert.Parameters["@inventoryId"].Value = inventoryId;
 
-                            cmdMessage.ExecuteNonQuery();
+                            cmdMessageInsert.ExecuteNonQuery();
                         }
                     }
                     transaction.Commit();
@@ -453,7 +461,6 @@ namespace GraslandenDL.Repositories
                 try
                 {
                     int inventoriedPlotId = (int)cmdInventoriedPlot.ExecuteScalar();
-                    //int? speciesId = (int?)cmdSpecies.ExecuteScalar();
 
                     Species foundSpecies = null;
                     using (SqlDataReader reader = cmdSpecies.ExecuteReader())
@@ -488,9 +495,6 @@ namespace GraslandenDL.Repositories
                     {
                         return null;
                     }
-                    
-
-                    //return false;
                 }
                 catch (Exception ex)
                 {
@@ -538,7 +542,6 @@ namespace GraslandenDL.Repositories
                         int measurementId = reader.GetInt32(reader.GetOrdinal("id"));
 
                         Species species = new Species(speciesId, speciesName, moisture, ph, nitrogen, nectarValue, biodiversity, rating);
-                        //public MeasurementDTO(int speciesid, string coverage)
                         MeasurementDTO measurementDTO = new MeasurementDTO(measurementId, species, coverage);
                         measurementDTOList.Add(measurementDTO);
                     }
