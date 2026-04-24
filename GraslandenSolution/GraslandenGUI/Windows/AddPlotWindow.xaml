@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GraslandenGUI.Windows"
         mc:Ignorable="d"
-        Title="AddPlotWindow" Height="auto" Width="400" SizeToContent="Height">
+        Title="Grasland toevoegen" Height="auto" Width="400" SizeToContent="Height">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"></ColumnDefinition>
