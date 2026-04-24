@@ -329,9 +329,9 @@ namespace GraslandenDL.FileReaders
                                                     if (distance < 3 && distance > 1)
                                                     {
                                                         // Remarks need to be unique
-                                                        if (!messages.ContainsKey(key: $"{speciesName.Trim()} | {newMeasurement.Species.Name.Trim()} Zijn dit twee verschillende planten?"))
+                                                        if (!messages.ContainsKey(key: $"{speciesName.Trim()} | {newMeasurement.Species.Name.Trim()} | Zijn dit twee verschillende planten?"))
                                                         {
-                                                            messages.TryAdd(key: $"{newMeasurement.Species.Name.Trim()} | {speciesName.Trim()} Zijn dit twee verschillende planten?", value: MessageType.Remark);
+                                                            messages.TryAdd(key: $"{newMeasurement.Species.Name.Trim()} | {speciesName.Trim()} | Zijn dit twee verschillende planten?", value: MessageType.Remark);
                                                         }
                                                     }
                                                 }
